@@ -1,6 +1,5 @@
 {
   "$schema": "./node_modules/fallow/schema.json",
-  // Vendored oxlint plugin: owned by its upstream, not part of our architecture.
   "ignorePatterns": ["tools/**"],
   "duplicates": {
     // Hide pair-only clones; report only widespread copy-paste worth refactoring.
