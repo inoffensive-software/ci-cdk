@@ -1,4 +1,4 @@
-import type { Text } from "../core/index.js";
+import type { Text, Value } from "../core/index.js";
 
 /**
  * A job's commands, in GitLab's own spelling: one string, one leaf that decides its own style, or an
@@ -12,12 +12,19 @@ export interface Job {
   readonly name: string;
   readonly stage?: string;
   readonly script: Script;
+  /** Job keywords this slice does not model, appended after `stage` and `script`. */
+  readonly raw?: Readonly<Record<string, Value>>;
 }
 
 /** `stages` is emitted exactly as written; `jobs` becomes a map keyed by name in array order. */
 export interface Pipeline {
   readonly stages?: readonly string[];
   readonly jobs: readonly Job[];
+  /**
+   * Global keywords and hidden templates this slice does not model, appended after `stages` and the
+   * job entries: `image`, `workflow`, `variables`, `.template`, and their like.
+   */
+  readonly raw?: Readonly<Record<string, Value>>;
 }
 
 /**
