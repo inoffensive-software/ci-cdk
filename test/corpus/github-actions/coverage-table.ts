@@ -1,5 +1,5 @@
 import type { CoverageDebt } from "./coverage-debt.js";
-import { translateLedgerPath } from "./exhaustiveness.js";
+import { LEDGER_RULES } from "./exhaustiveness.js";
 
 /** One grammar area: the paths it owns, named exactly or by owning a subtree. */
 interface GrammarArea {
@@ -176,7 +176,7 @@ const checkCorpusKnown = (
   modelled: readonly string[],
   ledger: readonly string[],
 ): ReadonlySet<string> => {
-  const known = new Set([...modelled, ...ledger.map((path) => translateLedgerPath(path))]);
+  const known = new Set([...modelled, ...ledger.map((path) => LEDGER_RULES.translate(path))]);
 
   for (const entry of corpus) {
     for (const path of entry.paths) {

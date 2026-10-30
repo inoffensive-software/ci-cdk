@@ -12,8 +12,8 @@ import {
 } from "./coverage-table.js";
 import { renderDocumentedGrammar } from "./documented-grammar.js";
 import { ENTRIES } from "./entries.js";
-import { inventoryPaths, keyPaths } from "./exhaustiveness.js";
-import { GAP_CATEGORIES, GAPS, OVERCLAIMS, SCHEMA_PATHS } from "./schema-gap.js";
+import { keyPaths } from "./exhaustiveness.js";
+import { GAP_CATEGORIES, GAPS, MODELLED_PATHS, OVERCLAIMS, SCHEMA_PATHS } from "./schema-gap.js";
 import { readVendored } from "../vendored.js";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
@@ -60,7 +60,7 @@ const expectedCounts = (): readonly number[] => [
 describe("provider document", () => {
   it("shows the generated coverage table exactly", async () => {
     const document = await readFile(DOCUMENT, "utf8");
-    const generated = renderCoverageTable(inventoryPaths(), await corpusPaths(), LEDGER);
+    const generated = renderCoverageTable(MODELLED_PATHS, await corpusPaths(), LEDGER);
 
     expect(blockIn(document, "coverage")).toBe(generated);
   });
@@ -69,8 +69,8 @@ describe("provider document", () => {
     const document = await readFile(DOCUMENT, "utf8");
 
     expect(countsIn(blockIn(document, "coverage"))).toStrictEqual([
-      inventoryPaths().length,
-      displayKeysOf(inventoryPaths()).length,
+      MODELLED_PATHS.length,
+      displayKeysOf(MODELLED_PATHS).length,
     ]);
   });
 

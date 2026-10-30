@@ -6,8 +6,8 @@ import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { renderCoverageTable, renderOpenGaps, type CorpusPaths } from "./coverage-table.js";
 import { renderDocumentedGrammar } from "./documented-grammar.js";
 import { ENTRIES } from "./entries.js";
-import { inventoryPaths, keyPaths } from "./exhaustiveness.js";
-import { GAP_CATEGORIES, GAPS, OVERCLAIMS, SCHEMA_PATHS } from "./schema-gap.js";
+import { keyPaths } from "./exhaustiveness.js";
+import { GAP_CATEGORIES, GAPS, MODELLED_PATHS, OVERCLAIMS, SCHEMA_PATHS } from "./schema-gap.js";
 import { readVendored } from "../vendored.js";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
@@ -54,7 +54,7 @@ const expectedCounts = (): readonly number[] => [
 describe("provider document", () => {
   it("shows the generated coverage table exactly", async () => {
     const document = await readFile(DOCUMENT, "utf8");
-    const generated = renderCoverageTable(inventoryPaths(), await corpusPaths(), LEDGER);
+    const generated = renderCoverageTable(MODELLED_PATHS, await corpusPaths(), LEDGER);
 
     expect(blockIn(document, "coverage")).toBe(generated);
   });
