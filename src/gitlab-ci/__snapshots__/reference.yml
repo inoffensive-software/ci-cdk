@@ -1,0 +1,11 @@
+build:
+  script:
+    - npm ci
+    - !reference
+      - .setup
+      - script
+deploy:
+  before_script: !reference
+    - .setup
+    - script
+  script: make deploy

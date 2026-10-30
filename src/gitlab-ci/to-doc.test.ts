@@ -53,7 +53,13 @@ describe("toDoc", () => {
 });
 
 describe("barrel", () => {
-  it("exposes exactly the two functions and two builders", () => {
-    expect(Object.keys(provider).toSorted()).toStrictEqual(["job", "pipeline", "render", "toDoc"]);
+  it("exposes exactly the two functions, two builders and the reference leaf", () => {
+    expect(Object.keys(provider).toSorted()).toStrictEqual([
+      "job",
+      "pipeline",
+      "ref",
+      "render",
+      "toDoc",
+    ]);
   });
 });
