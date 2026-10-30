@@ -25,6 +25,7 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.workflow.rules[].variables",
   "$.*.rules[].variables",
   "$.*.needs[].parallel.matrix[]",
+  "$.*.parallel.matrix[]",
   "$.*.artifacts.reports",
 ];
 
@@ -65,10 +66,24 @@ const parentPath = (path: string): string => {
 };
 
 /**
- * A key directly under an author-named path is a name the caller chose, so it becomes `*`. This runs
- * after the root is normalised, because a job's body is only reachable at `$.*` once its name is.
+ * A key below an author-named path is a name the caller chose, so it becomes `*`; a suffix of
+ * sequence markers after it stays, because a cell may hold a list. This runs after the root is
+ * normalised, because a job's body is only reachable at `$.*` once its name is.
  */
 const normaliseAuthor = (path: string): string => {
+  for (const name of AUTHOR_NAMED) {
+    const prefix = `${name}.`;
+
+    if (!path.startsWith(prefix)) {
+      continue;
+    }
+
+    const rest = path.slice(prefix.length);
+    const marker = rest.indexOf("[");
+
+    return marker === -1 ? `${name}.*` : `${name}.*${rest.slice(marker)}`;
+  }
+
   const parent = parentPath(path);
 
   return AUTHOR_NAMED.includes(parent) ? `${parent}.*` : path;

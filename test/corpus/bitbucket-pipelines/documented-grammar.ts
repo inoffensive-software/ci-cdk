@@ -1,6 +1,7 @@
-import type { Gap, GapCategory, Overclaim } from "./schema-gap-debt.js";
-import { GAP_CATEGORIES } from "./schema-gap-debt.js";
-import { collapsePosition, formatTable } from "./coverage-table.js";
+import { pathReasonRows, type ReportTable } from "../report.js";
+import { collapsePosition } from "./coverage-table.js";
+import { GAPS, OVERCLAIMS } from "./schema-gap.js";
+import type { Gap, GapCategory } from "./schema-gap.js";
 
 /** The per-row columns: what the schema allows and why it is not modelled. */
 const PATH_REASON_HEADER: readonly string[] = ["Path", "Reason"];
@@ -15,25 +16,8 @@ interface OutOfScopeGroup {
   readonly reason: string;
 }
 
-const byPath = (left: { readonly path: string }, right: { readonly path: string }): number => {
-  if (left.path === right.path) {
-    return 0;
-  }
-
-  return left.path < right.path ? -1 : 1;
-};
-
-const perCategory = (gaps: readonly Gap[]): string =>
-  GAP_CATEGORIES.map(
-    (category: GapCategory) =>
-      `${category} ${String(gaps.filter((gap) => gap.category === category).length)}`,
-  ).join(", ");
-
-const sectionsOf = (gaps: readonly Gap[], category: GapCategory): readonly (readonly string[])[] =>
-  gaps
-    .filter((gap) => gap.category === category)
-    .toSorted(byPath)
-    .map((gap) => [`\`${gap.path}\``, gap.reason]);
+const gapsOf = (category: GapCategory): readonly Gap[] =>
+  GAPS.filter((gap) => gap.category === category);
 
 /**
  * Out-of-scope gaps are per-position copies of a handful of shapes. Grouping by the same display key
@@ -41,10 +25,10 @@ const sectionsOf = (gaps: readonly Gap[], category: GapCategory): readonly (read
  * positions the shape covers. A group whose rows disagree on the reason is a ledger error, so it
  * throws rather than picking one silently.
  */
-const outOfScopeGroups = (gaps: readonly Gap[]): readonly OutOfScopeGroup[] => {
+const outOfScopeGroups = (): readonly OutOfScopeGroup[] => {
   const groups = new Map<string, Gap[]>();
 
-  for (const gap of gaps.filter((row) => row.category === "out-of-scope")) {
+  for (const gap of gapsOf("out-of-scope")) {
     const key = collapsePosition(gap.path);
     groups.set(key, [...(groups.get(key) ?? []), gap]);
   }
@@ -63,42 +47,29 @@ const outOfScopeGroups = (gaps: readonly Gap[]): readonly OutOfScopeGroup[] => {
     });
 };
 
-const groupedRows = (groups: readonly OutOfScopeGroup[]): readonly (readonly string[])[] =>
-  groups.map((group) => [`\`${group.key}\``, String(group.positions.length), group.reason]);
+const outOfScopeRows = (): readonly (readonly string[])[] =>
+  outOfScopeGroups().map((group) => [
+    `\`${group.key}\``,
+    String(group.positions.length),
+    group.reason,
+  ]);
 
 /**
- * The document's documented-grammar block: the counts, then each category in its own table. Gaps the
+ * What the document's documented-grammar block renders: each category in its own table. Gaps the
  * vocabulary could model are listed individually; repeated non-goals are grouped by display key;
- * overclaims are listed individually. `schema` is the walker's path set, so the count follows the
- * pinned schema rather than prose, and every list is sorted so two runs render the same block.
+ * overclaims are listed individually.
  */
-export const renderDocumentedGrammar = (
-  schema: readonly string[],
-  gaps: readonly Gap[],
-  overclaims: readonly Overclaim[],
-): string => {
-  const counts = [
-    `${String(schema.length)} documented paths.`,
-    `Gaps: ${String(gaps.length)} (${perCategory(gaps)}).`,
-    `Overclaims: ${String(overclaims.length)}.`,
-  ].join(" ");
-
-  const unmodelled = sectionsOf(gaps, "unmodelled");
-  const schemaNoise = sectionsOf(gaps, "schema-noise");
-
-  const overclaimRows = overclaims
-    .toSorted(byPath)
-    .map((overclaim) => [`\`${overclaim.path}\``, overclaim.reason]);
-
-  return [
-    counts,
-    "### Unmodelled",
-    formatTable(PATH_REASON_HEADER, unmodelled),
-    "### Out of scope",
-    formatTable(GROUPED_HEADER, groupedRows(outOfScopeGroups(gaps))),
-    "### Schema noise",
-    formatTable(PATH_REASON_HEADER, schemaNoise),
-    "### Overclaims",
-    formatTable(PATH_REASON_HEADER, overclaimRows),
-  ].join("\n\n");
-};
+export const GRAMMAR_TABLES: readonly ReportTable[] = [
+  {
+    heading: "### Unmodelled",
+    header: PATH_REASON_HEADER,
+    rows: pathReasonRows(gapsOf("unmodelled")),
+  },
+  { heading: "### Out of scope", header: GROUPED_HEADER, rows: outOfScopeRows() },
+  {
+    heading: "### Schema noise",
+    header: PATH_REASON_HEADER,
+    rows: pathReasonRows(gapsOf("schema-noise")),
+  },
+  { heading: "### Overclaims", header: PATH_REASON_HEADER, rows: pathReasonRows(OVERCLAIMS) },
+];

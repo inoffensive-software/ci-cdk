@@ -1,9 +1,7 @@
 import { type Gap, type Overclaim, gapCategoryOf } from "../../schemas/gap-debt.js";
 import debt from "./schema-gap-debt.json" with { type: "json" };
 
-export { GAP_CATEGORIES } from "../../schemas/gap-debt.js";
-
-export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
+export type { Gap, Overclaim } from "../../schemas/gap-debt.js";
 
 /**
  * The roadmap of documented grammar this provider cannot emit, one row per missing keyword. Every row
@@ -32,6 +30,11 @@ export const OVERCLAIMS: readonly Overclaim[] = [
     path: "$.*.image.entrypoint[]",
     reason:
       "the schema declares a job's `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; GitLab documents a list of strings, which is what the vocabulary emits",
+  },
+  {
+    path: "$.*.parallel.matrix[].*[]",
+    reason:
+      "a `parallel:matrix` cell written as a list; the schema declares the cell as an array without `items`, so the walk reads the cell but not its item, while the corpus lists several values in one cell",
   },
   {
     path: "$.default.image.entrypoint[]",

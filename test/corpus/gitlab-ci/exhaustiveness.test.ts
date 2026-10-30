@@ -65,8 +65,9 @@ describe("exhaustiveness gate", () => {
     expect(unusedLedgerPaths(entries.flat(), LEDGER, LEDGER_RULES)).toStrictEqual([]);
   });
 
-  it("leaves six rows, all vocabulary gaps, after rules and needs landed", () => {
-    expect(COVERAGE_DEBT).toHaveLength(6);
+  it("leaves one row, the trigger gap, after delivery and scheduling landed", () => {
+    expect(COVERAGE_DEBT).toHaveLength(1);
+    expect(COVERAGE_DEBT.map((row) => row.path)).toStrictEqual(["$.jobs[19].raw.trigger"]);
   });
 });
 
@@ -95,7 +96,7 @@ describe("corpus paths", () => {
 
 describe("gate failure cases", () => {
   it("reports a corpus path outside the inventory and the ledger, naming both remedies", () => {
-    const invented = "$.*.environment";
+    const invented = "$.*.dast_configuration";
     const report = gapPaths([...MODELLED, invented], MODELLED, LEDGER, LEDGER_RULES);
 
     expect(report).toStrictEqual([invented]);

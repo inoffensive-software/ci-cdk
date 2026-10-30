@@ -239,8 +239,8 @@ describe("job raw collisions", () => {
   });
 
   it("still allows raw for a keyword the vocabulary does not model", () => {
-    expect(body({ raw: { release: { tag_name: "$CI_COMMIT_TAG" } } })).toStrictEqual({
-      release: { tag_name: "$CI_COMMIT_TAG" },
+    expect(body({ raw: { manual_confirmation: "Ship it?" } })).toStrictEqual({
+      manual_confirmation: "Ship it?",
     });
   });
 });

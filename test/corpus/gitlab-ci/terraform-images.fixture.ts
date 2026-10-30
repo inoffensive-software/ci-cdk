@@ -79,11 +79,9 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
       image: "registry.gitlab.com/gitlab-org/release-cli:latest",
       needs: ["release-terraform"],
       rules: [{ if: "$CI_COMMIT_TAG" }],
-      raw: {
-        release: {
-          tag_name: "$CI_COMMIT_TAG",
-          description: "terraform-images release $CI_COMMIT_TAG",
-        },
+      release: {
+        tag_name: "$CI_COMMIT_TAG",
+        description: "terraform-images release $CI_COMMIT_TAG",
       },
     }),
   ],
