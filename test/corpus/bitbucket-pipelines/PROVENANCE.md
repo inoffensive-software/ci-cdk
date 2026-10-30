@@ -119,3 +119,9 @@ The pinned schema copied 2026-10-29 (`test/schemas/bitbucket-pipelines.json`) ty
 variable's `description` as a string, but no vendored config uses that key. The synthetic fixture in
 `src/bitbucket-pipelines/custom-variables.test.ts` covers it from the schema; no file is vendored for
 it. Every other variable key is exercised by `custom-vars-nakama.yml` and the inventory.
+
+The same pinned schema, copied 2026-10-29, types an artifact upload's `type`, `capture-on`, `depth`
+and `ignore-paths`, and no corpus config and no Atlassian page documents them. `ArtifactUpload`
+carries all four, the inventory exercises them at every upload position, and
+`src/bitbucket-pipelines/artifacts.test.ts` covers their emission and the depth floor; no file is
+vendored for them.

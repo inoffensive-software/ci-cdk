@@ -67,6 +67,13 @@ const artifactsProblems = (artifacts: Artifacts, artifactsPath: string): readonl
         message: "an artifact upload needs at least one path",
       });
     }
+
+    if (upload.depth !== undefined && upload.depth < 1) {
+      diagnostics.push({
+        path: `${uploadPath}.depth`,
+        message: "an artifact upload needs a depth of at least 1",
+      });
+    }
   }
 
   return diagnostics;
