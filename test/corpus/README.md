@@ -29,9 +29,9 @@ meaning does: a missing key, a key the vocabulary cannot emit at all, a wrong va
 or a scalar of the wrong type (a quoted `"10"` where upstream has the number `10`). Editing the
 vendored file remains forbidden: if the data cannot be expressed, that is a coverage gap.
 
-The header is suppressed because the vendored file has none. Byte equality is still asserted where an
-entry achieves it - `got` does - and `PROVENANCE.md` says which entries are byte-identical and which
-match data only. ADR 0005 records why the rule is semantic.
+The header is suppressed because the vendored file has none. No entry is compared byte for byte;
+`PROVENANCE.md` records `data` as the comparison level for every entry. ADR 0005 records why the rule
+is semantic.
 
 ## Rules
 
@@ -52,12 +52,10 @@ match data only. ADR 0005 records why the rule is semantic.
 
 ## Coverage debt
 
-`coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why. Two kinds
-of row are legal. Most are vocabulary gaps: the key is not modelled. The rest exist only because an
-entry is also checked byte for byte (see `got`), where the modelled field exists but its emitted style
-differs from the file; those rows would disappear if that entry were compared as data only.
+`coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why. Every row
+is a vocabulary gap: the key is not modelled. An empty ledger means the vocabulary can express every
+key the corpus uses.
 
 `coverage.test.ts` walks the fixtures and asserts set equality in both directions - a fixture that
 starts using `raw` without a row fails, and a row no fixture uses fails. Adding a row is a deliberate
-widening of the escape hatch; deleting one is how a gap closes. The vocabulary-gap rows are the
-roadmap; the byte-fidelity rows are not.
+widening of the escape hatch; deleting one is how a gap closes. The rows are the roadmap.
