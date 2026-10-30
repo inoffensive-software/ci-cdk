@@ -1,5 +1,6 @@
 import {
   block,
+  fail,
   fromValue,
   map,
   seq,
@@ -19,6 +20,7 @@ import type {
   Strategy,
   Workflow,
 } from "./types.js";
+import { validate } from "./validate.js";
 
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
@@ -137,11 +139,18 @@ const jobDoc = (job: Job): Doc =>
   ]);
 
 /**
- * The single lowering pass. `jobs` is an array on the struct so composition is spread and concat;
- * it becomes a map keyed by id here, in array order, with `id` stripped from the body.
+ * Validates the whole document, collects every problem, then lowers it. `jobs` is an array on the
+ * struct so composition is spread and concat; it becomes a map keyed by id here, in array order,
+ * with `id` stripped from the body.
  */
-export const toDoc = (workflow: Workflow): Doc =>
-  map([
+export const toDoc = (workflow: Workflow): Doc => {
+  const diagnostics = validate(workflow);
+
+  if (diagnostics.length > 0) {
+    fail(...diagnostics);
+  }
+
+  return map([
     { key: "name", value: fromValue(workflow.name) },
     { key: "on", value: fromValue(workflow.on) },
     ...entry(
@@ -162,3 +171,4 @@ export const toDoc = (workflow: Workflow): Doc =>
       value: map(workflow.jobs.map((job) => ({ key: job.id, value: jobDoc(job) }))),
     },
   ]);
+};

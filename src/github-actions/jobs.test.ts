@@ -106,8 +106,12 @@ describe("job fields", () => {
     expect(text).toContain("    name: Build\n");
     expect(text.indexOf("digest:")).toBeLessThan(text.indexOf("url:"));
   });
+});
 
+describe("declared job order", () => {
   it("emits in documented order whatever order the properties were written", () => {
+    const prepare = build({ id: "prepare" });
+
     const defined = build({
       name: "Build",
       needs: "prepare",
@@ -124,7 +128,7 @@ describe("job fields", () => {
       name: "Build",
     });
 
-    const rendered = render(workflow({ name: "CI", on: "push", jobs: [reordered] }));
+    const rendered = render(workflow({ name: "CI", on: "push", jobs: [prepare, reordered] }));
 
     expect(rendered).toContain(
       "  build:\n" +
@@ -140,7 +144,7 @@ describe("job fields", () => {
         "    strategy:\n" +
         "      fail-fast: false\n",
     );
-    expect(rendered).toBe(render(workflow({ name: "CI", on: "push", jobs: [defined] })));
+    expect(rendered).toBe(render(workflow({ name: "CI", on: "push", jobs: [prepare, defined] })));
   });
 });
 
