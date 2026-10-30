@@ -15,15 +15,17 @@ import type {
   AutoCancel,
   Cache,
   CacheKeyFiles,
-  Changes,
   Default,
   Image,
   Include,
   IncludeEntry,
   IncludeOptions,
+  Need,
+  NeedParallel,
   Retry,
   RetryOptions,
   Rule,
+  RuleChanges,
   Scalar,
   Service,
   ServiceOptions,
@@ -43,11 +45,32 @@ const isSequence = <T>(value: T | readonly T[]): value is readonly T[] => Array.
  */
 export const variablesDoc = (value: Readonly<Record<string, Scalar>>): Doc => fromValue(value);
 
-const changesDoc = (changes: Changes): Doc =>
-  map([
-    { key: "paths", value: fromValue(changes.paths) },
-    ...entry("compare_to", present(changes.compare_to)),
-  ]);
+/** A readonly array is not narrowed by `Array.isArray`, which only accepts a mutable one. */
+const isPathList = (changes: RuleChanges): changes is readonly string[] => Array.isArray(changes);
+
+const changesDoc = (changes: RuleChanges): Doc =>
+  isPathList(changes)
+    ? fromValue(changes)
+    : map([
+        { key: "paths", value: fromValue(changes.paths) },
+        ...entry("compare_to", present(changes.compare_to)),
+      ]);
+
+const matrixDoc = (parallel: NeedParallel): Doc =>
+  map([{ key: "matrix", value: fromValue(parallel.matrix) }]);
+
+/** One need, in GitLab's documented key order; a bare job name stays a scalar. */
+const needDoc = (need: Need): Doc =>
+  typeof need === "string"
+    ? fromValue(need)
+    : map([
+        { key: "job", value: fromValue(need.job) },
+        ...entry("optional", present(need.optional)),
+        ...entry("artifacts", present(need.artifacts)),
+        ...entry("parallel", need.parallel === undefined ? undefined : matrixDoc(need.parallel)),
+      ]);
+
+export const needsDoc = (needs: readonly Need[]): Doc => seq(needs.map((need) => needDoc(need)));
 
 /** One rule, in GitLab's documented key order; `variables` keeps the author's order. */
 const ruleDoc = (rule: Rule): Doc =>
@@ -58,9 +81,10 @@ const ruleDoc = (rule: Rule): Doc =>
     ...entry("when", present(rule.when)),
     ...entry("allow_failure", present(rule.allow_failure)),
     ...entry("variables", rule.variables === undefined ? undefined : variablesDoc(rule.variables)),
+    ...entry("needs", present(rule.needs)),
   ]);
 
-const rulesDoc = (rules: readonly Rule[]): Doc => seq(rules.map((rule) => ruleDoc(rule)));
+export const rulesDoc = (rules: readonly Rule[]): Doc => seq(rules.map((rule) => ruleDoc(rule)));
 
 const autoCancelDoc = (autoCancel: AutoCancel): Doc =>
   map([

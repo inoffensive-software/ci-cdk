@@ -160,7 +160,8 @@ describe("job emission order", () => {
             job({
               name: "build",
               after_script: "echo after",
-              raw: { needs: ["prep"] },
+              needs: ["prep"],
+              rules: [{ if: "$CI_COMMIT_TAG" }],
               script: ["make"],
               before_script: "echo before",
               artifacts: { paths: ["dist/"] },
@@ -180,6 +181,8 @@ describe("job emission order", () => {
     expect(Object.keys(parsed.build)).toStrictEqual([
       "stage",
       "extends",
+      "needs",
+      "rules",
       "tags",
       "image",
       "services",
@@ -189,7 +192,6 @@ describe("job emission order", () => {
       "before_script",
       "script",
       "after_script",
-      "needs",
     ]);
   });
 
@@ -213,6 +215,8 @@ describe("job raw collisions", () => {
             after_script: ["make"],
             tags: ["docker"],
             extends: ".common",
+            needs: ["prep"],
+            rules: [{ if: "$CI_COMMIT_TAG" }],
             cache: { paths: [".cache/"] },
             artifacts: { paths: ["dist/"] },
           },
@@ -227,13 +231,17 @@ describe("job raw collisions", () => {
       '$.jobs[0].raw["after_script"]',
       '$.jobs[0].raw["tags"]',
       '$.jobs[0].raw["extends"]',
+      '$.jobs[0].raw["needs"]',
+      '$.jobs[0].raw["rules"]',
       '$.jobs[0].raw["cache"]',
       '$.jobs[0].raw["artifacts"]',
     ]);
   });
 
   it("still allows raw for a keyword the vocabulary does not model", () => {
-    expect(body({ raw: { needs: ["prep"] } })).toStrictEqual({ needs: ["prep"] });
+    expect(body({ raw: { release: { tag_name: "$CI_COMMIT_TAG" } } })).toStrictEqual({
+      release: { tag_name: "$CI_COMMIT_TAG" },
+    });
   });
 });
 
@@ -276,7 +284,7 @@ describe("job fundamentals golden", () => {
             before_script: ["make deps"],
             script: ["make build"],
             after_script: "echo done",
-            raw: { needs: ["prep"] },
+            needs: ["prep"],
           }),
         ],
       }),

@@ -54,7 +54,11 @@ describe("job raw placement", () => {
             name: "build",
             stage: "build",
             script: "npm ci",
-            raw: { needs: ["prep"], rules: [], allow_failure: true },
+            raw: {
+              environment: { name: "prod" },
+              release: { tag_name: "$CI_COMMIT_TAG" },
+              allow_failure: true,
+            },
           }),
         ],
       }),
@@ -66,18 +70,18 @@ describe("job raw placement", () => {
     expect(Object.keys(parsed.build)).toStrictEqual([
       "stage",
       "script",
-      "needs",
-      "rules",
+      "environment",
+      "release",
       "allow_failure",
     ]);
   });
 
   it("keeps modelled keys first however the struct is written", () => {
-    const text = render(withRawJob({ needs: ["prep"] }), { header: "" });
+    const text = render(withRawJob({ release: { tag_name: "$CI_COMMIT_TAG" } }), { header: "" });
     const parsed = parse(text);
 
     expect(Object.keys(parsed)).toStrictEqual(["build"]);
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "needs"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "release"]);
   });
 });
 

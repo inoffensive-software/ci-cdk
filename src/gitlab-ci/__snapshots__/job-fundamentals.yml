@@ -5,6 +5,8 @@ build:
   extends:
     - .common
     - .go-cache
+  needs:
+    - prep
   tags:
     - gitlab-org
     - docker
@@ -43,5 +45,3 @@ build:
   script:
     - make build
   after_script: echo done
-  needs:
-    - prep

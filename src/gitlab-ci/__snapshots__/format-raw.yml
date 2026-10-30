@@ -4,13 +4,13 @@ variables:
   CI: "true"
 build:
   stage: build
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH
   artifacts:
     paths:
       - dist/
   script: make
-  needs: []
-  rules:
-    - if: $CI_COMMIT_BRANCH
 image: node:24
 .template:
   before_script:

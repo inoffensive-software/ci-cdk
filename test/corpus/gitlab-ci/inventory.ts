@@ -118,6 +118,33 @@ export const INVENTORY: readonly InventoryDocument[] = [
           name: "build",
           stage: "build",
           extends: ".go-cache",
+          needs: [
+            "prepare",
+            { job: "lint", optional: true, artifacts: false },
+            {
+              job: "test",
+              artifacts: true,
+              parallel: {
+                matrix: [
+                  { GO_VERSION: "1.26", SHARD: 1 },
+                  { GO_VERSION: "1.27", SHARD: 2 },
+                ],
+              },
+            },
+          ],
+          rules: [
+            { if: "$CI_COMMIT_TAG", when: "never" },
+            {
+              if: "$CI_COMMIT_BRANCH",
+              changes: { paths: ["src/**/*", "go.mod"], compare_to: "main" },
+              exists: ["Dockerfile"],
+              when: "manual",
+              allow_failure: true,
+              variables: { DEPLOY: "true", SHARDS: 4 },
+              needs: ["prepare", "lint"],
+            },
+            { changes: ["docs/**/*"] },
+          ],
           tags: ["gitlab-org", "docker"],
           image: { name: "golang:1.26", entrypoint: [""], pull_policy: "never" },
           services: [

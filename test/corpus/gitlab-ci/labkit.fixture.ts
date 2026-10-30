@@ -101,73 +101,59 @@ export const LABKIT: Pipeline = pipeline({
   jobs: [
     job({
       name: "semantic_release_check",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "semantic_release_dry_run",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "semantic_release",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "goreleaser_build",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "goreleaser_validate",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "go_unittests",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "golangci_lint",
-      raw: {
-        rules: [
-          {
-            when: "never",
-          },
-        ],
-      },
+      rules: [
+        {
+          when: "never",
+        },
+      ],
     }),
     job({
       name: "warm-go-mod-cache",
@@ -285,19 +271,17 @@ export const LABKIT: Pipeline = pipeline({
     }),
     job({
       name: "danger-review",
-      raw: {
-        rules: [
-          {
-            if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH == "gitlab-community/gitlab-org/labkit"',
-            exists: ["Dangerfile"],
-            allow_failure: true,
-          },
-          {
-            if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
-            exists: ["Dangerfile"],
-          },
-        ],
-      },
+      rules: [
+        {
+          if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH == "gitlab-community/gitlab-org/labkit"',
+          exists: ["Dangerfile"],
+          allow_failure: true,
+        },
+        {
+          if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
+          exists: ["Dangerfile"],
+        },
+      ],
     }),
     job({
       name: "integration:postgres",
@@ -310,23 +294,21 @@ export const LABKIT: Pipeline = pipeline({
       script: ["cd v2", "go test -v -tags integration -count=1 -timeout=60s ./postgres/"],
       extends: ".go-cache",
       image: "golang:${GL_ASDF_GOLANG_VERSION}",
-      raw: {
-        rules: [
-          {
-            if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH",
-          },
-          {
-            if: "$CI_COMMIT_BRANCH",
-            // `!reference [.postgres-integration-trigger-paths, changes]`: the tag is dropped by
-            // `parse`, so the sequence the tag carried is the data.
-            changes: [".postgres-integration-trigger-paths", "changes"],
-          },
-          {
-            if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
-            changes: [".postgres-integration-trigger-paths", "changes"],
-          },
-        ],
-      },
+      rules: [
+        {
+          if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH",
+        },
+        {
+          if: "$CI_COMMIT_BRANCH",
+          // `!reference [.postgres-integration-trigger-paths, changes]`: the tag is dropped by
+          // `parse`, so the sequence the tag carried is the data.
+          changes: [".postgres-integration-trigger-paths", "changes"],
+        },
+        {
+          if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
+          changes: [".postgres-integration-trigger-paths", "changes"],
+        },
+      ],
       services: [
         {
           name: "postgres:18-alpine",
@@ -397,21 +379,19 @@ export const LABKIT: Pipeline = pipeline({
       ],
       extends: ".go-cache",
       image: "golang:${GL_ASDF_GOLANG_VERSION}",
-      raw: {
-        rules: [
-          {
-            if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH",
-          },
-          {
-            if: "$CI_COMMIT_BRANCH",
-            changes: [".azure-integration-trigger-paths", "changes"],
-          },
-          {
-            if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
-            changes: [".azure-integration-trigger-paths", "changes"],
-          },
-        ],
-      },
+      rules: [
+        {
+          if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH",
+        },
+        {
+          if: "$CI_COMMIT_BRANCH",
+          changes: [".azure-integration-trigger-paths", "changes"],
+        },
+        {
+          if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
+          changes: [".azure-integration-trigger-paths", "changes"],
+        },
+      ],
       services: [
         {
           name: "mcr.microsoft.com/azure-storage/azurite:3.37.0",
@@ -434,14 +414,14 @@ export const LABKIT: Pipeline = pipeline({
       variables: {
         LABKIT_SHA: "$CI_COMMIT_SHA",
       },
+      needs: [],
+      rules: [
+        {
+          if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
+          changes: [".conformance-trigger-paths", "changes"],
+        },
+      ],
       raw: {
-        needs: [],
-        rules: [
-          {
-            if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
-            changes: [".conformance-trigger-paths", "changes"],
-          },
-        ],
         trigger: {
           project: "gitlab-org/quality/tooling/labkit-spec",
           branch: "main",
@@ -510,15 +490,11 @@ export const LABKIT: Pipeline = pipeline({
       stage: "validate",
       script: ["./scripts/check-go-version.sh"],
       image: "golang:${GL_ASDF_GOLANG_VERSION}",
-      raw: {
-        needs: [],
-      },
+      needs: [],
     }),
     job({
       name: "markdownlint",
-      raw: {
-        needs: [],
-      },
+      needs: [],
     }),
     job({
       name: "release-v1",

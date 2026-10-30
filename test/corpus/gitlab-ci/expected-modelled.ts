@@ -2,7 +2,7 @@
  * The inventory's rendered key-path union, pinned so a vocabulary change is a visible diff rather
  * than a silent widening. Regenerate only when a ticket deliberately adds or removes a modelled key.
  */
-export const EXPECTED_MODELLED: readonly string[] = ([] = [
+export const EXPECTED_MODELLED: readonly string[] = [
   "$.*",
   "$.*.after_script",
   "$.*.after_script[]",
@@ -51,6 +51,31 @@ export const EXPECTED_MODELLED: readonly string[] = ([] = [
   "$.*.image.entrypoint[]",
   "$.*.image.name",
   "$.*.image.pull_policy",
+  "$.*.needs",
+  "$.*.needs[]",
+  "$.*.needs[].artifacts",
+  "$.*.needs[].job",
+  "$.*.needs[].optional",
+  "$.*.needs[].parallel",
+  "$.*.needs[].parallel.matrix",
+  "$.*.needs[].parallel.matrix[]",
+  "$.*.needs[].parallel.matrix[].*",
+  "$.*.rules",
+  "$.*.rules[]",
+  "$.*.rules[].allow_failure",
+  "$.*.rules[].changes",
+  "$.*.rules[].changes.compare_to",
+  "$.*.rules[].changes.paths",
+  "$.*.rules[].changes.paths[]",
+  "$.*.rules[].changes[]",
+  "$.*.rules[].exists",
+  "$.*.rules[].exists[]",
+  "$.*.rules[].if",
+  "$.*.rules[].needs",
+  "$.*.rules[].needs[]",
+  "$.*.rules[].variables",
+  "$.*.rules[].variables.*",
+  "$.*.rules[].when",
   "$.*.script",
   "$.*.script[]",
   "$.*.services",
@@ -170,4 +195,4 @@ export const EXPECTED_MODELLED: readonly string[] = ([] = [
   "$.workflow.rules[].variables",
   "$.workflow.rules[].variables.*",
   "$.workflow.rules[].when",
-]);
+];

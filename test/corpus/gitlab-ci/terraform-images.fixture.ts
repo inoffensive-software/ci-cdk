@@ -70,18 +70,16 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
         name: "gcr.io/go-containerregistry/crane:debug",
         entrypoint: [""],
       },
-      raw: {
-        rules: [{ if: "$CI_COMMIT_TAG" }],
-      },
+      rules: [{ if: "$CI_COMMIT_TAG" }],
     }),
     job({
       name: "release",
       stage: "deploy",
       script: 'echo "Creating release $CI_COMMIT_TAG"',
       image: "registry.gitlab.com/gitlab-org/release-cli:latest",
+      needs: ["release-terraform"],
+      rules: [{ if: "$CI_COMMIT_TAG" }],
       raw: {
-        needs: ["release-terraform"],
-        rules: [{ if: "$CI_COMMIT_TAG" }],
         release: {
           tag_name: "$CI_COMMIT_TAG",
           description: "terraform-images release $CI_COMMIT_TAG",

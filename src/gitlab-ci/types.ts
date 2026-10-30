@@ -94,16 +94,38 @@ export interface Changes {
 }
 
 /**
- * One ordered condition. `needs` arrives with ticket 41, which also attaches `rules` to a job; the
- * fields here are the ones `workflow` and `include` already accept.
+ * `rules:changes` as GitLab writes it: the map form, or a plain list of paths. The corpus also
+ * carries the list a `!reference` tag leaves behind after parsing, which is the same sequence.
+ */
+export type RuleChanges = Changes | readonly string[];
+
+/** One entry of a job's `needs`: a job name, or the map form with its DAG options. */
+export interface NeedMap {
+  readonly job: string;
+  readonly optional?: boolean;
+  readonly artifacts?: boolean;
+  readonly parallel?: NeedParallel;
+}
+
+/** The `needs:parallel` selector: flat scalar rows, in the author's order. */
+export interface NeedParallel {
+  readonly matrix: readonly Readonly<Record<string, Scalar>>[];
+}
+
+export type Need = string | NeedMap;
+
+/**
+ * One ordered condition, shared by `workflow`, `include` and a job. `needs` is a plain job-name
+ * list here: GitLab's rule-level `needs` does not take the map form a job's `needs` does.
  */
 export interface Rule {
   readonly if?: Text;
-  readonly changes?: Changes;
+  readonly changes?: RuleChanges;
   readonly exists?: readonly string[];
   readonly when?: When;
   readonly allow_failure?: boolean;
   readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly needs?: readonly string[];
 }
 
 /** The fields every include entry may carry; the discriminator decides the source. */
@@ -170,6 +192,10 @@ export interface Job {
   readonly stage?: string;
   /** One template name or several. Never resolved: the target may live in an include. */
   readonly extends?: string | readonly string[];
+  /** DAG edges, in author order. Never checked for dangling names: a target may live in an include. */
+  readonly needs?: readonly Need[];
+  /** The job's condition list, in author order. */
+  readonly rules?: readonly Rule[];
   readonly tags?: readonly string[];
   readonly image?: Image;
   readonly services?: readonly Service[];

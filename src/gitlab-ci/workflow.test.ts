@@ -28,13 +28,14 @@ describe("workflow", () => {
     });
   });
 
-  it("writes a rule's changes map with compare_to and its variables map", () => {
+  it("writes a rule's changes map with compare_to, its variables map and rule-level needs", () => {
     const text = workflowText({
       rules: [
         {
           changes: { paths: ["src/**/*"], compare_to: "main" },
           exists: ["Dangerfile"],
           variables: { DEPLOY: "true", SHARDS: 4 },
+          needs: ["build"],
         },
       ],
     });
@@ -45,6 +46,7 @@ describe("workflow", () => {
           changes: { paths: ["src/**/*"], compare_to: "main" },
           exists: ["Dangerfile"],
           variables: { DEPLOY: "true", SHARDS: 4 },
+          needs: ["build"],
         },
       ],
     });

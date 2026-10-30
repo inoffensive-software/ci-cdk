@@ -116,7 +116,7 @@ describe("scripts", () => {
 
   it("accepts a job that declares no script, as a fragment overriding an included job", () => {
     const override = pipeline({
-      jobs: [job({ name: "semantic_release", raw: { rules: [{ when: "never" }] } })],
+      jobs: [job({ name: "semantic_release", rules: [{ when: "never" }] })],
     });
 
     expect(() => render(override)).not.toThrow();
