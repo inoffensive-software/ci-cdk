@@ -1,4 +1,5 @@
 import type { Text } from "../core/index.js";
+import type { On } from "./trigger.js";
 
 /** A shell or action step, in GitHub's documented key order. */
 export interface Step {
@@ -23,7 +24,7 @@ export interface Job {
 
 export interface Workflow {
   readonly name: string;
-  readonly on: string;
+  readonly on: On;
   readonly jobs: readonly Job[];
 }
 
