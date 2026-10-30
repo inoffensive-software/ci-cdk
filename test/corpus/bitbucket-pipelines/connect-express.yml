@@ -1,0 +1,28 @@
+# You can use a Docker image from Docker Hub or your own container
+# registry for your build environment.
+image: node:18-bullseye
+pipelines:
+  branches:
+    master:
+      - step:
+          oidc: true
+          name: Publish to Atlassian Artifactory
+          script:
+            # Publish to Atlassian Artifactory
+            - apt-get update && apt-get install -y default-jdk
+            - npm install
+            - npm test
+            - npm run lint:all
+            - npm run checktypes
+            - pipe: docker://atlassian/packages-oidc-pipe:latest
+            - source .envrc
+            - echo "Publishing version $PACKAGE_VERSION to Atlassian Artifactory npm-public..."
+            - npm publish --userconfig=./.npmrc-public --@atlassian/atlassian-connect-express:registry="https://packages.atlassian.com/api/npm/npm-public/"
+  default:
+    - step:
+        script: # Modify the commands below to build your repository.
+          - apt-get update && apt-get install -y default-jdk
+          - npm install
+          - npm test
+          - npm run lint:all
+          - npm run checktypes
