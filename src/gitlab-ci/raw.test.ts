@@ -55,9 +55,9 @@ describe("job raw placement", () => {
             stage: "build",
             script: "npm ci",
             raw: {
-              environment: { name: "prod" },
-              release: { tag_name: "$CI_COMMIT_TAG" },
-              allow_failure: true,
+              dast_configuration: { site_profile: "default" },
+              secrets: { TOKEN: { vault: "secret" } },
+              id_tokens: { ID_TOKEN: { aud: "https://example.com" } },
             },
           }),
         ],
@@ -70,18 +70,18 @@ describe("job raw placement", () => {
     expect(Object.keys(parsed.build)).toStrictEqual([
       "stage",
       "script",
-      "environment",
-      "release",
-      "allow_failure",
+      "dast_configuration",
+      "secrets",
+      "id_tokens",
     ]);
   });
 
   it("keeps modelled keys first however the struct is written", () => {
-    const text = render(withRawJob({ release: { tag_name: "$CI_COMMIT_TAG" } }), { header: "" });
+    const text = render(withRawJob({ secrets: { TOKEN: { vault: "secret" } } }), { header: "" });
     const parsed = parse(text);
 
     expect(Object.keys(parsed)).toStrictEqual(["build"]);
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "release"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "secrets"]);
   });
 });
 

@@ -225,7 +225,7 @@ const retryOptionsDoc = (retry: RetryOptions): Doc =>
   ]);
 
 /** A retry count stays a scalar; the map form keeps `max`, `when` and `exit_codes` in order. */
-const retryDoc = (retry: Retry): Doc =>
+export const retryDoc = (retry: Retry): Doc =>
   typeof retry === "number" ? fromValue(retry) : retryOptionsDoc(retry);
 
 /** An image keeps its string form; the map form carries `name` first, then the overrides. */

@@ -81,11 +81,52 @@ export interface Artifacts {
 export interface RetryOptions {
   readonly max: number;
   readonly when?: readonly string[];
-  readonly exit_codes?: readonly number[];
+  readonly exit_codes?: number | readonly number[];
 }
 
 /** A retry count, or the map with `when` conditions and `exit_codes`. */
 export type Retry = number | RetryOptions;
+
+/** The map form of `environment`: a deployment target with its URL and lifecycle hooks. */
+export interface EnvironmentOptions {
+  readonly name: Text;
+  readonly url?: Text;
+  readonly action?: "start" | "prepare" | "stop" | "verify" | "access";
+  readonly on_stop?: Text;
+  readonly auto_stop_in?: Text;
+  readonly deployment_tier?: Text;
+}
+
+/** A deployment environment, as its name or as the map GitLab also accepts. */
+export type Environment = Text | EnvironmentOptions;
+
+/** The metadata a job hands to GitLab's release API. */
+export interface Release {
+  readonly tag_name: Text;
+  readonly description: Text;
+  readonly name?: Text;
+  readonly ref?: Text;
+  readonly milestones?: readonly Text[];
+  readonly released_at?: Text;
+}
+
+/** One `parallel:matrix` row: the author's key order, and a scalar or a list of scalars per cell. */
+export type MatrixRow = Readonly<Record<string, Scalar | readonly Scalar[]>>;
+
+/** The `matrix` form of a job's `parallel`. */
+export interface ParallelMatrix {
+  readonly matrix: readonly MatrixRow[];
+}
+
+/** An instance count, or the matrix that expands the job into one job per row. */
+export type Parallel = number | ParallelMatrix;
+
+/** The map form of `allow_failure`: exit codes that do not fail the pipeline. */
+export interface AllowFailureOptions {
+  readonly exit_codes: number | readonly number[];
+}
+
+export type AllowFailure = boolean | AllowFailureOptions;
 
 /** The `paths`/`compare_to` form of `rules:changes`. */
 export interface Changes {
@@ -206,6 +247,20 @@ export interface Job {
   readonly before_script?: Script;
   readonly script?: Script;
   readonly after_script?: Script;
+  /** A deployment target, as its name or as the map with `url` and lifecycle hooks. */
+  readonly environment?: Environment;
+  /** The release this job creates; emitted as data, never submitted anywhere. */
+  readonly release?: Release;
+  /** An instance count, or a matrix of scalar rows that expands the job. */
+  readonly parallel?: Parallel;
+  /** A retry count, or the map with `when` conditions and `exit_codes`. */
+  readonly retry?: Retry;
+  readonly timeout?: Text;
+  readonly interruptible?: boolean;
+  readonly allow_failure?: AllowFailure;
+  readonly when?: When;
+  readonly resource_group?: Text;
+  readonly coverage?: Text;
   /** Job keywords the vocabulary does not model, appended after the modelled keys. */
   readonly raw?: Readonly<Record<string, Value>>;
 }

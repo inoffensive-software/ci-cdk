@@ -18,11 +18,13 @@ import {
   imageDoc,
   includeDoc,
   needsDoc,
+  retryDoc,
   rulesDoc,
   servicesDoc,
   variablesDoc,
   workflowDoc,
 } from "./blocks.js";
+import { allowFailureDoc, environmentDoc, parallelDoc, releaseDoc } from "./delivery-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -59,7 +61,21 @@ const JOB_RESERVED: readonly string[] = [
   "before_script",
   "script",
   "after_script",
+  "environment",
+  "release",
+  "parallel",
+  "retry",
+  "timeout",
+  "interruptible",
+  "allow_failure",
+  "when",
+  "resource_group",
+  "coverage",
 ];
+
+/** An absent field emits no entry; a present one crosses its shape's own lowering. */
+const whenPresent = <T>(value: T | undefined, doc: (item: T) => Doc): Doc | undefined =>
+  value === undefined ? undefined : doc(value);
 
 /**
  * A job's body in the spec's fixed order. Absent fields emit nothing, so a fragment stays a fragment;
@@ -69,17 +85,28 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("stage", item.stage === undefined ? undefined : fromValue(item.stage)),
     ...entry("extends", present(item.extends)),
-    ...entry("needs", item.needs === undefined ? undefined : needsDoc(item.needs)),
-    ...entry("rules", item.rules === undefined ? undefined : rulesDoc(item.rules)),
+    ...entry("needs", whenPresent(item.needs, needsDoc)),
+    ...entry("rules", whenPresent(item.rules, rulesDoc)),
     ...entry("tags", present(item.tags)),
-    ...entry("image", item.image === undefined ? undefined : imageDoc(item.image)),
-    ...entry("services", item.services === undefined ? undefined : servicesDoc(item.services)),
-    ...entry("variables", item.variables === undefined ? undefined : variablesDoc(item.variables)),
-    ...entry("cache", item.cache === undefined ? undefined : cacheDoc(item.cache)),
-    ...entry("artifacts", item.artifacts === undefined ? undefined : artifactsDoc(item.artifacts)),
+    ...entry("image", whenPresent(item.image, imageDoc)),
+    ...entry("services", whenPresent(item.services, servicesDoc)),
+    ...entry("variables", whenPresent(item.variables, variablesDoc)),
+    ...entry("cache", whenPresent(item.cache, cacheDoc)),
+    ...entry("artifacts", whenPresent(item.artifacts, artifactsDoc)),
     ...entry("before_script", present(item.before_script)),
     ...entry("script", present(item.script)),
     ...entry("after_script", present(item.after_script)),
+    // `trigger` would sit between `release` and `parallel`; it is not modelled yet, so the slot is empty.
+    ...entry("environment", whenPresent(item.environment, environmentDoc)),
+    ...entry("release", whenPresent(item.release, releaseDoc)),
+    ...entry("parallel", whenPresent(item.parallel, parallelDoc)),
+    ...entry("retry", whenPresent(item.retry, retryDoc)),
+    ...entry("timeout", present(item.timeout)),
+    ...entry("interruptible", present(item.interruptible)),
+    ...entry("allow_failure", whenPresent(item.allow_failure, allowFailureDoc)),
+    ...entry("when", present(item.when)),
+    ...entry("resource_group", present(item.resource_group)),
+    ...entry("coverage", present(item.coverage)),
   ];
 
   return map([

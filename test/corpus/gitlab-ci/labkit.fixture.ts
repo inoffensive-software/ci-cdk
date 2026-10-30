@@ -176,22 +176,20 @@ export const LABKIT: Pipeline = pipeline({
       script: ["./scripts/compile.sh"],
       extends: ".go-cache",
       image: "golang:${GO_VERSION}",
-      raw: {
-        parallel: {
-          matrix: [
-            {
-              GO_VERSION: ["1.25", "1.26", "1.27"],
-              BUILD_TAGS: [
-                "tracer_static tracer_static_jaeger",
-                "tracer_static tracer_static_lightstep",
-                "tracer_static tracer_static_datadog",
-                "tracer_static tracer_static_stackdriver",
-                "tracer_static tracer_static_jaeger tracer_static_lightstep tracer_static_datadog tracer_static_stackdriver",
-                "continuous_profiler_stackdriver",
-              ],
-            },
-          ],
-        },
+      parallel: {
+        matrix: [
+          {
+            GO_VERSION: ["1.25", "1.26", "1.27"],
+            BUILD_TAGS: [
+              "tracer_static tracer_static_jaeger",
+              "tracer_static tracer_static_lightstep",
+              "tracer_static tracer_static_datadog",
+              "tracer_static tracer_static_stackdriver",
+              "tracer_static tracer_static_jaeger tracer_static_lightstep tracer_static_datadog tracer_static_stackdriver",
+              "continuous_profiler_stackdriver",
+            ],
+          },
+        ],
       },
     }),
     job({
@@ -200,19 +198,17 @@ export const LABKIT: Pipeline = pipeline({
       script: ["./scripts/test.sh"],
       extends: ".go-cache",
       image: "golang:${GO_VERSION}",
-      raw: {
-        parallel: {
-          matrix: [
-            {
-              GO_VERSION: ["1.25", "1.26", "1.27"],
-              BUILD_TAGS: [
-                "",
-                "tracer_static tracer_static_jaeger tracer_static_lightstep tracer_static_datadog tracer_static_stackdriver",
-                "continuous_profiler_stackdriver",
-              ],
-            },
-          ],
-        },
+      parallel: {
+        matrix: [
+          {
+            GO_VERSION: ["1.25", "1.26", "1.27"],
+            BUILD_TAGS: [
+              "",
+              "tracer_static tracer_static_jaeger tracer_static_lightstep tracer_static_datadog tracer_static_stackdriver",
+              "continuous_profiler_stackdriver",
+            ],
+          },
+        ],
       },
     }),
     job({
@@ -436,20 +432,18 @@ export const LABKIT: Pipeline = pipeline({
       extends: ".go-cache",
       image:
         "${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/golang-fips:${GO_FIPS_VERSION}",
-      raw: {
-        parallel: {
-          matrix: [
-            {
-              GO_FIPS_VERSION: ["1.25", "1.26"],
-              GOEXPERIMENT: "boringcrypto",
-              GOFIPS140: "off",
-            },
-            {
-              GO_FIPS_VERSION: ["1.27"],
-              FIPS_EXPECT_NATIVE_MODULE: "1",
-            },
-          ],
-        },
+      parallel: {
+        matrix: [
+          {
+            GO_FIPS_VERSION: ["1.25", "1.26"],
+            GOEXPERIMENT: "boringcrypto",
+            GOFIPS140: "off",
+          },
+          {
+            GO_FIPS_VERSION: ["1.27"],
+            FIPS_EXPECT_NATIVE_MODULE: "1",
+          },
+        ],
       },
       variables: {
         BUILD_TAGS: "fips",
@@ -464,14 +458,12 @@ export const LABKIT: Pipeline = pipeline({
       script: ["./scripts/test.sh"],
       extends: ".go-cache",
       image: "golang:${GO_VERSION}",
-      raw: {
-        parallel: {
-          matrix: [
-            {
-              GO_VERSION: ["1.25", "1.26", "1.27"],
-            },
-          ],
-        },
+      parallel: {
+        matrix: [
+          {
+            GO_VERSION: ["1.25", "1.26", "1.27"],
+          },
+        ],
       },
       variables: {
         BUILD_TAGS: "fips",
