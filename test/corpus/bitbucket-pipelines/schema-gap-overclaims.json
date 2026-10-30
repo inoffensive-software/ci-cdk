@@ -1,0 +1,378 @@
+[
+  {
+    "path": "$.definitions.steps",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.artifacts",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.artifacts[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.caches",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.caches[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.clone",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.clone.depth",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.clone.enabled",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.clone.lfs",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.clone[\"skip-ssl-verify\"]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.condition",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.condition.changesets",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.condition.changesets.includePaths",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.condition.changesets.includePaths[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.condition.state",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.deployment",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.environment",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.image",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.name",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.oidc",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.script",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.script[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.script[].pipe",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.script[].variables",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.script[].variables.*",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.script[].variables.*[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.services",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.services[]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.size",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step.trigger",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"after-script\"]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"after-script\"][]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"after-script\"][].pipe",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"after-script\"][].variables",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"after-script\"][].variables.*",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"concurrency-group\"]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"fail-fast\"]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"max-time\"]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"runs-on\"]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.definitions.steps[].step[\"runs-on\"][]",
+    "reason": "the pinned schema's `definitions` object has no `steps` entry, though Bitbucket documents `definitions.steps` and every real config uses it; the vocabulary models the shared step group, so the schema is the stale side"
+  },
+  {
+    "path": "$.pipelines.branches.*[].stage.steps[].step.condition.changesets",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines.branches.*[].stage.steps[].step.condition.changesets.includePaths",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines.branches.*[].stage.steps[].step.condition.changesets.includePaths[]",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines.branches.*[].stage.steps[].step.condition.state",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.artifacts",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.artifacts[]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.caches",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.caches[]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.clone",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.clone.depth",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.clone.enabled",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.clone.lfs",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.clone[\"skip-ssl-verify\"]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.condition",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.condition.changesets",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.condition.changesets.excludePaths",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.condition.changesets.excludePaths[]",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.condition.state",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.environment",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.image",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.image.name",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.image.password",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.image.username",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.name",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.oidc",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.script",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.script[]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.script[].pipe",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.script[].variables",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.services",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.services[]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.size",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final.trigger",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"after-script\"]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"after-script\"][]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"after-script\"][].pipe",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"after-script\"][].variables",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"after-script\"][].variables.*",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"concurrency-group\"]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"max-time\"]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"runs-on\"]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"runs-on\"][]",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.default[].final.condition",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.default[].final.condition.changesets",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.default[].final.condition.changesets.excludePaths",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.default[].final.condition.changesets.excludePaths[]",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines.default[].final.condition.state",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`, so the walk never reaches one; `FinalStep` omits only `deployment` and `fail-fast`, so a condition remains expressible"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].stage.steps[].step.condition.changesets",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].stage.steps[].step.condition.changesets.includePaths",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].stage.steps[].step.condition.changesets.includePaths[]",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].stage.steps[].step.condition.state",
+    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage, which forbids it, and the walk reads `properties` without the `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
+  }
+]
