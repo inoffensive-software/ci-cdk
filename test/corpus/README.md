@@ -12,6 +12,10 @@ test/corpus/<provider>/<name>.fixture.ts   one fixture per file
 test/corpus/<provider>/coverage-debt.ts    the ledger of raw paths the fixtures need, with reasons
 test/corpus/<provider>/coverage.test.ts    asserts the ledger against the fixtures, both ways
 test/corpus/<provider>/PROVENANCE.md       repo, commit SHA, path, licence for every entry
+test/corpus/paths.ts                       every key path in a parsed document, normalised
+test/corpus/vendored.ts                    reads an entry's vendored bytes
+test/corpus/coverage.ts                    the ledger assertions; each provider supplies its walker
+test/corpus/provenance.test.ts             checks every provider's PROVENANCE.md against its files
 ```
 
 The corpus tests import the entries they walk; a `<name>.test.ts` loads its vendored file and compares

@@ -102,8 +102,9 @@ change for every consumer.
 - No other comments, and no blank lines outside a block scalar.
 - Output is LF only and ends with exactly one newline. An open block scalar whose text ends in blank
   lines keeps them: they are content, not trailing layout.
-- Shell text (`run`, `script`) is a literal block scalar. Anything carrying a `DOC` leaf decides its
-  own style; nothing else is inferred.
+- GitHub Actions' `run` field and its opt-in `script` leaf are literal block scalars. A field lowered
+  through the boundary parser keeps plain style, as GitLab's `script` does. Anything carrying a `DOC`
+  leaf decides its own style; nothing else is inferred.
 - Tags survive: GitLab's `!reference` emits as a tagged scalar.
 
 ## Core surface
@@ -138,11 +139,18 @@ src/github-actions/
   on-doc.ts     `on:` lowered to a Doc, so a bare event becomes `null`
   validate.ts   document-level checks
   trigger.ts    the `on:` vocabulary
+
+src/gitlab-ci/
+  index.ts      barrel; re-exports render, toDoc and the vocabulary
+  render.ts     render(pipeline) = renderDoc(toDoc(pipeline)), the call users make
+  types.ts      the structs `Pipeline` and `Job`, and the `Script` union
+  to-doc.ts     the single lowering function; public as `toDoc`
+  validate.ts   document-level checks
 ```
 
-`render` and `toDoc` are the public surface; the reasoning is in
-`docs/decisions/0003-to-doc-public.md`. Nothing else in a provider directory is imported by
-consumers.
+`render` and `toDoc` are the public surface in both providers; the reasoning is in
+`docs/decisions/0003-to-doc-public.md` and `docs/decisions/0008-gitlab-public-surface.md`. Nothing
+else in a provider directory is imported by consumers.
 
 Providers import from core, never from a sibling provider. Duplicated vocabulary across providers
 is deliberate: `Cache` in GHA and `cache:` in GitLab differ in ways that only reveal themselves

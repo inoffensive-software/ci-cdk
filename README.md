@@ -92,7 +92,7 @@ git status --porcelain -- .github/workflows   # edits, and a first commit you fo
 | Subpath                                   | Provider            | Status      |
 | ----------------------------------------- | ------------------- | ----------- |
 | `@inoffensive/ci-cdk/github-actions`      | GitHub Actions      | In Progress |
-| `@inoffensive/ci-cdk/gitlab-ci`           | GitLab CI           | Planned     |
+| `@inoffensive/ci-cdk/gitlab-ci`           | GitLab CI           | In Progress |
 | `@inoffensive/ci-cdk/bitbucket-pipelines` | Bitbucket Pipelines | Planned     |
 
 ## Documentation
