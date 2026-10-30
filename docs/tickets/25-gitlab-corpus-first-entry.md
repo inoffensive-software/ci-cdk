@@ -14,20 +14,20 @@ fetching.
 
 **Blocked by:** 24 (GitLab raw escape hatch).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The upstream file is vendored byte for byte under the GitLab corpus directory, with repo,
+- [x] The upstream file is vendored byte for byte under the GitLab corpus directory, with repo,
       commit `4230b972896ea9b4c23322855bcf76256e5ae1c9`, path `.gitlab-ci.yml`, MIT licence, the
       SHA-256 above, and comparison mode `data` recorded in provenance.
-- [ ] A fixture reproduces the file's parsed data through `render(fixture, { header: "" })`; the test
+- [x] A fixture reproduces the file's parsed data through `render(fixture, { header: "" })`; the test
       parses both sides with the `yaml` package and asserts deep equality.
-- [ ] The fixture writes `workflow`, `variables` and the hidden `.terraform-versions` template through
+- [x] The fixture writes `workflow`, `variables` and the hidden `.terraform-versions` template through
       pipeline raw, and the unmodelled keywords of all five jobs through job raw; `stages`, `stage`
       and `script` use the modelled fields.
-- [ ] No byte-equality assertion is added for this entry.
-- [ ] A coverage-debt ledger lists every raw path the fixture uses, each with a one-line
+- [x] No byte-equality assertion is added for this entry.
+- [x] A coverage-debt ledger lists every raw path the fixture uses, each with a one-line
       vocabulary-gap reason; the ledger test asserts set equality in both directions and rejects an
       empty reason.
-- [ ] The ledger contains no byte-fidelity rows, because this entry is not compared byte for byte.
-- [ ] The vendored file is unmodified: a checksum test or the provenance test fails if it changes.
-- [ ] `pnpm check` passes.
+- [x] The ledger contains no byte-fidelity rows, because this entry is not compared byte for byte.
+- [x] The vendored file is unmodified: a checksum test or the provenance test fails if it changes.
+- [x] `pnpm check` passes.
