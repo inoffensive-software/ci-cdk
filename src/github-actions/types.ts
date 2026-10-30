@@ -108,7 +108,8 @@ export interface Job {
   readonly permissions?: Permissions;
   readonly needs?: string | readonly string[];
   readonly if?: Text;
-  readonly "runs-on"?: string;
+  /** A label, a label set, or an expression leaf: a string lowers to a scalar, an array to a sequence. */
+  readonly "runs-on"?: readonly string[] | Text;
   readonly strategy?: Strategy;
   readonly environment?: Environment;
   readonly concurrency?: Concurrency;

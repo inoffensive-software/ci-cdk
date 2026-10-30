@@ -14,6 +14,24 @@ const build = (overrides: Partial<Job> = {}): Job =>
 const withJobs = (jobs: readonly Job[]): string =>
   render(workflow({ name: "CI", on: "push", jobs }), { header: "" });
 
+describe("runs-on", () => {
+  it("keeps a single label a scalar", () => {
+    expect(withJobs([build({ "runs-on": "self-hosted" })])).toContain("    runs-on: self-hosted\n");
+  });
+
+  it("lowers a label set to a sequence", () => {
+    expect(withJobs([build({ "runs-on": ["self-hosted", "linux", "x64"] })])).toContain(
+      "    runs-on:\n      - self-hosted\n      - linux\n      - x64\n",
+    );
+  });
+
+  it("accepts an expression leaf and emits it double-quoted", () => {
+    expect(withJobs([build({ "runs-on": expr`matrix.os` })])).toContain(
+      '    runs-on: "${{ matrix.os }}"\n',
+    );
+  });
+});
+
 describe("needs", () => {
   it("keeps a single id a scalar", () => {
     const text = withJobs([build(), build({ id: "test", needs: "build" })]);
