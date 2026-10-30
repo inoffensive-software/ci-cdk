@@ -28,6 +28,7 @@ export type {
   Stage,
   StageItem,
   Step,
+  StepAuth,
   StepItem,
   Trigger,
 } from "./types.js";

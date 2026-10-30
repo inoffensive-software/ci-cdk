@@ -125,3 +125,9 @@ and `ignore-paths`, and no corpus config and no Atlassian page documents them. `
 carries all four, the inventory exercises them at every upload position, and
 `src/bitbucket-pipelines/artifacts.test.ts` covers their emission and the depth floor; no file is
 vendored for them.
+
+The same pinned schema, copied 2026-10-29, types a step's `auth.system.scopes` and the pipeline's
+top-level `labels` map, and no corpus config and no Atlassian page documents either. `Step.auth` and
+`PipelineConfig.labels` carry both, the inventory exercises them at every step position and at the
+document root, and `src/bitbucket-pipelines/auth-labels.test.ts` covers their emission and
+validation; no file is vendored for them.

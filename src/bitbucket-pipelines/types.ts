@@ -60,10 +60,16 @@ export type Artifacts =
 /** How a step or stage starts. */
 export type Trigger = "automatic" | "manual";
 
+/** A step's auth configuration: the schema's system layer and its scopes. */
+export interface StepAuth {
+  readonly system?: { readonly scopes?: readonly Text[] };
+}
+
 /** A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. */
 export interface Step {
   readonly "after-script"?: readonly ScriptItem[];
   readonly artifacts?: Artifacts;
+  readonly auth?: StepAuth;
   readonly caches?: readonly Text[];
   readonly clone?: Clone;
   readonly condition?: Condition;
@@ -207,6 +213,7 @@ export interface Pipelines {
  */
 export interface PipelineConfig {
   readonly image?: Image;
+  readonly labels?: Readonly<Record<string, Text>>;
   readonly options?: Options;
   readonly clone?: Clone;
   readonly definitions?: Definitions;

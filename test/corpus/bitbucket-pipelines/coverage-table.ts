@@ -10,7 +10,7 @@ import { LEDGER_RULES } from "./exhaustiveness.js";
 const GRAMMAR_AREAS: readonly GrammarArea[] = [
   {
     name: "Document",
-    prefixes: ["$.image", "$.clone", "$.options"],
+    prefixes: ["$.image", "$.clone", "$.labels", "$.options"],
   },
   {
     name: "Definitions",

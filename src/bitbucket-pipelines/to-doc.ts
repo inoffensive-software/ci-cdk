@@ -29,6 +29,7 @@ const DOCUMENT_RESERVED: readonly string[] = [
   "clone",
   "definitions",
   "image",
+  "labels",
   "options",
   "pipelines",
 ];
@@ -234,6 +235,12 @@ export const toDoc = (config: PipelineConfig): Doc => {
     ...entry("clone", cloneDoc(config.clone)),
     ...entry("definitions", definitions),
     ...entry("image", imageDoc(config.image)),
+    ...entry(
+      "labels",
+      config.labels === undefined
+        ? undefined
+        : namedDoc(config.labels, (value) => fromValue(value)),
+    ),
     ...entry("options", optionsDoc(config)),
     { key: "pipelines", value: pipelinesDoc(config, diagnostics) },
   ];
