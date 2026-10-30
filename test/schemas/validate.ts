@@ -14,12 +14,12 @@ export interface SchemaProblem {
  * and keywords Ajv would otherwise warn about. Strict mode is off for that reason, not to excuse
  * a fixture that does not conform.
  */
-const ajv = new Ajv({ strict: false, allErrors: true });
+const AJV = new Ajv({ strict: false, allErrors: true });
 
-const validators = new Map<string, ValidateFunction>();
+const VALIDATORS = new Map<string, ValidateFunction>();
 
 const validatorFor = (provider: string): ValidateFunction => {
-  const cached = validators.get(provider);
+  const cached = VALIDATORS.get(provider);
 
   if (cached !== undefined) {
     return cached;
@@ -29,9 +29,9 @@ const validatorFor = (provider: string): ValidateFunction => {
     readFileSync(new URL(`./${provider}.json`, import.meta.url), "utf8"),
   );
 
-  const validate = ajv.compile(schema);
+  const validate = AJV.compile(schema);
 
-  validators.set(provider, validate);
+  VALIDATORS.set(provider, validate);
 
   return validate;
 };

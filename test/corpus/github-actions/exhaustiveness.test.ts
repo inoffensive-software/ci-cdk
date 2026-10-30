@@ -15,10 +15,10 @@ import {
   unique,
   unusedLedgerPaths,
 } from "./exhaustiveness.js";
-import { anyhow } from "./anyhow.fixture.js";
-import { got } from "./got.fixture.js";
+import { ANYHOW } from "./anyhow.fixture.js";
+import { GOT } from "./got.fixture.js";
 import { INVENTORY } from "./inventory.js";
-import { trpcMain } from "./trpc-main.fixture.js";
+import { TRPC_MAIN } from "./trpc-main.fixture.js";
 import { vendored } from "./vendored.js";
 
 interface Entry {
@@ -28,19 +28,19 @@ interface Entry {
 }
 
 const ENTRIES: readonly Entry[] = [
-  { name: "got", file: "got.yml", workflow: got },
-  { name: "anyhow", file: "anyhow.yml", workflow: anyhow },
-  { name: "trpc-main", file: "trpc-main.yml", workflow: trpcMain },
+  { name: "got", file: "got.yml", workflow: GOT },
+  { name: "anyhow", file: "anyhow.yml", workflow: ANYHOW },
+  { name: "trpc-main", file: "trpc-main.yml", workflow: TRPC_MAIN },
 ];
 
-const modelled = inventoryPaths();
-const modelledSet = new Set(modelled);
-const ledger = COVERAGE_DEBT.map((debt) => debt.path);
-const declared = unique(ledger.map((path) => translateLedgerPath(path)));
+const MODELLED = inventoryPaths();
+const MODELLED_SET = new Set(MODELLED);
+const LEDGER = COVERAGE_DEBT.map((debt) => debt.path);
+const DECLARED = unique(LEDGER.map((path) => translateLedgerPath(path)));
 
 /** The corpus differs from the modelled set by exactly the ledger's raw paths. */
 const differenceOf = async (entry: Entry): Promise<readonly string[]> =>
-  unique((await keyPaths(await vendored(entry.file))).filter((path) => !modelledSet.has(path)));
+  unique((await keyPaths(await vendored(entry.file))).filter((path) => !MODELLED_SET.has(path)));
 
 describe("inventory", () => {
   it("renders every document to data the vendored schema accepts", () => {
@@ -58,7 +58,7 @@ describe("inventory", () => {
   });
 
   it("contains every declared author-named path, so a typo cannot exclude a subtree", () => {
-    expect(AUTHOR_NAMED.filter((path) => !modelledSet.has(path))).toStrictEqual([]);
+    expect(AUTHOR_NAMED.filter((path) => !MODELLED_SET.has(path))).toStrictEqual([]);
   });
 
   it("covers more than one document, so the shapes that cannot coexist are exercised", () => {
@@ -68,24 +68,24 @@ describe("inventory", () => {
 
 describe("exhaustiveness gate", () => {
   it.each(ENTRIES)("$name needs exactly the ledger's raw paths", async (entry: Entry) => {
-    expect(await differenceOf(entry)).toStrictEqual(declared);
+    expect(await differenceOf(entry)).toStrictEqual(DECLARED);
   });
 
   it.each(ENTRIES)("$name uses no raw for a modelled key", (entry: Entry) => {
-    expect(filledRawPaths(entry.workflow, modelled)).toStrictEqual([]);
+    expect(filledRawPaths(entry.workflow, MODELLED)).toStrictEqual([]);
   });
 
   it.each(ENTRIES)("$name declares no ledger row it does not use", async (entry: Entry) => {
     const corpus = await keyPaths(await vendored(entry.file));
 
-    expect(unusedLedgerPaths(corpus, ledger)).toStrictEqual([]);
+    expect(unusedLedgerPaths(corpus, LEDGER)).toStrictEqual([]);
   });
 });
 
 describe("gate failure cases", () => {
   it("reports a corpus path outside the inventory and the ledger, naming both remedies", () => {
     const invented = "$.jobs.*.steps[].uses-with";
-    const report = gapPaths([...modelled, invented], modelled, ledger);
+    const report = gapPaths([...MODELLED, invented], MODELLED, LEDGER);
 
     expect(report).toStrictEqual([invented]);
     expect(remediesFor(invented)).toContain("model it in the vocabulary");
@@ -105,7 +105,7 @@ describe("gate failure cases", () => {
       ],
     });
 
-    expect(filledRawPaths(sneaky, modelled)).toStrictEqual(["$.jobs.*.steps"]);
+    expect(filledRawPaths(sneaky, MODELLED)).toStrictEqual(["$.jobs.*.steps"]);
   });
 });
 
@@ -113,7 +113,7 @@ describe("gate report", () => {
   it("reports raw at workflow level on a modelled key", () => {
     const sneaky = workflow({ name: "Sneaky", on: "push", jobs: [], raw: { name: "Other" } });
 
-    expect(filledRawPaths(sneaky, modelled)).toStrictEqual(["$.name"]);
+    expect(filledRawPaths(sneaky, MODELLED)).toStrictEqual(["$.name"]);
   });
 
   it("reports raw at step level on a modelled key", () => {
@@ -123,7 +123,7 @@ describe("gate report", () => {
       jobs: [job({ id: "build", steps: [step({ raw: { name: "Other" } })] })],
     });
 
-    expect(filledRawPaths(sneaky, modelled)).toStrictEqual(["$.jobs.*.steps[].name"]);
+    expect(filledRawPaths(sneaky, MODELLED)).toStrictEqual(["$.jobs.*.steps[].name"]);
   });
 
   it("reports a ledger row no fixture needs", () => {
@@ -147,6 +147,6 @@ describe("gate report", () => {
       jobs: [job({ id: "build", steps: [step({ run: "true" })] })],
     });
 
-    expect(filledRawPaths(real, modelled)).toStrictEqual([]);
+    expect(filledRawPaths(real, MODELLED)).toStrictEqual([]);
   });
 });

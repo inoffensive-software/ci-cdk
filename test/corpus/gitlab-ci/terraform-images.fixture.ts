@@ -7,7 +7,7 @@ import { type Pipeline, job, pipeline } from "../../../src/gitlab-ci/index.js";
  * Entries are compared semantically, so a fixture may write a scalar or a collection however the DSL
  * prefers. Where the vocabulary models a key, a fixture uses that field rather than `raw`.
  */
-export const terraformImages: Pipeline = pipeline({
+export const TERRAFORM_IMAGES: Pipeline = pipeline({
   stages: ["test", "build", "deploy"],
   jobs: [
     job({

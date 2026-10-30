@@ -1,15 +1,15 @@
 import { type Workflow, job, step, workflow } from "../../../src/github-actions/index.js";
 
-const trpcEnv = {
+const TRPC_ENV = {
   TURBO_TOKEN: "${{ secrets.TURBO_TOKEN }}",
   TURBO_TEAM: "${{ vars.TURBO_TEAM }}",
 };
 
-const trpcCheckout = step({ uses: "actions/checkout@v7", with: { "fetch-depth": 0 } });
+const TRPC_CHECKOUT = step({ uses: "actions/checkout@v7", with: { "fetch-depth": 0 } });
 
-const trpcSetup = step({ uses: "./.github/setup" });
+const TRPC_SETUP = step({ uses: "./.github/setup" });
 
-const postgresService = {
+const POSTGRES_SERVICE = {
   image: "postgres",
   env: {
     POSTGRES_DATABASE: "trpcdb",
@@ -19,10 +19,10 @@ const postgresService = {
   ports: ["5432:5432"],
 };
 
-const trpcIf = "github.event_name == 'pull_request' || github.event_name == 'merge_group'";
+const TRPC_IF = "github.event_name == 'pull_request' || github.event_name == 'merge_group'";
 
 /** The PR pipeline: services, a scalar matrix, workflow concurrency, and a number in `with`. */
-export const trpcMain: Workflow = workflow({
+export const TRPC_MAIN: Workflow = workflow({
   name: "main",
   on: {
     pull_request: { types: ["synchronize", "opened", "reopened"] },
@@ -36,38 +36,38 @@ export const trpcMain: Workflow = workflow({
   jobs: [
     job({
       id: "build",
-      if: trpcIf,
+      if: TRPC_IF,
       "timeout-minutes": 10,
-      env: trpcEnv,
+      env: TRPC_ENV,
       "runs-on": "ubuntu-latest",
-      steps: [trpcCheckout, trpcSetup, step({ run: "pnpm build" })],
+      steps: [TRPC_CHECKOUT, TRPC_SETUP, step({ run: "pnpm build" })],
     }),
     job({
       id: "typecheck",
-      if: trpcIf,
+      if: TRPC_IF,
       "timeout-minutes": 10,
-      env: trpcEnv,
+      env: TRPC_ENV,
       "runs-on": "ubuntu-latest",
-      steps: [trpcCheckout, trpcSetup, step({ run: "pnpm typecheck-packages" })],
+      steps: [TRPC_CHECKOUT, TRPC_SETUP, step({ run: "pnpm typecheck-packages" })],
     }),
     job({
       id: "typecheck-www",
-      if: trpcIf,
+      if: TRPC_IF,
       "timeout-minutes": 10,
-      env: trpcEnv,
+      env: TRPC_ENV,
       needs: ["build"],
       "runs-on": "ubuntu-latest",
-      steps: [trpcCheckout, trpcSetup, step({ run: "pnpm typecheck-www" })],
+      steps: [TRPC_CHECKOUT, TRPC_SETUP, step({ run: "pnpm typecheck-www" })],
     }),
     job({
       id: "test",
       name: "unit and integration tests",
       "timeout-minutes": 10,
-      env: trpcEnv,
+      env: TRPC_ENV,
       "runs-on": "ubuntu-latest",
       steps: [
-        trpcCheckout,
-        trpcSetup,
+        TRPC_CHECKOUT,
+        TRPC_SETUP,
         step({ run: "MUTE_REACT_ACT_WARNINGS=1 pnpm test --coverage" }),
         step({
           name: "Verify committed openapi test fixtures",
@@ -94,10 +94,10 @@ export const trpcMain: Workflow = workflow({
     }),
     job({
       id: "e2e",
-      if: trpcIf,
+      if: TRPC_IF,
       name: "E2E-tests",
       needs: ["build"],
-      services: { postgres: postgresService },
+      services: { postgres: POSTGRES_SERVICE },
       env: {
         NEXTAUTH_SECRET: "supersecret",
         TURBO_TEAM: "${{ vars.TURBO_TEAM }}",
@@ -132,8 +132,8 @@ export const trpcMain: Workflow = workflow({
         },
       },
       steps: [
-        trpcCheckout,
-        trpcSetup,
+        TRPC_CHECKOUT,
+        TRPC_SETUP,
         step({ run: "pnpm build" }),
         step({
           run: "cp ./examples/${{ matrix.dir }}/.env.example ./examples/${{ matrix.dir }}/.env || true",
@@ -146,7 +146,7 @@ export const trpcMain: Workflow = workflow({
     }),
     job({
       id: "e2e-deno",
-      if: trpcIf,
+      if: TRPC_IF,
       name: "E2E-tests (Deno)",
       needs: ["build"],
       env: {
@@ -159,8 +159,8 @@ export const trpcMain: Workflow = workflow({
       "continue-on-error": true,
       strategy: { matrix: { dir: ["deno-deploy"] } },
       steps: [
-        trpcCheckout,
-        trpcSetup,
+        TRPC_CHECKOUT,
+        TRPC_SETUP,
         step({ run: "pnpm build" }),
         step({ uses: "denoland/setup-deno@v2.0.5", with: { "deno-version": "2.x" } }),
         step({ run: "deno --version" }),
@@ -174,7 +174,7 @@ export const trpcMain: Workflow = workflow({
     }),
     job({
       id: "e2e-bun",
-      if: trpcIf,
+      if: TRPC_IF,
       name: "E2E-tests (Bun)",
       needs: ["build"],
       env: {
@@ -187,8 +187,8 @@ export const trpcMain: Workflow = workflow({
       "continue-on-error": true,
       strategy: { matrix: { dir: ["bun"], os: ["ubuntu-latest"] } },
       steps: [
-        trpcCheckout,
-        trpcSetup,
+        TRPC_CHECKOUT,
+        TRPC_SETUP,
         step({ run: "pnpm build" }),
         step({ uses: "oven-sh/setup-bun@v2", with: { "bun-version": "1.4.4" } }),
         step({ run: "bun --version" }),
@@ -200,9 +200,9 @@ export const trpcMain: Workflow = workflow({
     }),
     job({
       id: "e2e-legacy-node",
-      if: trpcIf,
+      if: TRPC_IF,
       needs: ["build"],
-      services: { postgres: postgresService },
+      services: { postgres: POSTGRES_SERVICE },
       env: {
         NEXTAUTH_SECRET: "supersecret",
         TURBO_TOKEN: "${{ secrets.TURBO_TOKEN }}",
@@ -218,8 +218,8 @@ export const trpcMain: Workflow = workflow({
         },
       },
       steps: [
-        trpcCheckout,
-        trpcSetup,
+        TRPC_CHECKOUT,
+        TRPC_SETUP,
         step({ run: "pnpm build" }),
         step({
           uses: "actions/setup-node@v7",
@@ -238,10 +238,10 @@ export const trpcMain: Workflow = workflow({
       if: "github.event_name != 'merge_group'",
       needs: ["build"],
       "runs-on": "ubuntu-latest",
-      env: trpcEnv,
+      env: TRPC_ENV,
       steps: [
-        trpcCheckout,
-        trpcSetup,
+        TRPC_CHECKOUT,
+        TRPC_SETUP,
         step({ run: "pnpm build" }),
         step({ run: "pnpx pkg-pr-new publish './packages/*'" }),
       ],
@@ -251,7 +251,7 @@ export const trpcMain: Workflow = workflow({
       name: "Test a monorepo using built declaration files",
       needs: ["build"],
       "runs-on": "ubuntu-latest",
-      steps: [trpcCheckout, trpcSetup, step({ run: "pnpm monotest-build" })],
+      steps: [TRPC_CHECKOUT, TRPC_SETUP, step({ run: "pnpm monotest-build" })],
     }),
   ],
 });

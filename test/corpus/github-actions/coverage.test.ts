@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import type { Workflow } from "../../../src/github-actions/index.js";
 import { keyPath } from "../paths.js";
-import { anyhow } from "./anyhow.fixture.js";
+import { ANYHOW } from "./anyhow.fixture.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
-import { got } from "./got.fixture.js";
-import { trpcMain } from "./trpc-main.fixture.js";
+import { GOT } from "./got.fixture.js";
+import { TRPC_MAIN } from "./trpc-main.fixture.js";
 
 /** Every raw key a fixture wrote, at the level it wrote it. */
 const rawPathsOf = (workflow: Workflow): readonly string[] => {
@@ -28,12 +28,12 @@ const rawPathsOf = (workflow: Workflow): readonly string[] => {
   return paths;
 };
 
-const workflows = [got, anyhow, trpcMain];
+const WORKFLOWS = [GOT, ANYHOW, TRPC_MAIN];
 
 describe("coverage debt", () => {
   it("declares exactly the raw paths the fixtures use, in both directions", () => {
     const declared = COVERAGE_DEBT.map((debt) => debt.path).toSorted();
-    const used = workflows.flatMap(rawPathsOf).toSorted();
+    const used = WORKFLOWS.flatMap(rawPathsOf).toSorted();
 
     expect(declared).toStrictEqual(used);
   });
@@ -43,6 +43,6 @@ describe("coverage debt", () => {
   });
 
   it("scans the fixtures", () => {
-    expect(workflows).not.toHaveLength(0);
+    expect(WORKFLOWS).not.toHaveLength(0);
   });
 });

@@ -1,6 +1,6 @@
 import { type Workflow, job, step, workflow } from "../../../src/github-actions/index.js";
 
-export const got: Workflow = workflow({
+export const GOT: Workflow = workflow({
   name: "CI",
   on: ["push", "pull_request"],
   permissions: { contents: "read" },
