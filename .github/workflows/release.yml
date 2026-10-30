@@ -31,6 +31,20 @@ jobs:
             echo "error: tag ${GITHUB_REF_NAME} does not match package version v${version}" >&2
             exit 1
           fi
+      - name: Pack the tarball and fail if it is empty or missing dist
+        run: |-
+          packed=$(npm pack --dry-run --json)
+          if printf '%s' "$packed" | grep -q '"files": \[\]'; then
+            echo "error: the tarball is empty; pnpm compile did not produce dist" >&2
+            exit 1
+          fi
+          for required in dist/index.js dist/index.d.ts dist/github-actions/index.js dist/gitlab-ci/index.js dist/bitbucket-pipelines/index.js; do
+            if ! printf '%s' "$packed" | grep -q "\"$required\""; then
+              echo "error: the tarball is missing $required; check that compile ran and files includes dist" >&2
+              exit 1
+            fi
+          done
+          printf '%s\n' "$packed" | grep -o '"path": "[^"]*"' | sed 's/"path": //'
       - name: Publish
         run: |-
           npm publish --provenance --access public

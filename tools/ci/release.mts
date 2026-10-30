@@ -16,6 +16,26 @@ const TAG_MATCH_CHECK = [
   "fi",
 ].join("\n");
 
+/**
+ * Reads the tarball npm would publish and refuses to publish when it is empty or carries no `dist`
+ * entries. A build that was skipped, or a `files` list that lost `dist`, otherwise publishes a
+ * package that installs and then fails on import.
+ */
+const PACK_CHECK = [
+  "packed=$(npm pack --dry-run --json)",
+  "if printf '%s' \"$packed\" | grep -q '\"files\": \\[\\]'; then",
+  '  echo "error: the tarball is empty; pnpm compile did not produce dist" >&2',
+  "  exit 1",
+  "fi",
+  "for required in dist/index.js dist/index.d.ts dist/github-actions/index.js dist/gitlab-ci/index.js dist/bitbucket-pipelines/index.js; do",
+  '  if ! printf \'%s\' "$packed" | grep -q "\\"$required\\""; then',
+  '    echo "error: the tarball is missing $required; check that compile ran and files includes dist" >&2',
+  "    exit 1",
+  "  fi",
+  "done",
+  'printf \'%s\\n\' "$packed" | grep -o \'"path": "[^"]*"\' | sed \'s/"path": //\'',
+].join("\n");
+
 const release = workflow({
   name: "Release",
   on: { push: { tags: ["v*"] }, workflow_dispatch: {} },
@@ -35,6 +55,10 @@ const release = workflow({
         step({ name: "Install", run: "pnpm install --frozen-lockfile" }),
         step({ name: "Check", run: "bash tools/ci/ci.sh" }),
         step({ name: "Verify tag matches package version", run: TAG_MATCH_CHECK }),
+        step({
+          name: "Pack the tarball and fail if it is empty or missing dist",
+          run: PACK_CHECK,
+        }),
         step({ name: "Publish", run: "npm publish --provenance --access public" }),
       ],
     }),
