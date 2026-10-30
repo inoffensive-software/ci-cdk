@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { type Workflow, job, render, step, workflow } from "../../../src/github-actions/index.js";
+import { job, render, step, workflow } from "../../../src/github-actions/index.js";
 import { problemsFor } from "../../schemas/validate.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
+import { ENTRIES, type Entry } from "./entries.js";
 import {
   AUTHOR_NAMED,
   filledRawPaths,
@@ -15,27 +16,8 @@ import {
   unique,
   unusedLedgerPaths,
 } from "./exhaustiveness.js";
-import { ANYHOW } from "./anyhow.fixture.js";
-import { GOT } from "./got.fixture.js";
 import { INVENTORY } from "./inventory.js";
-import { TRPC_MAIN } from "./trpc-main.fixture.js";
-import { TRPC_RELEASE } from "./trpc-release.fixture.js";
-import { TURBO_LSP } from "./turbo-lsp.fixture.js";
 import { readVendored } from "../vendored.js";
-
-interface Entry {
-  readonly name: string;
-  readonly file: string;
-  readonly workflow: Workflow;
-}
-
-const ENTRIES: readonly Entry[] = [
-  { name: "got", file: "got.yml", workflow: GOT },
-  { name: "anyhow", file: "anyhow.yml", workflow: ANYHOW },
-  { name: "trpc-main", file: "trpc-main.yml", workflow: TRPC_MAIN },
-  { name: "trpc-release", file: "trpc-release.yml", workflow: TRPC_RELEASE },
-  { name: "turbo-lsp", file: "turbo-lsp.yml", workflow: TURBO_LSP },
-];
 
 const MODELLED = inventoryPaths();
 const MODELLED_SET = new Set(MODELLED);
