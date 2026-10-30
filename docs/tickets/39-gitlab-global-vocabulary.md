@@ -1,12 +1,12 @@
-# 33: Global vocabulary and Scalar
+# 39: Global vocabulary and Scalar
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** The pipeline-level configuration GitLab documents: `default`, `include`, `variables`
 and `workflow`, plus the provider-local `Scalar` alias that author maps need. After this ticket no
 corpus entry writes a pipeline-level keyword through `raw`.
 
-**Blocked by:** 32 (Corpus, gitlab-pages).
+**Blocked by:** 38 (Corpus, gitlab-pages).
 
 **Status:** ready-for-agent
 

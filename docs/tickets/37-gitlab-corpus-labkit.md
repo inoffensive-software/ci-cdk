@@ -1,6 +1,6 @@
-# 31: Corpus, labkit
+# 37: Corpus, labkit
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** A second GitLab corpus entry that reaches shapes the container-build entry cannot:
 defaults, includes, workflow rules, cache keys, matrix aliases and `when: never`.
@@ -9,7 +9,7 @@ Fetch `gitlab-org/labkit` at commit `8024160e53afaa18991004aa3e06dd336665f983`, 
 `.gitlab-ci.yml` (518 lines, MIT, Copyright (c) 2011-2026 GitLab, Inc.). Verify SHA-256
 `ec24d2817707bdbaf093ea56b12a0ec9224f9a894cf95845f5c80501bc9e89ea`. Do not edit the file.
 
-**Blocked by:** 29 (Coverage gate and hidden templates).
+**Blocked by:** 33 (Coverage gate and hidden templates).
 
 **Status:** ready-for-agent
 

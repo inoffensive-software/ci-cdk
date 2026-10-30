@@ -1,6 +1,6 @@
-# 30: GitLab schema conformance
+# 34: GitLab schema vendoring and conformance
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** Vendor GitLab's official `ci.json` at the pinned commit and validate every inventory
 document and every corpus entry's rendered output against it. Hidden templates are stripped first,
@@ -11,7 +11,7 @@ Fetch the blob from `gitlab-org/gitlab` at commit
 `app/assets/javascripts/editor/schema/ci.json` (MIT). Verify 128,105 bytes and SHA-256
 `1c6eeb7d3a34c39996afbfe1ade220480eb05bbeae674e86d3c745dfeeded7fd`.
 
-**Blocked by:** 29 (Coverage gate and hidden templates).
+**Blocked by:** 33 (Coverage gate and hidden templates).
 
 **Status:** ready-for-agent
 

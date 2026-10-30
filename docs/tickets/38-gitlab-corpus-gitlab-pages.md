@@ -1,6 +1,6 @@
-# 32: Corpus, gitlab-pages
+# 38: Corpus, gitlab-pages
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** A third GitLab corpus entry, small and include-heavy: a component include with rules,
 `default` image/tags, a hidden template with `variables` and `cache`, and one job with `needs`,
@@ -10,7 +10,7 @@ Fetch `gitlab-org/gitlab-pages` at commit `80b941cceb10cb8c18e6cb09314a20ff08847
 `.gitlab-ci.yml` (50 lines, MIT, Copyright GitLab Inc.). Verify SHA-256
 `99145262691ca02eb9faf0e6181d5dbde33bea4025c5ff1f5709386d81f2cd17`. Do not edit the file.
 
-**Blocked by:** 31 (Corpus, labkit), because both append to one ledger.
+**Blocked by:** 37 (Corpus, labkit), because both append to one ledger.
 
 **Status:** ready-for-agent
 

@@ -1,10 +1,12 @@
-# Spec 0005: The GitLab CI provider, breadth
+# Spec 0006: The GitLab CI provider, breadth
 
 Status: ready-for-agent
 Covers: the GitLab breadth slice, successor to spec 0004 and modelled on the structure spec 0003 gave
-GitHub Actions.
-Respects: ADR 0001, ADR 0002, ADR 0005, ADR 0006, ADR 0008, ADR 0009, ADR 0010, specs 0001-0004.
-Adds: ADR 0011 (the `!reference` leaf).
+GitHub Actions. It adopts the shared schema walker and documented-grammar gate that spec 0005 builds
+for GitHub Actions, so GitLab does not need a later measurement epic of its own.
+Respects: ADR 0001, ADR 0002, ADR 0005, ADR 0006, ADR 0008, ADR 0009, ADR 0010, ADR 0011, specs
+0001-0005.
+Adds: ADR 0012 (the `!reference` leaf).
 
 ## Problem Statement
 
@@ -36,6 +38,9 @@ configurations.
   machinery and reusing the shared corpus helpers.
 - Vendor GitLab's official `ci.json` at a pinned commit and validate emitted inventory and corpus
   documents against it.
+- Wire that schema into the shared documented-grammar walker and diff it against the modelled set, so
+  GitLab inherits the same gap/overclaim measurement spec 0005 builds for GitHub Actions instead of
+  opening a second measurement epic later.
 - Add two more corpus entries, chosen for shapes the current entry cannot reach:
   `gitlab-org/labkit` (defaults, includes, workflow rules, anchors, cache keys, matrix aliases) and
   `gitlab-org/gitlab-pages` (includes with rules, defaults, a hidden template, `extends` and `needs`).
@@ -151,7 +156,7 @@ gate fails if the vocabulary and the corpus drift.
 32. As a maintainer, I want the gate and the ledger to reach zero vocabulary-gap rows at the end of
     this slice, so that "supports GitLab CI" has a measurable target.
 
-33. As a maintainer, I want ADR 0011 to record the `!reference` leaf as a widening of the provider
+33. As a maintainer, I want ADR 0012 to record the `!reference` leaf as a widening of the provider
     surface, so that the decision is not smuggled in as a field.
 
 34. As a library consumer, I want `templates` to accept an ordered map of `.`-prefixed names to plain
@@ -160,6 +165,21 @@ gate fails if the vocabulary and the corpus drift.
 35. As a maintainer, I want hidden templates excluded from the vocabulary gate and stripped before
     schema validation, so that author data does not pollute the coverage metric.
 
+36. As a maintainer, I want GitLab's vendored schema walked into key paths and diffed against the
+    modelled set, so that "what can GitLab write that we cannot" is a list with a size.
+
+37. As a maintainer, I want every gap categorised as `unmodelled`, `out-of-scope` or `schema-noise`, so
+    that only the first is debt and the other two are decisions.
+
+38. As a maintainer, I want modelled paths the schema rejects reported as overclaims, so that a stale
+    schema and a provider bug are both visible.
+
+39. As a maintainer, I want a schema refresh that introduces an unruly path to fail the suite, so that
+    refreshing is always a reviewed change.
+
+40. As a consumer, I want the provider page to show documented-grammar coverage beside corpus coverage,
+    so that the claim and its debt are one artefact.
+
 ## Implementation Decisions
 
 ### Modules and public surface
@@ -167,7 +187,7 @@ gate fails if the vocabulary and the corpus drift.
 - The `gitlab-ci` provider gains `inventory` and `exhaustiveness` test support mirroring the GitHub
   Actions corpus machinery, plus a `leaves` module for `ref`. It continues to expose only `render`,
   `toDoc`, `pipeline`, `job`, `ref` and the types.
-- `ref` is a new public export and therefore needs ADR 0011: it widens the surface ADR 0008 set, it is
+- `ref` is a new public export and therefore needs ADR 0012: it widens the surface ADR 0008 set, it is
   the first GitLab leaf, and it exists because `!reference` carries a tag no plain string can.
 - Core is unchanged. The shared corpus helpers (`test/corpus/paths.ts`, `vendored.ts`, `coverage.ts`,
   `provenance.test.ts`) are reused, not forked.
@@ -302,6 +322,23 @@ parsed data with the header suppressed (ADR 0005).
 - The schema is a typo net, not a type source. If the pinned schema rejects a modelled shape GitLab
   accepts, the ticket stops and reports; there is no exception list in this slice.
 
+### Documented grammar
+
+Spec 0005 defines the walker, the two declared lists, the closed categories and the refresh rule. GitLab
+reuses them rather than restating the mechanism.
+
+- The walker is shared test support under `test/schemas/`; the GitLab diff and its two lists are
+  provider-local.
+- `GAPS` holds a schema path the GitLab inventory cannot emit, with `reason` and `category` from
+  `unmodelled | out-of-scope | schema-noise`.
+- `OVERCLAIMS` holds a modelled path the GitLab schema does not allow, with `reason`.
+- Both lists are asserted in both directions: an undeclared path fails, an unused row fails.
+- Paths use the inventory's notation, and the report is sorted and de-duplicated.
+- No new ADR: ADR 0011 already records the gate, the categories and the refresh rule. GitLab adds data,
+  not policy.
+- Triage classifies; it does not build vocabulary. A gap becomes vocabulary only when a pinned corpus
+  entry already needs it.
+
 ## Testing Decisions
 
 - **Seam.** `render(pipeline(...))` from `@inoffensive/ci-cdk/gitlab-ci`, called as a consumer writes
@@ -322,10 +359,14 @@ parsed data with the header suppressed (ADR 0005).
   shared provenance test.
 - **Schema.** Inventory and corpus output validate against the pinned schema with hidden templates
   stripped.
+- **Documented grammar.** The shared walker's output is diffed against the modelled set; both lists
+  are asserted both ways with negative cases, and the report is asserted as sets of paths. The walker
+  itself is tested by spec 0005, not here.
 - **Goldens.** New fields add new goldens only where they are set; existing goldens must not change.
   Regenerating from unchanged source produces no diff.
 - **Prior art.** `test/corpus/github-actions/exhaustiveness.test.ts`, `inventory.ts`,
-  `conformance.test.ts`, and the GitLab format lock from ticket 26.
+  `conformance.test.ts`, the schema walker and diff from spec 0005, and the GitLab format lock from
+  ticket 26.
 
 ## Out of Scope
 
@@ -338,12 +379,17 @@ parsed data with the header suppressed (ADR 0005).
   `start_in`, `dast_configuration`, `inherit`, `dependencies`, and `rules:changes:compare_to`.
 - Child pipelines and multi-document pipelines.
 - A CLI or file-writing behaviour; `render` still returns text.
+- Refreshing the vendored schema, and modelling any declared `GAPS` row. Triage classifies; a row
+  becomes vocabulary only when a pinned corpus entry already needs it.
 
 ## Further Notes
 
 - The tracker is local: tickets are files under `docs/tickets/`, no issue is published. The
   `ready-for-agent` status stands in for a triage label.
-- The next free ticket number is 29; 28 belongs to the concurrent GitHub Actions work.
+- The next free ticket number is 33; 29-32 belong to spec 0005's documented-grammar work and 28 to the
+  concurrent GitHub Actions constant-naming ticket.
+- Ticket 35 depends on spec 0005's shared walker. If that work has not merged, 33, 34 and 37-44 can
+  still proceed; only 35 and 36 wait.
 - The three corpus files are pinned external artifacts. Fetch them at the commit and verify the hash
   before writing a fixture; do not refresh them mid-slice.
 - The schema is the largest vendored file in the repo. The formatter ignores `test/schemas/*.json`.
