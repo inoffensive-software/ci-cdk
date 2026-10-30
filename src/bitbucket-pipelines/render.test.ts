@@ -10,12 +10,6 @@ const oneStep = (): PipelineConfig =>
     pipelines: { default: [step({ script: ["npm ci", "npm test"] })] },
   });
 
-interface ParsedStepBody {
-  readonly name?: string;
-  readonly oidc?: boolean;
-  readonly script: readonly string[];
-}
-
 describe("render", () => {
   it("pins the connect-express fixture with the header suppressed", async () => {
     await expect(render(CONNECT_EXPRESS, { header: "" })).toMatchFileSnapshot(
@@ -32,7 +26,7 @@ describe("render", () => {
       { header: "" },
     );
 
-    expect(Object.keys(parse(text) as object)).toStrictEqual(["image", "pipelines"]);
+    expect(text.indexOf("image:")).toBeLessThan(text.indexOf("pipelines:"));
   });
 });
 
@@ -54,19 +48,21 @@ describe("pipelines", () => {
       { header: "" },
     );
 
-    const parsed = parse(text) as {
-      pipelines: {
-        default: readonly { step: { name?: string } }[];
-        branches: Record<string, readonly { step: { script: readonly string[] } }[]>;
-      };
-    };
+    const parsed = parse(text);
 
-    expect(parsed.pipelines.default.map((item) => item.step.name)).toStrictEqual([
-      "first",
-      "second",
-    ]);
+    expect(parsed).toStrictEqual({
+      pipelines: {
+        default: [
+          { step: { name: "first", script: ["one"] } },
+          { step: { name: "second", script: ["two"] } },
+        ],
+        branches: {
+          main: [{ step: { script: ["main"] } }],
+          "release/*": [{ step: { script: ["release"] } }],
+        },
+      },
+    });
     expect(Object.keys(parsed.pipelines.branches)).toStrictEqual(["main", "release/*"]);
-    expect(parsed.pipelines.branches["main"]).toStrictEqual([{ step: { script: ["main"] } }]);
   });
 });
 
@@ -84,14 +80,18 @@ describe("steps", () => {
       { header: "" },
     );
 
-    const parsed = parse(text) as {
-      pipelines: { default: readonly { step: ParsedStepBody }[] };
-    };
+    const parsed = parse(text);
 
-    expect(parsed.pipelines.default.map((item) => Object.keys(item.step))).toStrictEqual([
-      ["name", "oidc", "script"],
-      ["script"],
-    ]);
+    expect(parsed).toStrictEqual({
+      pipelines: {
+        default: [
+          { step: { name: "publish", oidc: true, script: ["npm publish"] } },
+          { step: { script: ["true"] } },
+        ],
+      },
+    });
+    expect(Object.keys(parsed.pipelines.default[0].step)).toStrictEqual(["name", "oidc", "script"]);
+    expect(Object.keys(parsed.pipelines.default[1].step)).toStrictEqual(["script"]);
   });
 });
 
