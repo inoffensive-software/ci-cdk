@@ -146,11 +146,22 @@ src/gitlab-ci/
   types.ts      the structs `Pipeline` and `Job`, and the `Script` union
   to-doc.ts     the single lowering function; public as `toDoc`
   validate.ts   document-level checks
+
+src/bitbucket-pipelines/
+  index.ts          barrel; re-exports render, toDoc and the vocabulary
+  render.ts         render(config) = renderDoc(toDoc(config)), the call users make
+  types.ts          the provider's structs and item unions
+  to-doc.ts         the single lowering function; public as `toDoc`
+  step-doc.ts       a step body lowered, reused at every pipeline position
+  item-doc.ts       the pipeline item union lowered
+  validate.ts       document-level checks
+  item-problems.ts  the item-level checks `validate` collects
 ```
 
-`render` and `toDoc` are the public surface in both providers; the reasoning is in
-`docs/decisions/0003-to-doc-public.md` and `docs/decisions/0008-gitlab-public-surface.md`. Nothing
-else in a provider directory is imported by consumers.
+`render` and `toDoc` are the public surface in all three providers; the reasoning is in
+`docs/decisions/0003-to-doc-public.md`, `docs/decisions/0008-gitlab-public-surface.md` and
+`docs/decisions/0013-bitbucket-public-surface.md`. Nothing else in a provider directory is imported
+by consumers.
 
 Providers import from core, never from a sibling provider. Duplicated vocabulary across providers
 is deliberate: `Cache` in GHA and `cache:` in GitLab differ in ways that only reveal themselves
