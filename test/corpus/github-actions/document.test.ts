@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { renderCoverageTable, renderOpenGaps, type CorpusPaths } from "./coverage-table.js";
+import { renderDocumentedGrammar } from "./documented-grammar.js";
 import { ENTRIES } from "./entries.js";
 import { inventoryPaths, keyPaths } from "./exhaustiveness.js";
+import { GAP_CATEGORIES, GAPS, OVERCLAIMS, SCHEMA_PATHS } from "./schema-gap.js";
 import { readVendored } from "../vendored.js";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
@@ -34,6 +36,20 @@ const blockIn = (text: string, name: string): string => {
 
   return match[1].trim();
 };
+
+/** The counts the block's lead states, read back so they can be held to the lists. */
+const countsIn = (block: string): readonly number[] => {
+  const lead = block.split("\n")[0] ?? "";
+
+  return [...lead.matchAll(/\d+/gu)].map((match) => Number(match[0]));
+};
+
+const expectedCounts = (): readonly number[] => [
+  SCHEMA_PATHS.length,
+  GAPS.length,
+  ...GAP_CATEGORIES.map((category) => GAPS.filter((gap) => gap.category === category).length),
+  OVERCLAIMS.length,
+];
 
 describe("provider document", () => {
   it("shows the generated coverage table exactly", async () => {
@@ -69,6 +85,29 @@ describe("provider document", () => {
 
     for (const value of [...repos, ...commits]) {
       expect(document).toContain(value);
+    }
+  });
+});
+
+describe("documented grammar section", () => {
+  it("shows the generated block exactly", async () => {
+    const document = await readFile(DOCUMENT, "utf8");
+    const generated = renderDocumentedGrammar(SCHEMA_PATHS, GAPS, OVERCLAIMS);
+
+    expect(blockIn(document, "documented-grammar")).toBe(generated);
+  });
+
+  it("states the counts the lists hold", async () => {
+    const document = await readFile(DOCUMENT, "utf8");
+
+    expect(countsIn(blockIn(document, "documented-grammar"))).toStrictEqual(expectedCounts());
+  });
+
+  it("names every declared gap and overclaim", async () => {
+    const document = await readFile(DOCUMENT, "utf8");
+
+    for (const row of [...GAPS, ...OVERCLAIMS]) {
+      expect(document).toContain(`\`${row.path}\``);
     }
   });
 });

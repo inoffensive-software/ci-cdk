@@ -48,6 +48,68 @@ editing it by hand fails.
 
 <!-- coverage:end -->
 
+## Documented grammar
+
+[`docs/references/upstream-schemas.md`](../references/upstream-schemas.md) pins the schema this section
+reads as a grammar: a gap is a schema path the provider cannot emit, and an overclaim is a modelled
+path the schema rejects. `test/corpus/github-actions/documented-grammar.ts` generates the block below
+from the walker's paths, `GAPS` and `OVERCLAIMS`; `document.test.ts` compares it with this file, so
+editing it by hand fails. The gate and its refresh rule are in
+[ADR 0011](../decisions/0011-documented-grammar-gate.md).
+
+<!-- documented-grammar:start -->
+
+154 documented paths. Gaps: 36 (unmodelled 18, out-of-scope 13, schema-noise 5). Overclaims: 0.
+
+| Path                                 | Category       | Reason                                                                                                                                                                                                   |
+| ------------------------------------ | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.concurrency.queue`                | `unmodelled`   | what happens to runs that wait on a busy concurrency group: `single` drops the older pending run and `max` queues up to 100 in order; the vocabulary emits only `group` and `cancel-in-progress`         |
+| `$.jobs.*.concurrency.queue`         | `unmodelled`   | the job-level form of the concurrency queue policy, `single` or `max`; job concurrency today carries only `group` and `cancel-in-progress`                                                               |
+| `$.jobs.*.environment.deployment`    | `unmodelled`   | a boolean on an environment reference that decides whether the job creates a deployment record, defaulting to true; the vocabulary emits only `name` and `url`                                           |
+| `$.jobs.*.services.*.command`        | `unmodelled`   | a Docker `CMD` override for one service container, passed as arguments after the image name, and combined with `entrypoint` when both are given                                                          |
+| `$.jobs.*.services.*.entrypoint`     | `unmodelled`   | a Docker `ENTRYPOINT` override for one service container, a single executable given as a string                                                                                                          |
+| `$.jobs.*.snapshot`                  | `unmodelled`   | asks the job to build a custom runner image from its steps, either as an image name string or as a mapping of `image-name` and an optional `version`                                                     |
+| `$.jobs.*.snapshot.version`          | `unmodelled`   | the major version a generated image is built under, a string such as `1` or `1.2`, in the mapping form of `snapshot`                                                                                     |
+| `$.jobs.*.snapshot["image-name"]`    | `unmodelled`   | the name a generated image is published under, the required key of the mapping form of `snapshot`                                                                                                        |
+| `$.jobs.*.steps[].background`        | `unmodelled`   | a boolean on a `run` or `uses` step that starts it asynchronously and lets the job continue; later `wait` and `cancel` steps reach it by its id                                                          |
+| `$.jobs.*.steps[].cancel`            | `unmodelled`   | a step that terminates one named background step, taking that step's id and sending SIGTERM so it can clean up                                                                                           |
+| `$.jobs.*.steps[].parallel`          | `unmodelled`   | a group of steps run at once, each as a background step and all waited for before the job continues; an array of steps                                                                                   |
+| `$.jobs.*.steps[].parallel[]`        | `unmodelled`   | one step inside a parallel group, with the same shape as any other step                                                                                                                                  |
+| `$.jobs.*.steps[].wait`              | `unmodelled`   | a step that pauses the job until named background steps finish, taking one step id as a string or several as an array                                                                                    |
+| `$.jobs.*.steps[].wait[]`            | `unmodelled`   | one background step id that a wait step blocks on                                                                                                                                                        |
+| `$.jobs.*.steps[]["wait-all"]`       | `unmodelled`   | a step that pauses the job until every background step finishes; it takes a boolean (or null) and no arguments                                                                                           |
+| `$.jobs.*.strategy.matrix.*[].*.*`   | `schema-noise` | an object under a key of a matrix cell object; `definitions.configuration` recurses through `additionalProperties`, while GitHub documents cell object keys that hold scalars, one level deep            |
+| `$.jobs.*.strategy.matrix.*[].*[]`   | `schema-noise` | an array of cells under a key of a matrix cell object; the array branch of `definitions.configuration`, while GitHub documents those keys with scalar values                                             |
+| `$.jobs.*.strategy.matrix.*[][]`     | `schema-noise` | an array whose elements are arrays, one more turn of the recursive `definitions.configuration`; GitHub documents a matrix variable as an array of scalars or of objects                                  |
+| `$.jobs.*["cache-mode"]`             | `unmodelled`   | a cache access policy for a single job, one of `read`, `write`, `write-only` or `none`                                                                                                                   |
+| `$.jobs.*["runs-on"].group`          | `out-of-scope` | the runner group of the mapping form of `runs-on`; docs/providers/github-actions.md#non-goals rules that form out                                                                                        |
+| `$.jobs.*["runs-on"].labels`         | `out-of-scope` | the label list of the mapping form of `runs-on`; the `runs-on` non-goal in docs/providers/github-actions.md#non-goals covers it                                                                          |
+| `$.jobs.*["runs-on"].labels[]`       | `out-of-scope` | one label of the mapping form of `runs-on`; the `runs-on` non-goal in docs/providers/github-actions.md#non-goals covers it                                                                               |
+| `$.on.*.*`                           | `schema-noise` | `definitions.eventObject` sets `additionalProperties: true`, so the schema accepts any key under any event; GitHub documents only the filters the trigger vocabulary already types                       |
+| `$.on.*.inputs.*.deprecationMessage` | `schema-noise` | the schema borrows `deprecationMessage` from the action metadata syntax; the workflow-syntax reference for `on.workflow_dispatch.inputs` documents only description, required, type, default and options |
+| `$.on.*.outputs`                     | `out-of-scope` | workflow_call output declarations; docs/providers/github-actions.md#non-goals rules them out                                                                                                             |
+| `$.on.*.outputs.*`                   | `out-of-scope` | one workflow_call output under the author's chosen name; the workflow_call outputs non-goal covers it                                                                                                    |
+| `$.on.*.outputs.*.description`       | `out-of-scope` | the description of one workflow_call output; the workflow_call outputs non-goal covers it                                                                                                                |
+| `$.on.*.outputs.*.value`             | `out-of-scope` | the expression one workflow_call output is mapped to; the workflow_call outputs non-goal covers it                                                                                                       |
+| `$.on.*.secrets`                     | `out-of-scope` | workflow_call secret declarations; docs/providers/github-actions.md#non-goals rules them out                                                                                                             |
+| `$.on.*.secrets.*`                   | `out-of-scope` | one workflow_call secret under the author's chosen name; the workflow_call secrets non-goal covers it                                                                                                    |
+| `$.on.*.secrets.*.description`       | `out-of-scope` | the description of one workflow_call secret; the workflow_call secrets non-goal covers it                                                                                                                |
+| `$.on.*.secrets.*.required`          | `out-of-scope` | whether a workflow_call secret must be supplied; the workflow_call secrets non-goal covers it                                                                                                            |
+| `$.on.*.workflows`                   | `out-of-scope` | the `workflow_run` filter that lists which workflows may trigger the run; the per-event filters non-goal in docs/providers/github-actions.md#non-goals stops at the configured events                    |
+| `$.on.*.workflows[]`                 | `out-of-scope` | one workflow name in the `workflow_run` filter; the per-event filters non-goal in docs/providers/github-actions.md#non-goals covers it                                                                   |
+| `$.on.*[].timezone`                  | `unmodelled`   | an IANA timezone on a schedule entry so its cron runs relative to that zone instead of UTC; the vocabulary emits only `cron`                                                                             |
+| `$["cache-mode"]`                    | `unmodelled`   | a cache access policy for the whole workflow, one of `read`, `write`, `write-only` or `none`                                                                                                             |
+
+| Path | Reason                                                       |
+| ---- | ------------------------------------------------------------ |
+| —    | No overclaims: every modelled path is allowed by the schema. |
+
+<!-- documented-grammar:end -->
+
+The overclaim table covers exercised vocabulary only, because the inventory cannot hold an arm the
+schema rejects: `image_version` is typed but unproven, so its note stays under Non-goals rather than
+appearing here (spec 0005, Further Notes).
+
 ## Corpus
 
 Six vendored configs, pinned by commit. [`PROVENANCE.md`](../../test/corpus/github-actions/PROVENANCE.md)
