@@ -22,7 +22,7 @@ fetching.
 - [ ] A fixture reproduces the file's parsed data through `render(fixture, { header: "" })`; the test
       parses both sides with the `yaml` package and asserts deep equality.
 - [ ] The fixture writes `workflow`, `variables` and the hidden `.terraform-versions` template through
-      pipeline raw, and the unmodelled keywords of all four jobs through job raw; `stages`, `stage`
+      pipeline raw, and the unmodelled keywords of all five jobs through job raw; `stages`, `stage`
       and `script` use the modelled fields.
 - [ ] No byte-equality assertion is added for this entry.
 - [ ] A coverage-debt ledger lists every raw path the fixture uses, each with a one-line
