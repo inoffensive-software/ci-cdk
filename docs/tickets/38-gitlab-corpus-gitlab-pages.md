@@ -12,15 +12,15 @@ Fetch `gitlab-org/gitlab-pages` at commit `80b941cceb10cb8c18e6cb09314a20ff08847
 
 **Blocked by:** 37 (Corpus, labkit), because both append to one ledger.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The file is vendored verbatim with repo, commit, path, MIT licence, SHA-256 and comparison mode
+- [x] The file is vendored verbatim with repo, commit, path, MIT licence, SHA-256 and comparison mode
       `data` in provenance.
-- [ ] A per-entry fixture reproduces the file's parsed data through `render(fixture, { header: "" })`;
+- [x] A per-entry fixture reproduces the file's parsed data through `render(fixture, { header: "" })`;
       hidden entries use `templates`; the include component and its rules are preserved as data.
-- [ ] Every unmodelled keyword is `raw` plus a ledger row with a reason; the ledger remains a single
+- [x] Every unmodelled keyword is `raw` plus a ledger row with a reason; the ledger remains a single
       vocabulary-gap list for all three entries.
-- [ ] The coverage test and exhaustiveness gate accept the entry; no modelled key is written through
+- [x] The coverage test and exhaustiveness gate accept the entry; no modelled key is written through
       `raw`.
-- [ ] No byte-equality assertion is added.
-- [ ] `pnpm check` passes.
+- [x] No byte-equality assertion is added.
+- [x] `pnpm check` passes.
