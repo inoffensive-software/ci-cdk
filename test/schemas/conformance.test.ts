@@ -46,8 +46,15 @@ const corpusFixtures = (): readonly Fixture[] =>
       })),
     );
 
+/** The repository's own pipelines: generated from the DSL, and as much a fixture as the goldens. */
+const pipelineFixtures = (): readonly Fixture[] =>
+  ymlFiles(join(root, ".github", "workflows")).map((file) => ({
+    path: `.github/workflows/${file}`,
+    provider: "github-actions",
+  }));
+
 const fixtures = (): readonly Fixture[] =>
-  [...snapshotFixtures(), ...corpusFixtures()].toSorted((left, right) =>
+  [...snapshotFixtures(), ...corpusFixtures(), ...pipelineFixtures()].toSorted((left, right) =>
     left.path.localeCompare(right.path),
   );
 
