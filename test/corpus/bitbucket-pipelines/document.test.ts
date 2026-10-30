@@ -3,17 +3,19 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { COVERAGE_DEBT } from "./coverage-debt.js";
-import {
-  collapsePosition,
-  displayKeysOf,
-  renderCoverageTable,
-  renderOpenGaps,
-  type CorpusPaths,
-} from "./coverage-table.js";
-import { renderDocumentedGrammar } from "./documented-grammar.js";
+import { COVERAGE_TABLE, collapsePosition, displayKeysOf } from "./coverage-table.js";
+import { GRAMMAR_TABLES } from "./documented-grammar.js";
 import { ENTRIES } from "./entries.js";
 import { keyPaths } from "./exhaustiveness.js";
 import { GAP_CATEGORIES, GAPS, MODELLED_PATHS, OVERCLAIMS, SCHEMA_PATHS } from "./schema-gap.js";
+import {
+  blockIn,
+  countsIn,
+  renderCoverageTable,
+  renderDocumentedGrammar,
+  renderOpenGaps,
+  type CorpusPaths,
+} from "../report.js";
 import { readVendored } from "../vendored.js";
 
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
@@ -29,27 +31,6 @@ const corpusPaths = (): Promise<readonly CorpusPaths[]> =>
     })),
   );
 
-/** The text between a pair of marker comments, without the markers themselves. */
-const blockIn = (text: string, name: string): string => {
-  const match = new RegExp(
-    `<!-- ${name}:start -->\\n([\\s\\S]*?)\\n<!-- ${name}:end -->`,
-    "u",
-  ).exec(text);
-
-  if (match === null || match[1] === undefined) {
-    throw new Error(`no ${name} block in the document`);
-  }
-
-  return match[1].trim();
-};
-
-/** The counts the block's lead states, read back so they can be held to the lists. */
-const countsIn = (block: string): readonly number[] => {
-  const lead = block.split("\n")[0] ?? "";
-
-  return [...lead.matchAll(/\d+/gu)].map((match) => Number(match[0]));
-};
-
 const expectedCounts = (): readonly number[] => [
   SCHEMA_PATHS.length,
   GAPS.length,
@@ -60,7 +41,13 @@ const expectedCounts = (): readonly number[] => [
 describe("provider document", () => {
   it("shows the generated coverage table exactly", async () => {
     const document = await readFile(DOCUMENT, "utf8");
-    const generated = renderCoverageTable(MODELLED_PATHS, await corpusPaths(), LEDGER);
+
+    const generated = renderCoverageTable({
+      ...COVERAGE_TABLE,
+      modelled: MODELLED_PATHS,
+      corpus: await corpusPaths(),
+      ledger: LEDGER,
+    });
 
     expect(blockIn(document, "coverage")).toBe(generated);
   });
@@ -104,7 +91,14 @@ describe("provider document", () => {
 describe("documented grammar section", () => {
   it("shows the generated block exactly", async () => {
     const document = await readFile(DOCUMENT, "utf8");
-    const generated = renderDocumentedGrammar(SCHEMA_PATHS, GAPS, OVERCLAIMS);
+
+    const generated = renderDocumentedGrammar({
+      documented: SCHEMA_PATHS,
+      categories: GAP_CATEGORIES,
+      gaps: GAPS,
+      overclaims: OVERCLAIMS,
+      tables: GRAMMAR_TABLES,
+    });
 
     expect(blockIn(document, "documented-grammar")).toBe(generated);
   });
