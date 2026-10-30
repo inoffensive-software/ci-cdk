@@ -1,0 +1,171 @@
+image:
+    name: nakamapartneringservices/nakama-pipelines
+    username: $DOCKER_HUB_USERNAME
+    password: $DOCKER_HUB_PASSWORD
+
+clone:
+    depth: full
+
+pipelines:
+    pull-requests:
+        '**': # Note: only work for source branches, not target branches, so we are scoping all branches.
+            - step:
+                  name: 'Generate deltas'
+                  script:
+                      - sf nakama generate deltas
+                  condition:
+                      changesets:
+                          includePaths:
+                              - 'core/**'
+                  artifacts:
+                      - deltas/**
+
+            - parallel:
+                  - step:
+                        name: 'Validate Jest'
+                        script:
+                            - sf nakama validate jest
+                        condition:
+                            changesets:
+                                includePaths:
+                                    - '**/lwc/**'
+
+                  - step:
+                        name: 'Validate Prettier'
+                        script:
+                            # TODO: troubleshoot lack of consistency in apex with multi-line string messages
+                            - sf nakama validate prettier
+
+                  - step:
+                        name: 'Validate recommendations'
+                        script:
+                            - sf nakama validate recommendations
+
+                  - step:
+                        name: 'Validate flows'
+                        script:
+                            - sf nakama validate flows
+                        condition:
+                            changesets:
+                                includePaths:
+                                    - '**/flows/**'
+
+                  - step:
+                        name: 'Validate deployment'
+                        script:
+                            - PULL_REQUEST_BODY=$(curl -X GET -H "Authorization:Bearer $PIPELINE_ACCESS_TOKEN" --url https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/pullrequests/$BITBUCKET_PR_ID | jq '.description')
+                            - TESTS_SPECIFICATION=$(awk -F 'Tests:' '{print $2}' <<< "$PULL_REQUEST_BODY" | tr -d '"')
+                            - |
+                                if [ -z "$TESTS_SPECIFICATION" ]; then
+                                    TESTS_SPECIFICATION=$(sf nakama decide test level)
+                                    echo "TEST LEVEL: $TESTS_SPECIFICATION"
+                                fi
+                                TESTS_SPECIFICATION_ARRAY=($TESTS_SPECIFICATION)
+                                TEST_LEVEL=${TESTS_SPECIFICATION_ARRAY[0]}
+                                TESTS=${TESTS_SPECIFICATION_ARRAY[1]}
+                                if [ -n "$TESTS" ]; then
+                                    TESTS_FLAG+="-t $TESTS"
+                                fi
+                            - source .env.replacements
+                              # Note: used mainly for detection of environment replacements.
+                            - export TARGET_ORG=PRODUCTION
+                            - sf nakama deploy deltas -o $TARGET_ORG --dry-run true -l $TEST_LEVEL $TESTS_FLAG
+                        artifacts:
+                            - results.json
+
+            - step:
+                  name: 'Validate test coverage'
+                  script:
+                      - sf nakama validate coverage -r 75
+    branches:
+        main:
+            - parallel:
+                  - step:
+                        name: 'Deploy INT'
+                        deployment: INT
+                        script:
+                            - source .env.replacements
+                              # Note: used mainly for detection of environment replacements.
+                            - export TARGET_ORG=UAT
+                            - sf nakama deploy deltas -o $TARGET_ORG
+                        condition:
+                            changesets:
+                                includePaths:
+                                    - 'core/**'
+                  # TODO: add QA and lower environments
+
+        rc/*:
+            - step:
+                  name: 'Deploy UAT'
+                  deployment: UAT
+                  script:
+                      - source .env.replacements
+                        # Note: used mainly for detection of environment replacements.
+                      - export TARGET_ORG=UAT
+                      - sf nakama deploy deltas -o $TARGET_ORG
+                  condition:
+                      changesets:
+                          includePaths:
+                              - 'core/**'
+    custom:
+        manual-deployment:
+            - variables:
+                  - name: TARGET_ORG
+                    allowed-values:
+                        - 'PRODUCTION'
+                    default: 'PRODUCTION'
+                  - name: USE_MOST_RECENT
+                    allowed-values:
+                        - 'true'
+                        - 'false'
+                    default: 'false'
+                  - name: DRY_RUN
+                    allowed-values:
+                        - 'true'
+                        - 'false'
+                    default: 'true'
+                  - name: TEST_LEVEL
+                    allowed-values:
+                        - 'NoTestRun'
+                        - 'RunSpecifiedTests'
+                        - 'RunLocalTests'
+                        - 'RunAllTestsInOrg'
+                        - 'Default'
+                    default: 'Default'
+                  - name: TESTS
+
+            - step:
+                  name: 'Deploy $TARGET_ORG'
+                  deployment: $TARGET_ORG
+                  script:
+                      - source .env.replacements
+                        # Note: used mainly for detection of environment replacements.
+                      - export TARGET_ORG=PRODUCTION
+                      - |
+                          if [ -n "$TESTS" ]; then
+                              TESTS_FLAG+="-t $TESTS"
+                          fi
+                      - sf nakama deploy deltas -o $TARGET_ORG -r $USE_MOST_RECENT --dry-run $DRY_RUN -l $TEST_LEVEL $TESTS_FLAG
+
+        install-package:
+            - variables:
+                  - name: PACKAGE_VERSION_ID
+                    default: '04t...'
+                  - name: INSTALLATION_KEY
+            - parallel:
+                  - step:
+                        name: 'Install package'
+                        script:
+                            - |
+                                if [ -n "$INSTALLATION_KEY" ]; then
+                                    INSTALLATION_KEY_FLAG+="--installation-key $INSTALLATION_KEY"
+                                fi
+                            - sf nakama install package -o INT -p $PACKAGE_VERSION_ID $INSTALLATION_KEY_FLAG
+
+        run-apex-tests:
+            - parallel:
+                  - step:
+                        name: 'Validate deployment executing local tests'
+                        script:
+                            - sf nakama validate tests -o INT
+                  # TODO: add QA, UAT, PRODUCTION and HOTFIX environments

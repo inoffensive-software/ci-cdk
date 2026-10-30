@@ -4,6 +4,7 @@ import { parse } from "yaml";
 import { ALIGENT_GRAPHQL_MESH } from "../../test/corpus/bitbucket-pipelines/aligent-graphql-mesh.fixture.js";
 import { ARTIFACTS_EXPANDED } from "../../test/corpus/bitbucket-pipelines/artifacts-expanded.fixture.js";
 import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-express.fixture.js";
+import { CUSTOM_VARS_NAKAMA } from "../../test/corpus/bitbucket-pipelines/custom-vars-nakama.fixture.js";
 import { OBUSPA } from "../../test/corpus/bitbucket-pipelines/obuspa.fixture.js";
 import { RAIR_DAPP } from "../../test/corpus/bitbucket-pipelines/rair-dapp.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "../../test/corpus/bitbucket-pipelines/systemsdk-symfony.fixture.js";
@@ -49,7 +50,17 @@ describe("render", () => {
       "__snapshots__/artifacts-expanded.yml",
     );
   });
+});
 
+describe("custom-variable corpus goldens", () => {
+  it("pins the custom-vars-nakama fixture with the header suppressed", async () => {
+    await expect(render(CUSTOM_VARS_NAKAMA, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/custom-vars-nakama.yml",
+    );
+  });
+});
+
+describe("render ordering", () => {
   it("emits image first, then pipelines", () => {
     const text = render(
       pipelineConfig({

@@ -92,9 +92,30 @@ as the file (see the corpus README and ADR 0005).
   runs two pipes - the expanded shape whose list-form sibling every earlier entry already exercises.
 - Vendored as: `artifacts-expanded.yml`, SHA-256 `043f661cc2ee991bac5316607fd05edbd48ea19bc24d1f5c6e08679c16ca2da6`
 
+## custom-vars-nakama
+
+- Repo: <https://github.com/Nakama-Partnering-Services/nakama-project-scaffolding>
+- Commit: `fd8bfc6f5b7c9e3ada89c99c8d8aec27d586a6f0`
+- Path: `bitbucket-pipelines.yml`
+- Licence: MIT
+- Bytes: 7188
+- Lines: 171
+- Comparison: data
+- Why this entry: a second shape of the same declaration - a credentialed root image, `clone.depth`,
+  a `pull-requests` selector and branches beside three custom pipelines, two of which open with
+  `variables`. Its values are quoted strings, so it compares under the default schema.
+- Vendored as: `custom-vars-nakama.yml`, SHA-256 `ca31bd3371cc55bc4ef1ce51a251f65a754e7cdd346eeb916645997da3b40af5`
+
 ## Documentation-derived fixtures
 
 Bitbucket documents the named `upload` entry and the name-list `download`, and no redistributable
 config uses either shape. The synthetic fixture in `artifacts-expanded.test.ts` is built from
 <https://support.atlassian.com/bitbucket-cloud/docs/child-pipeline-step-options/> retrieved
 2026-10-29; no file is vendored for it.
+
+## Schema-derived fixtures
+
+The pinned schema copied 2026-10-29 (`test/schemas/bitbucket-pipelines.json`) types a custom
+variable's `description` as a string, but no vendored config uses that key. The synthetic fixture in
+`src/bitbucket-pipelines/custom-variables.test.ts` covers it from the schema; no file is vendored for
+it. Every other variable key is exercised by `custom-vars-nakama.yml` and the inventory.

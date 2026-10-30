@@ -15,6 +15,7 @@ import { itemDoc } from "./item-doc.js";
 import { cloneDoc, imageDoc } from "./step-doc.js";
 import type {
   Cache,
+  CustomVariable,
   NamedPipeline,
   PipelineConfig,
   Pipelines,
@@ -150,6 +151,25 @@ const selectorDoc = (
   ];
 };
 
+/** One variable: `allowed-values`, `default`, `description`, `name`, with absent keys omitted. */
+const variableDoc = (variable: CustomVariable): Doc =>
+  map([
+    ...entry(
+      "allowed-values",
+      variable["allowed-values"] === undefined ? undefined : fromValue(variable["allowed-values"]),
+    ),
+    ...entry("default", variable.default === undefined ? undefined : fromValue(variable.default)),
+    ...entry(
+      "description",
+      variable.description === undefined ? undefined : fromValue(variable.description),
+    ),
+    { key: "name", value: fromValue(variable.name) },
+  ]);
+
+/** The leading `variables` item a custom pipeline carries, before its own items. */
+const variablesItem = (variables: readonly CustomVariable[]): Doc =>
+  map([{ key: "variables", value: seq(variables.map((variable) => variableDoc(variable))) }]);
+
 /** One custom section: `name: [ ...items ]`, entries in array order. */
 const customDoc = (
   entries: readonly NamedPipeline[] | undefined,
@@ -165,11 +185,12 @@ const customDoc = (
       value: map(
         entries.map((entryValue, index) => ({
           key: entryValue.name,
-          value: seq(
-            entryValue.pipeline.map((item, itemIndex) =>
+          value: seq([
+            ...(entryValue.variables === undefined ? [] : [variablesItem(entryValue.variables)]),
+            ...entryValue.pipeline.map((item, itemIndex) =>
               itemDoc(item, `$.pipelines.custom[${index}].pipeline[${itemIndex}]`, diagnostics),
             ),
-          ),
+          ]),
         })),
       ),
     },
