@@ -15,7 +15,7 @@ import {
 
 const emit = (value: Value, header = ""): string => renderDoc(fromValue(value), { header });
 
-const nestedMap: Value = {
+const NESTED_MAP: Value = {
   name: "build",
   on: "push",
   jobs: {
@@ -28,7 +28,9 @@ const nestedMap: Value = {
 
 describe("goldens", () => {
   it("pins a nested map", async () => {
-    await expect(renderDoc(fromValue(nestedMap))).toMatchFileSnapshot("__snapshots__/map-trap.txt");
+    await expect(renderDoc(fromValue(NESTED_MAP))).toMatchFileSnapshot(
+      "__snapshots__/map-trap.txt",
+    );
   });
 
   it("pins nested sequences", async () => {
@@ -115,7 +117,7 @@ describe("header", () => {
   });
 
   it("pins a document with no header", async () => {
-    await expect(emit(nestedMap, "")).toMatchFileSnapshot("__snapshots__/header-off.txt");
+    await expect(emit(NESTED_MAP, "")).toMatchFileSnapshot("__snapshots__/header-off.txt");
   });
 });
 

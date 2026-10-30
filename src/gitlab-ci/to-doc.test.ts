@@ -24,7 +24,7 @@ const entry = (doc: Doc, key: string): Doc => {
   return found.value;
 };
 
-const doc = toDoc(
+const DOC = toDoc(
   pipeline({
     stages: ["build", "test"],
     jobs: [
@@ -36,13 +36,13 @@ const doc = toDoc(
 
 describe("toDoc", () => {
   it("keys the document by stages and then job name in array order", () => {
-    expect(keys(doc)).toStrictEqual(["stages", "zulu", "alpha"]);
+    expect(keys(DOC)).toStrictEqual(["stages", "zulu", "alpha"]);
   });
 
   it("keys the jobs map by name and strips the identity field from the body", () => {
-    expect(keys(entry(doc, "zulu"))).toStrictEqual(["stage", "script"]);
-    expect(keys(entry(doc, "alpha"))).toStrictEqual(["script"]);
-    expect(keys(entry(doc, "zulu"))).not.toContain("name");
+    expect(keys(entry(DOC, "zulu"))).toStrictEqual(["stage", "script"]);
+    expect(keys(entry(DOC, "alpha"))).toStrictEqual(["script"]);
+    expect(keys(entry(DOC, "zulu"))).not.toContain("name");
   });
 });
 

@@ -7,7 +7,7 @@ import type { Value } from "./index.js";
 
 type CoreModule = typeof import("./index.js");
 
-const coreDir = import.meta.dirname;
+const CORE_DIR = import.meta.dirname;
 
 const loadFresh = (): Promise<CoreModule> => {
   // Clearing the registry re-instantiates every core module. A query suffix would only re-run the
@@ -17,7 +17,7 @@ const loadFresh = (): Promise<CoreModule> => {
   return import("./index.js");
 };
 
-const fixture: Value = {
+const FIXTURE: Value = {
   name: "ci",
   on: ["push", "pull_request"],
   env: { "1.10": "1.10", yes: "yes", n: null, f: 1.5 },
@@ -25,9 +25,9 @@ const fixture: Value = {
 };
 
 const emitWith = (module: CoreModule): string =>
-  module.renderDoc(module.fromValue(fixture), { header: "" });
+  module.renderDoc(module.fromValue(FIXTURE), { header: "" });
 
-const providerNames = /\b(?:github|gitlab|bitbucket|actions)\b/iu;
+const PROVIDER_NAMES = /\b(?:github|gitlab|bitbucket|actions)\b/iu;
 
 const sourceFiles = async (directory: string): Promise<readonly string[]> => {
   const entries = await readdir(directory, { recursive: true, withFileTypes: true });
@@ -66,15 +66,15 @@ const filesMentioningProvider = async (directory: string): Promise<readonly stri
   const files = await sourceFiles(directory);
   const contents = await Promise.all(files.map((file) => readFile(file, "utf8")));
 
-  return files.filter((_file, index) => providerNames.test(contents[index] ?? ""));
+  return files.filter((_file, index) => PROVIDER_NAMES.test(contents[index] ?? ""));
 };
 
 describe("provider blindness", () => {
   it("finds no provider name under src/core", async () => {
-    expect(await filesMentioningProvider(coreDir)).toStrictEqual([]);
+    expect(await filesMentioningProvider(CORE_DIR)).toStrictEqual([]);
   });
 
   it("scans the core sources", async () => {
-    expect(await sourceFiles(coreDir)).not.toHaveLength(0);
+    expect(await sourceFiles(CORE_DIR)).not.toHaveLength(0);
   });
 });

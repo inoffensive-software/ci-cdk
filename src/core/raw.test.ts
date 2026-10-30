@@ -6,7 +6,7 @@ import { fromValue } from "./from-value.js";
 import { rawKeyPath } from "./paths.js";
 import { lowerRawBlock, rawEntries } from "./raw.js";
 
-const modelled: readonly DocEntry[] = [{ key: "run", value: fromValue("npm test") }];
+const MODELLED: readonly DocEntry[] = [{ key: "run", value: fromValue("npm test") }];
 
 describe("rawEntries", () => {
   it("appends kept keys after the modelled ones in author order", () => {
@@ -15,7 +15,7 @@ describe("rawEntries", () => {
     const entries = rawEntries(
       "$.jobs[0]",
       { "continue-on-error": true, if: "branch" },
-      modelled,
+      MODELLED,
       diagnostics,
     );
 
@@ -26,7 +26,7 @@ describe("rawEntries", () => {
   it("emits nothing when raw is absent", () => {
     const diagnostics: Diagnostic[] = [];
 
-    expect(rawEntries("$.jobs[0]", undefined, modelled, diagnostics)).toStrictEqual([]);
+    expect(rawEntries("$.jobs[0]", undefined, MODELLED, diagnostics)).toStrictEqual([]);
     expect(diagnostics).toStrictEqual([]);
   });
 });
@@ -35,7 +35,7 @@ describe("rawEntries collisions", () => {
   it("refuses a collision in dot notation by default", () => {
     const diagnostics: Diagnostic[] = [];
 
-    expect(rawEntries("$.jobs[0]", { run: "x" }, modelled, diagnostics)).toStrictEqual([]);
+    expect(rawEntries("$.jobs[0]", { run: "x" }, MODELLED, diagnostics)).toStrictEqual([]);
     expect(diagnostics).toStrictEqual([
       {
         path: "$.jobs[0].raw.run",
@@ -48,7 +48,7 @@ describe("rawEntries collisions", () => {
   it("refuses a collision in the notation the caller passes", () => {
     const diagnostics: Diagnostic[] = [];
 
-    rawEntries("$.jobs[0]", { run: "x" }, modelled, diagnostics, [], rawKeyPath);
+    rawEntries("$.jobs[0]", { run: "x" }, MODELLED, diagnostics, [], rawKeyPath);
 
     expect(diagnostics).toStrictEqual([
       {
@@ -75,7 +75,7 @@ describe("rawEntries refusals", () => {
       "$.jobs[0]",
       // @ts-expect-error raw is a record of keys to values, not an array
       ["badge"],
-      modelled,
+      MODELLED,
       diagnostics,
     );
 
