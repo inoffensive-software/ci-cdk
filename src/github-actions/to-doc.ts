@@ -193,10 +193,14 @@ const containerDoc = (container: Container): Doc =>
 const servicesDoc = (services: Readonly<Record<string, Container>>): Doc =>
   map(Object.entries(services).map(([id, service]) => ({ key: id, value: containerDoc(service) })));
 
+/**
+ * `fail-fast` first, then the matrix, following the pinned configs rather than the documented order
+ * (ADR 0004). `max-parallel` has no corpus evidence yet, so it keeps its documented last position.
+ */
 const strategyDoc = (strategy: Strategy): Doc =>
   map([
-    ...entry("matrix", present(strategy.matrix)),
     ...entry("fail-fast", present(strategy["fail-fast"])),
+    ...entry("matrix", present(strategy.matrix)),
     ...entry("max-parallel", present(strategy["max-parallel"])),
   ]);
 
@@ -207,6 +211,7 @@ const jobDoc = (job: Job, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("needs", present(job.needs)),
     ...entry("if", present(job.if)),
     ...entry("runs-on", present(job["runs-on"])),
+    ...entry("strategy", job.strategy === undefined ? undefined : strategyDoc(job.strategy)),
     ...entry(
       "environment",
       job.environment === undefined ? undefined : environmentDoc(job.environment),
@@ -227,7 +232,6 @@ const jobDoc = (job: Job, path: string, diagnostics: Diagnostic[]): Doc => {
           ),
     ),
     ...entry("timeout-minutes", present(job["timeout-minutes"])),
-    ...entry("strategy", job.strategy === undefined ? undefined : strategyDoc(job.strategy)),
     ...entry("continue-on-error", present(job["continue-on-error"])),
     ...entry("container", job.container === undefined ? undefined : containerDoc(job.container)),
     ...entry("services", job.services === undefined ? undefined : servicesDoc(job.services)),

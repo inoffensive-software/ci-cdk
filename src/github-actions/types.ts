@@ -97,7 +97,11 @@ export type Environment = string | EnvironmentTarget;
 
 export type Secrets = "inherit" | Readonly<Record<string, Text>>;
 
-/** A job, in GitHub's documented key order. `id` is the map key, never a field in the output. */
+/**
+ * A job, in the corpus's key order: GitHub's documented order, with `strategy` moved ahead of the
+ * body it shapes because the pinned configs write it that way (ADR 0004). `id` is the map key,
+ * never a field in the output.
+ */
 export interface Job {
   readonly id: string;
   readonly name?: Text;
@@ -105,6 +109,7 @@ export interface Job {
   readonly needs?: string | readonly string[];
   readonly if?: Text;
   readonly "runs-on"?: string;
+  readonly strategy?: Strategy;
   readonly environment?: Environment;
   readonly concurrency?: Concurrency;
   readonly outputs?: Readonly<Record<string, Text>>;
@@ -112,7 +117,6 @@ export interface Job {
   readonly defaults?: Defaults;
   readonly steps?: readonly Step[];
   readonly "timeout-minutes"?: number;
-  readonly strategy?: Strategy;
   readonly "continue-on-error"?: boolean | Text;
   readonly container?: Container;
   readonly services?: Readonly<Record<string, Container>>;

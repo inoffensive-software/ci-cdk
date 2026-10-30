@@ -109,7 +109,7 @@ describe("job fields", () => {
 });
 
 describe("declared job order", () => {
-  it("emits in documented order whatever order the properties were written", () => {
+  it("emits the fixed order whatever order the properties were written", () => {
     const prepare = build({ id: "prepare" });
 
     const defined = build({
@@ -136,13 +136,13 @@ describe("declared job order", () => {
         "    needs: prepare\n" +
         "    if: success()\n" +
         "    runs-on: ubuntu-latest\n" +
+        "    strategy:\n" +
+        "      fail-fast: false\n" +
         "    outputs:\n" +
         "      digest: abc\n" +
         "    steps:\n" +
         "      - run: |-\n" +
-        "          npm test\n" +
-        "    strategy:\n" +
-        "      fail-fast: false\n",
+        "          npm test\n",
     );
     expect(rendered).toBe(render(workflow({ name: "CI", on: "push", jobs: [prepare, defined] })));
   });

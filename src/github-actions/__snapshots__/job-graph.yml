@@ -10,9 +10,6 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
-    steps:
-      - run: |-
-          npm test
     strategy:
       matrix:
         node-version:
@@ -21,6 +18,9 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
+    steps:
+      - run: |-
+          npm test
   deploy:
     name: Deploy
     needs:
