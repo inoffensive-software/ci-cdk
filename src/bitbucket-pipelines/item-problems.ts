@@ -1,6 +1,7 @@
 import type { Diagnostic } from "../core/index.js";
 import { keyPath } from "../core/paths.js";
 import type {
+  Artifacts,
   FinalItem,
   ParallelItem,
   PipelineItem,
@@ -11,6 +12,9 @@ import type {
 } from "./types.js";
 
 const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
+
+const isArtifactsMap = (artifacts: Artifacts): artifacts is Exclude<Artifacts, readonly string[]> =>
+  !Array.isArray(artifacts);
 
 const isParallelMap = (
   value: ParallelItem["parallel"],
@@ -39,6 +43,35 @@ const conditionProblems = (body: Step, stepPath: string): readonly Diagnostic[] 
   return [];
 };
 
+/** An upload is a named capture, so it needs a name and at least one path. */
+const artifactsProblems = (artifacts: Artifacts, artifactsPath: string): readonly Diagnostic[] => {
+  if (!isArtifactsMap(artifacts) || artifacts.upload === undefined) {
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+
+  for (const [index, upload] of artifacts.upload.entries()) {
+    const uploadPath = `${artifactsPath}.upload[${index}]`;
+
+    if (upload.name === "") {
+      diagnostics.push({
+        path: `${uploadPath}.name`,
+        message: "an artifact upload needs a non-empty name",
+      });
+    }
+
+    if (upload.paths.length === 0) {
+      diagnostics.push({
+        path: `${uploadPath}.paths`,
+        message: "an artifact upload needs at least one path",
+      });
+    }
+  }
+
+  return diagnostics;
+};
+
 /** A step body, wherever it sits: `...step`, `...final`, a stage or a parallel group. */
 const bodyProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
@@ -58,6 +91,10 @@ const bodyProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
         message: "pipe must not be empty",
       });
     }
+  }
+
+  if (body.artifacts !== undefined) {
+    diagnostics.push(...artifactsProblems(body.artifacts, `${bodyPath}.artifacts`));
   }
 
   diagnostics.push(...conditionProblems(body, bodyPath));

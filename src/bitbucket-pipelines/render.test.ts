@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { ALIGENT_GRAPHQL_MESH } from "../../test/corpus/bitbucket-pipelines/aligent-graphql-mesh.fixture.js";
+import { ARTIFACTS_EXPANDED } from "../../test/corpus/bitbucket-pipelines/artifacts-expanded.fixture.js";
 import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-express.fixture.js";
 import { OBUSPA } from "../../test/corpus/bitbucket-pipelines/obuspa.fixture.js";
 import { RAIR_DAPP } from "../../test/corpus/bitbucket-pipelines/rair-dapp.fixture.js";
@@ -40,6 +41,12 @@ describe("render", () => {
   it("pins the rair-dapp fixture with the header suppressed", async () => {
     await expect(render(RAIR_DAPP, { header: "" })).toMatchFileSnapshot(
       "__snapshots__/rair-dapp.yml",
+    );
+  });
+
+  it("pins the artifacts-expanded fixture with the header suppressed", async () => {
+    await expect(render(ARTIFACTS_EXPANDED, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/artifacts-expanded.yml",
     );
   });
 

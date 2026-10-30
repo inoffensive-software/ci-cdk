@@ -1,6 +1,8 @@
 export { finalStep, parallel, pipe, pipelineConfig, stage, step } from "./types.js";
 
 export type {
+  Artifacts,
+  ArtifactUpload,
   Cache,
   Changesets,
   Clone,

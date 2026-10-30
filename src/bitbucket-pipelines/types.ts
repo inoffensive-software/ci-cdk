@@ -26,13 +26,31 @@ export interface Condition {
   readonly changesets?: Changesets;
 }
 
+/** One named artifact upload: a name and the paths it captures. */
+export interface ArtifactUpload {
+  readonly name: Text;
+  readonly paths: readonly string[];
+}
+
+/**
+ * A step's artifacts: a path list, or the expanded map that filters downloads and publishes named
+ * uploads. Exactly one shape per step, because Bitbucket parses the key as either.
+ */
+export type Artifacts =
+  | readonly string[]
+  | {
+      readonly paths?: readonly string[];
+      readonly download?: boolean | readonly string[];
+      readonly upload?: readonly ArtifactUpload[];
+    };
+
 /** How a step or stage starts. */
 export type Trigger = "automatic" | "manual";
 
 /** A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. */
 export interface Step {
   readonly "after-script"?: readonly ScriptItem[];
-  readonly artifacts?: readonly string[];
+  readonly artifacts?: Artifacts;
   readonly caches?: readonly Text[];
   readonly clone?: Clone;
   readonly condition?: Condition;

@@ -1,5 +1,6 @@
 import type { PipelineConfig } from "../../../src/bitbucket-pipelines/index.js";
 import { ALIGENT_GRAPHQL_MESH } from "./aligent-graphql-mesh.fixture.js";
+import { ARTIFACTS_EXPANDED } from "./artifacts-expanded.fixture.js";
 import { CONNECT_EXPRESS } from "./connect-express.fixture.js";
 import { OBUSPA } from "./obuspa.fixture.js";
 import { RAIR_DAPP } from "./rair-dapp.fixture.js";
@@ -12,11 +13,12 @@ export interface CorpusEntry {
   readonly config: PipelineConfig;
 }
 
-/** The five entries, in the order `PROVENANCE.md` records them. */
+/** The six entries, in the order `PROVENANCE.md` records them. */
 export const ENTRIES: readonly CorpusEntry[] = [
   { name: "connect-express", file: "connect-express.yml", config: CONNECT_EXPRESS },
   { name: "systemsdk-symfony", file: "systemsdk-symfony.yml", config: SYSTEMSDK_SYMFONY },
   { name: "obuspa", file: "obuspa.yml", config: OBUSPA },
   { name: "rair-dapp", file: "rair-dapp.yml", config: RAIR_DAPP },
   { name: "aligent-graphql-mesh", file: "aligent-graphql-mesh.yml", config: ALIGENT_GRAPHQL_MESH },
+  { name: "artifacts-expanded", file: "artifacts-expanded.yml", config: ARTIFACTS_EXPANDED },
 ];
