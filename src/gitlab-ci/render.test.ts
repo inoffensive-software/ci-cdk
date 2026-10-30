@@ -129,9 +129,6 @@ describe("script", () => {
     expect(parse(text)).toStrictEqual({ build: { script: ["npm ci", "npm run build"] } });
   });
 
-  // A plain scalar holding a newline is emitted double-quoted with `\n` escapes. Beyond roughly 35
-  // characters the `yaml` writer switches to a folded multi-line form whose blank lines the format
-  // contract forbids; that boundary is core's, and this slice does not infer a style to dodge it.
   it("keeps a multi-line command as one string", () => {
     const script = "echo one\necho two";
     const text = render(oneJob("build", script), { header: "" });
@@ -149,6 +146,27 @@ describe("script", () => {
     const text = render(oneJob("build", script), { header: "" });
 
     expect(parse(text)).toStrictEqual({ build: { script } });
+  });
+});
+
+describe("multi-line scripts", () => {
+  const install = "if [ -f pnpm-lock.yaml ]; then\n  pnpm install --frozen-lockfile\nfi";
+
+  // Longer than the fold threshold, so a double-quoted scalar would otherwise wrap across physical
+  // lines and leave a blank line the format contract forbids.
+  it("keeps a realistic command as one string", () => {
+    const text = render(oneJob("build", install), { header: "" });
+
+    expect(text.split("\n")).toHaveLength(3);
+    expect(parse(text)).toStrictEqual({ build: { script: install } });
+  });
+
+  it("keeps a realistic command inside a script array", () => {
+    const script = ["npm ci", install] as const;
+    const text = render(pipeline({ jobs: [job({ name: "build", script })] }), { header: "" });
+
+    expect(text.split("\n")).toHaveLength(5);
+    expect(parse(text)).toStrictEqual({ build: { script: ["npm ci", install] } });
   });
 });
 

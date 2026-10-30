@@ -25,8 +25,8 @@ const ymlFiles = (dir: string): readonly string[] =>
     : [];
 
 /**
- * Providers with a vendored schema. A provider can exist before its schema does — GitLab's `ci.json`
- * lands in its own slice (spec 0004) — and a golden can only be checked against a schema that exists.
+ * Providers with a vendored schema. A provider can exist before its schema does, and a golden can
+ * only be checked against a schema that exists.
  */
 const schemaProviders = new Set(
   readdirSync(join(root, "test", "schemas"), { withFileTypes: true })

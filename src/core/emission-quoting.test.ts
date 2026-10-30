@@ -65,6 +65,19 @@ describe("round trips", () => {
     expect(parse(emit(value))).toStrictEqual(value);
   });
 
+  it("keeps a long multi-line string on one escaped physical line", () => {
+    const value: Value = {
+      a: "if [ -f pnpm-lock.yaml ]; then\n  pnpm install --frozen-lockfile\nfi",
+    };
+
+    const text = emit(value);
+
+    // A folded double-quoted scalar would spread this over several physical lines with a blank line
+    // between them, which the format contract forbids.
+    expect(text.split("\n")).toHaveLength(2);
+    expect(parse(text)).toStrictEqual(value);
+  });
+
   it("does not wrap a long plain string", () => {
     const long = "x".repeat(140);
 
