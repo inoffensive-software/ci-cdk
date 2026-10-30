@@ -57,6 +57,20 @@ export const undeclaredSchemaPaths = (
   return unique(schema.filter((path) => !isDeclared(path)));
 };
 
+/**
+ * GAPS rows whose path the vocabulary now models. Modelling a keyword closes its row, and a row that
+ * outlives its keyword keeps reporting debt that is already paid; the row must go, or be narrowed to
+ * the children the schema still allows and the vocabulary does not.
+ */
+export const staleGapPaths = (
+  modelled: readonly string[],
+  gaps: readonly PathRow[],
+): readonly string[] => {
+  const modelledSet = new Set(modelled);
+
+  return unique(gaps.flatMap((gap) => (modelledSet.has(gap.path) ? [gap.path] : [])));
+};
+
 /** GAPS rows that name no schema path, so a row cannot outlive the schema entry it describes. */
 export const orphanedGapPaths = (
   schema: readonly string[],
@@ -98,3 +112,7 @@ export const unusedOverclaimPaths = (
 /** The failure text a reader needs: the path, and both ways to make it legal. */
 export const gapRemedies = (path: string): string =>
   `${path} is neither modelled nor declared; model it in the vocabulary, or add a row to GAPS`;
+
+/** The failure text for a stale row: the debt is paid, so the row narrows or leaves. */
+export const staleGapRemedies = (path: string): string =>
+  `${path} is modelled now, so its GAPS row is stale: delete the row, or replace it with the child paths that are still missing`;

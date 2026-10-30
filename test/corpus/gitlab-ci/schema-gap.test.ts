@@ -11,6 +11,8 @@ import {
   SCHEMA_PATHS,
   gapRemedies,
   orphanedGapPaths,
+  staleGapPaths,
+  staleGapRemedies,
   undeclaredOverclaimPaths,
   undeclaredSchemaPaths,
   unusedOverclaimPaths,
@@ -32,6 +34,10 @@ describe("schema gap gate", () => {
 
   it("declares no gap the schema does not allow", () => {
     expect(orphanedGapPaths(SCHEMA_PATHS, GAPS)).toStrictEqual([]);
+  });
+
+  it("declares no gap the vocabulary already models", () => {
+    expect(staleGapPaths(MODELLED_PATHS, GAPS)).toStrictEqual([]);
   });
 
   it("declares every modelled path the schema lacks", () => {
@@ -136,6 +142,13 @@ describe("schema gap failure cases", () => {
     expect(orphanedGapPaths(SCHEMA_PATHS, [...GAPS, inventedGap])).toStrictEqual([
       inventedGap.path,
     ]);
+  });
+
+  it("reports a GAPS row for a path the vocabulary already models", () => {
+    const stale: Gap = { path: "$.*.invented", reason: "invented", category: "unmodelled" };
+
+    expect(staleGapPaths([...MODELLED_PATHS, stale.path], [stale])).toStrictEqual([stale.path]);
+    expect(staleGapRemedies(stale.path)).toContain("delete the row");
   });
 
   it("reports a modelled path the schema lacks as an overclaim", () => {
