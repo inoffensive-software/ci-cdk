@@ -22,6 +22,8 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.default.services[].variables",
   "$.*.services[].variables",
   "$.include[].inputs",
+  "$.*.trigger.inputs",
+  "$.*.trigger.include[].inputs",
   "$.workflow.rules[].variables",
   "$.*.rules[].variables",
   "$.*.needs[].parallel.matrix[]",

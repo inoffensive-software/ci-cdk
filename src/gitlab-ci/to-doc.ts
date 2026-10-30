@@ -24,7 +24,13 @@ import {
   variablesDoc,
   workflowDoc,
 } from "./blocks.js";
-import { allowFailureDoc, environmentDoc, parallelDoc, releaseDoc } from "./delivery-blocks.js";
+import {
+  allowFailureDoc,
+  environmentDoc,
+  parallelDoc,
+  releaseDoc,
+  triggerDoc,
+} from "./delivery-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -63,6 +69,7 @@ const JOB_RESERVED: readonly string[] = [
   "after_script",
   "environment",
   "release",
+  "trigger",
   "parallel",
   "retry",
   "timeout",
@@ -96,9 +103,9 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("before_script", present(item.before_script)),
     ...entry("script", present(item.script)),
     ...entry("after_script", present(item.after_script)),
-    // `trigger` would sit between `release` and `parallel`; it is not modelled yet, so the slot is empty.
     ...entry("environment", whenPresent(item.environment, environmentDoc)),
     ...entry("release", whenPresent(item.release, releaseDoc)),
+    ...entry("trigger", whenPresent(item.trigger, triggerDoc)),
     ...entry("parallel", whenPresent(item.parallel, parallelDoc)),
     ...entry("retry", whenPresent(item.retry, retryDoc)),
     ...entry("timeout", present(item.timeout)),

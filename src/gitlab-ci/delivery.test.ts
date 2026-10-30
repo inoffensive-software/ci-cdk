@@ -170,6 +170,7 @@ const ordered = (): Pipeline =>
         after_script: "echo after",
         environment: "production",
         release: { tag_name: "v1", description: "one" },
+        trigger: { project: "group/downstream" },
         parallel: 2,
         retry: 1,
         timeout: "1h",
@@ -195,6 +196,7 @@ describe("job emission order", () => {
       "after_script",
       "environment",
       "release",
+      "trigger",
       "parallel",
       "retry",
       "timeout",
@@ -217,6 +219,7 @@ describe("job raw collisions", () => {
           raw: {
             environment: "production",
             release: { tag_name: "v1" },
+            trigger: { project: "group/downstream" },
             parallel: 2,
             retry: 2,
             timeout: "1h",
@@ -233,6 +236,7 @@ describe("job raw collisions", () => {
     expect(diagnosticsOf(() => toDoc(refused)).map((item) => item.path)).toStrictEqual([
       '$.jobs[0].raw["environment"]',
       '$.jobs[0].raw["release"]',
+      '$.jobs[0].raw["trigger"]',
       '$.jobs[0].raw["parallel"]',
       '$.jobs[0].raw["retry"]',
       '$.jobs[0].raw["timeout"]',
