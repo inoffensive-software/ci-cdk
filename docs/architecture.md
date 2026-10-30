@@ -143,11 +143,15 @@ src/github-actions/
   trigger.ts    the `on:` vocabulary
 
 src/gitlab-ci/
-  index.ts      barrel; re-exports render, toDoc and the vocabulary
-  render.ts     render(pipeline) = renderDoc(toDoc(pipeline)), the call users make
-  types.ts      the structs `Pipeline` and `Job`, and the `Script` union
-  to-doc.ts     the single lowering function; public as `toDoc`
-  validate.ts   document-level checks
+  index.ts            barrel; re-exports render, toDoc and the vocabulary
+  render.ts           render(pipeline) = renderDoc(toDoc(pipeline)), the call users make
+  types.ts            the structs `Pipeline` and `Job`, and the `Script` union
+  blocks.ts           the global and job blocks lowered, reused at every default and job position
+  delivery-blocks.ts  the delivery and scheduling keys lowered
+  trigger-types.ts    the `trigger:` vocabulary and its closed strategy union
+  leaves.ts           ref, the `!reference` leaf
+  to-doc.ts           the single lowering function; public as `toDoc`
+  validate.ts         document-level checks
 
 src/bitbucket-pipelines/
   index.ts          barrel; re-exports render, toDoc and the vocabulary
