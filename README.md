@@ -14,6 +14,7 @@ src/index.ts         core primitives and the public entry point
 src/vendors/         one directory per provider, e.g. src/vendors/github-actions/
 tsconfig.json        all compiler options; build: src/ -> dist/, tests excluded
 tsconfig.test.json   extends the above, typechecks src/ + vitest.config.ts, noEmit
+.fallowrc.json       fallow config (JSONC); entry points detected from package.json
 ```
 
 Single package, no workspace: this repo _is_ `@inoffensive/ci`. Providers are directories inside it,
@@ -48,9 +49,10 @@ pnpm typecheck        # tsc -p tsconfig.test.json, includes colocated tests
 pnpm test             # vitest run
 pnpm test:watch       # vitest
 pnpm lint             # oxlint
+pnpm fallow           # dead code + duplication + complexity; any subcommand: pnpm fallow health
 pnpm format           # oxfmt, writes
 pnpm format:check     # oxfmt --check
-pnpm check            # format:check -> compile -> typecheck -> lint -> test
+pnpm check            # format:check -> compile -> typecheck -> lint -> test -> fallow
 ```
 
 Provider emitters assert their YAML with `expect(...).toMatchFileSnapshot("__snapshots__/<name>.yml")`
@@ -62,6 +64,14 @@ from the test file next to the emitter, so the golden files are reviewable in th
   `tsconfig.json` (see below).
 - Build is `tsc` alone; no bundler. `exports` points straight at the emitted files.
 - oxlint for linting (`.oxlintrc.json`), oxfmt for formatting (`.oxfmtrc.json`).
+- fallow for dead code, duplication, complexity, and architecture (`.fallowrc.json`, JSONC, so it
+  carries comments; fallow owns validation of that file, not tsc). It runs clean on zero config --
+  entry points are read from `package.json` `exports`/`bin`, so nothing is listed by hand. The config
+  only sets `duplicates.minOccurrences: 3` (ignore pair-only clones) and keeps
+  `unused-dependencies` at `warn` rather than failing the build.
+- `pnpm fallow <subcommand>` reaches the rest: `health --hotspots`, `dupes`, `architecture`,
+  `dead-code --trace <file>:<export>`, `inspect --file <path>`, and `audit --base <ref>` as the
+  PR-scoped gate. `fallow doctor` diagnoses project detection without changing anything.
 - Versioning and publishing are not wired yet: changesets plus a provenance-enabled release workflow
   are the intended path.
 

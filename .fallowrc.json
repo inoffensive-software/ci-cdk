@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "duplicates": {
+    // Hide pair-only clones; report only widespread copy-paste worth refactoring.
+    "minOccurrences": 3
+  },
+  "rules": {
+    "unused-dependencies": "error"
+  }
+}
