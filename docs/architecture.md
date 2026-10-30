@@ -31,7 +31,7 @@ Non-goals, stated so they are not designed for by accident:
 Three stages, each with exactly one axis of variance:
 
 ```
-typed structs (provider vocabulary)   --toDoc()-->   Doc   --render()-->   text
+typed structs (provider vocabulary)   --toDoc()-->   Doc   --renderDoc()-->   text
               per provider                      shared, provider-blind       Serializer
 ```
 
@@ -87,7 +87,7 @@ describe the thing without naming a provider? If not, it belongs in a provider d
 ```
 src/core/doc.ts         the Doc union and its constructors (map, seq, scalar, block, tagged)
 src/core/from-value.ts  fromValue: arbitrary plain values -> Doc
-src/core/render.ts      render(doc, options) -> string
+src/core/render-doc.ts  renderDoc(doc, options) -> string  (provider-author API)
 src/core/serialize.ts   Serializer interface; the YAML implementation
 src/core/io.ts          write(path, text)
 src/core/diagnostic.ts  Diagnostic, fail()
@@ -101,6 +101,7 @@ Roughly eight exports and no CI nouns. A test asserts that no provider name appe
 
 ```
 src/github-actions/
+  index.ts      barrel; re-exports, plus render(wf) = renderDoc(toDoc(wf))
   types.ts      the provider's structs and unions
   leaves.ts     expr, script, matrix, needs
   to-doc.ts     the single lowering function
@@ -117,10 +118,10 @@ extracted from two is a commitment.
 
 These are testable and should be enforced by tests, not by review.
 
-1. `render` is pure and deterministic. Same `Doc` in separate processes yields identical bytes,
+1. `renderDoc` is pure and deterministic. Same `Doc` in separate processes yields identical bytes,
    LF only, exactly one trailing newline.
 
-2. `render` is provider-blind. No provider identifier appears under `src/core/`. Enforced by the
+2. `renderDoc` is provider-blind. No provider identifier appears under `src/core/`. Enforced by the
    zone rules in `.fallowrc.json`, which also make providers mutually unimportable.
 
 3. `toDoc` is the only place that validates a whole document. Duplicate job ids, dangling `needs`

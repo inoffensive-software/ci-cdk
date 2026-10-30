@@ -1,81 +1,69 @@
 # @inoffensive/ci-cdk
 
-A typed TypeScript DSL that compiles to CI provider configuration. You write a `ci.ts`, run the
-CLI, and get committed YAML for the providers you target. No runtime dependency on this package:
-it is a dev dependency that generates config, never something your pipeline imports at run time.
+No one was born to write or read YAML. Why can't we use functions as the essential unit of composition for CI? Why have we decided that magical YAML syntax is a better solution than the one we had all along: code.
 
-Status: scaffold. The package shape, tooling, and TypeScript configuration are in place; the DSL
-surface and provider emitters are not written yet.
+This project aims to end the tyranny of YAML by allowing for the specification of various CI providers' pipelines as Typescript which is automagically emitted as valid YAML.
 
-## Layout
+## Why
 
-```
-src/index.ts         public entry point; re-exports core
-src/core/            provider-neutral: Doc, fromValue, render, write
-src/github-actions/  one directory per provider; directory name = subpath export
-tsconfig.json        all compiler options; build: src/ -> dist/, tests excluded
-tsconfig.test.json   extends the above, typechecks src/ + vitest.config.ts, noEmit
-.fallowrc.json       fallow config (JSONC); entry points detected from package.json
-```
+- **Typechecking is good**: Catch annoying YAML syntax errors before merging a PR, not when the pipeline goes red.
 
-Single package, no workspace: this repo _is_ `@inoffensive/ci-cdk`. Providers are directories inside it,
-not separate packages -- they ship together, at one version, to one audience, so a package boundary
-would only add build plumbing. Each provider still owns its vocabulary, types, and tests, and gets
-its own subpath export:
+- **Composition is code**: Shared workflow logic is a function returning a struct, imported and
+  spread where needed. No YAML anchors, no `include:`, no `!reference` chaining across files.
+
+- **Generated, not hand-maintained**: Each definition owns one file end to end. Use `git diff` to see detect and (optionally) automatically commit changes.
+
+This project is not attempting to be an ORM: each provider keeps its own vocabulary, types and warts. There is no
+provider-neutral pipeline model.
+
+## Usage
 
 ```ts
-import { defineConfig } from "@inoffensive/ci-cdk";
-import { githubActions } from "@inoffensive/ci-cdk/github-actions";
+// ci/github.ts
+import { write } from "@inoffensive/ci-cdk";
+import { render, workflow, job, step } from "@inoffensive/ci-cdk/github-actions";
 
-export default defineConfig(githubActions(/* ... */));
+const build = job({
+  id: "build",
+  "runs-on": "ubuntu-latest",
+  steps: [
+    step({ uses: "actions/checkout@v4" }),
+    step({ run: "pnpm install --frozen-lockfile && pnpm build" }),
+  ],
+});
+
+write(
+  ".github/workflows/ci.yml",
+  render(workflow({ name: "CI", on: ["push", "pull_request"], jobs: [build] })),
+);
 ```
 
-Conventions that keep that workable:
+Composition is plain JavaScript — a shared job is a function you import and spread:
 
-- Core stays provider-neutral. No GitHub/GitLab-specific nouns outside a provider directory
-  (`src/<provider>/`).
-- Providers may import from core, never from a sibling provider directory.
-- One declaration site per shared type, in core (`Doc`, `Text`, `Diagnostic`). Providers do not
-  re-declare or wrap them, or type identity breaks across subpaths.
-- Every provider ships a golden-file test of its emitted YAML; those files double as documentation.
-
-Tests sit next to the code they cover (`src/foo.test.ts`, golden files in `src/__snapshots__/`).
-`tsconfig.json` excludes `*.test.ts` so they never reach `dist/`.
-
-## Commands
-
-```
-pnpm install          # install deps
-pnpm compile          # tsc -b, emits dist/
-pnpm typecheck        # tsc -p tsconfig.test.json, includes colocated tests
-pnpm test             # vitest run
-pnpm test:watch       # vitest
-pnpm lint             # oxlint
-pnpm fallow           # dead code + duplication + complexity; any subcommand: pnpm fallow health
-pnpm fmt           # oxfmt, writes
-pnpm fmt:check     # oxfmt --check
-pnpm check            # fmt:check -> compile -> typecheck -> lint -> test -> fallow
+```ts
+const withPnpmCache = (j: Job): Job => ({ ...j, steps: [cacheStep, ...j.steps] });
 ```
 
-Provider emitters assert their YAML with `expect(...).toMatchFileSnapshot("__snapshots__/<name>.yml")`
-from the test file next to the emitter, so the golden files are reviewable in the diff.
+Keeping the file honest in CI:
 
-## Tooling
+```
+node ci/github.ts && git diff --exit-code -- .github/workflows
+```
 
-- TypeScript 7.x, ESM only, `module`/`moduleResolution: nodenext`, strict flag set inline in
-  `tsconfig.json` (see below).
-- Build is `tsc` alone; no bundler. `exports` points straight at the emitted files.
-- oxlint for linting (`.oxlintrc.json`), oxfmt for fmtting (`.oxfmtrc.json`).
-- fallow for dead code, duplication, complexity, and architecture (`.fallowrc.json`, JSONC, so it
-  carries comments; fallow owns validation of that file, not tsc). It runs clean on zero config --
-  entry points are read from `package.json` `exports`/`bin`, so nothing is listed by hand. The config
-  sets `duplicates.minOccurrences: 3` (ignore pair-only clones), `unused-dependencies` at `error`,
-  and the architecture zones: `core` may import nothing from the project, each provider may import
-  `core` only, and `coverage.requireAllFiles` forces any new directory to be classified into a zone.
-  A provider therefore cannot import a sibling without failing `pnpm check`. `pnpm fallow guard <files>`
-  shows which zone rules apply to a file before you edit it.
-- `pnpm fallow <subcommand>` reaches the rest: `health --hotspots`, `dupes`, `architecture`,
-  `dead-code --trace <file>:<export>`, `inspect --file <path>`, and `audit --base <ref>` as the
-  PR-scoped gate. `fallow doctor` diagnoses project detection without changing anything.
-- Versioning and publishing are not wired yet: changesets plus a provenance-enabled release workflow
-  are the intended path.
+## Providers
+
+| Subpath                                   | Provider            | Status      |
+| ----------------------------------------- | ------------------- | ----------- |
+| `@inoffensive/ci-cdk/github-actions`      | GitHub Actions      | In Progress |
+| `@inoffensive/ci-cdk/gitlab-ci`           | GitLab CI           | Planned     |
+| `@inoffensive/ci-cdk/bitbucket-pipelines` | Bitbucket Pipelines | Planned     |
+
+## Documentation
+
+- `docs/architecture.md` — layers, invariants, and the decisions behind them.
+- `docs/decisions/` — individual decision records.
+- `docs/providers/<provider>.md` — per-provider coverage and quirks.
+
+## Development
+
+See `AGENTS.md` for the repo map, commands, and the rules that keep the architecture intact.
