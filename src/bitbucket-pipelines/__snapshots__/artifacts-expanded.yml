@@ -1,0 +1,33 @@
+image: node:latest
+pipelines:
+  default:
+    - step:
+        artifacts:
+          download: true
+          paths:
+            - snykcode_results.sarif
+        caches:
+          - node
+          - docker
+        script:
+          - npm install
+          - npm install -g snyk
+          - snyk auth $SNYK_TOKEN
+          - snyk code test --sarif > snykcode_results.sarif || true
+          - docker build -t snykschmidtty/goof:latest .
+          - pipe: snyk/snyk-scan:0.5.1
+            variables:
+              SNYK_TOKEN: $SNYK_TOKEN
+              LANGUAGE: npm
+              DONT_BREAK_BUILD: "true"
+              MONITOR: "true"
+              CODE_INSIGHTS_RESULTS: "true"
+              EXTRA_ARGS: --project-name=goof-bitbucket-pipelines --remote-repo-url=goof-bitbucket-pipelines
+          - pipe: snyk/snyk-scan:0.5.1
+            variables:
+              SNYK_TOKEN: $SNYK_TOKEN
+              LANGUAGE: docker
+              IMAGE_NAME: snykschmidtty/goof:latest
+              DONT_BREAK_BUILD: "true"
+              MONITOR: "true"
+              EXTRA_ARGS: --project-name=docker-image|goof-bitbucket-pipelines --app-vulns

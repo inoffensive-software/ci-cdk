@@ -5,7 +5,7 @@ import {
   pipelineConfig,
   step,
 } from "../../../src/bitbucket-pipelines/index.js";
-import { everyDefinedStep, everyItems } from "./inventory-items.js";
+import { everyDefinedStep, everyFinalArtifacts, everyItems } from "./inventory-items.js";
 
 /** One inventory document: a configuration, plus the name a failure should use for it. */
 export interface InventoryDocument {
@@ -56,6 +56,64 @@ export const INVENTORY: readonly InventoryDocument[] = [
         tags: [selector("*")],
         "pull-requests": [selector("**")],
         custom: [named("cleanup")],
+      },
+    }),
+  },
+  {
+    name: "expanded-final",
+    config: pipelineConfig({
+      pipelines: {
+        default: [step({ script: ["true"] }), everyFinalArtifacts(true)],
+      },
+    }),
+  },
+  {
+    name: "expanded-final-names",
+    config: pipelineConfig({
+      pipelines: {
+        default: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+      },
+    }),
+  },
+  {
+    name: "expanded-final-sections",
+    config: pipelineConfig({
+      pipelines: {
+        branches: [
+          { pattern: "main", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
+          {
+            pattern: "release/*",
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+          },
+        ],
+        tags: [
+          { pattern: "*", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
+          {
+            pattern: "v*",
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+          },
+        ],
+        "pull-requests": [
+          { pattern: "**", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
+          {
+            pattern: "pr-*",
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+          },
+        ],
+      },
+    }),
+  },
+  {
+    name: "expanded-final-custom",
+    config: pipelineConfig({
+      pipelines: {
+        custom: [
+          { name: "publish", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
+          {
+            name: "publish-named",
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+          },
+        ],
       },
     }),
   },

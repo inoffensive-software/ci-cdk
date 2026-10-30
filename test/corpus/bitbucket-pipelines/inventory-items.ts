@@ -1,5 +1,6 @@
 import {
   type Changesets,
+  type FinalItem,
   type FinalStep,
   type PipelineItem,
   type Stage,
@@ -121,13 +122,30 @@ const everyStageStep = (): StepItem =>
     trigger: "automatic",
   });
 
+/** A step carrying the artifacts map, one download form each since a step can hold only one. */
+const everyExpandedArtifacts = (download: boolean | readonly string[]): StepItem =>
+  step({
+    artifacts: {
+      download,
+      paths: ["dist/**"],
+      upload: [{ name: "build", paths: ["dist/**", "coverage/**"] }],
+    },
+    script: ["true"],
+  });
+
+/** The two download forms, so both shapes of the one field reach every position. */
+const everyExpandedSteps = (): readonly StepItem[] => [
+  everyExpandedArtifacts(true),
+  everyExpandedArtifacts(["build", "coverage"]),
+];
+
 /** A stage body carries its own condition, one document per branch, plus its child step. */
 const everyStage = (changesets: Changesets = INCLUDED): Stage => ({
   condition: { changesets, state: "successful" },
   deployment: "production",
   environment: "production",
   name: "Release",
-  steps: [everyStageStep()],
+  steps: [everyStageStep(), ...everyExpandedSteps()],
   trigger: "manual",
 });
 
@@ -139,10 +157,11 @@ const everyStage = (changesets: Changesets = INCLUDED): Stage => ({
 export const everyItems = (): readonly PipelineItem[] => [
   everyField(INCLUDED),
   everyField(EXCLUDED),
-  parallel([everyField(INCLUDED), everyField(EXCLUDED)]),
+  ...everyExpandedSteps(),
+  parallel([everyField(INCLUDED), everyField(EXCLUDED), ...everyExpandedSteps()]),
   parallel({
     "fail-fast": true,
-    steps: [everyField(INCLUDED), everyField(EXCLUDED)],
+    steps: [everyField(INCLUDED), everyField(EXCLUDED), ...everyExpandedSteps()],
   }),
   stage(everyStage(INCLUDED)),
   stage(everyStage(EXCLUDED)),
@@ -153,4 +172,19 @@ export const everyItems = (): readonly PipelineItem[] => [
 export const everyDefinedStep = (): readonly StepItem[] => [
   everyField(INCLUDED),
   everyField(EXCLUDED),
+  ...everyExpandedSteps(),
 ];
+
+/**
+ * The final step's artifacts map, one download form per document because a pipeline allows a single
+ * final step and a step holds one artifacts shape.
+ */
+export const everyFinalArtifacts = (download: boolean | readonly string[]): FinalItem =>
+  finalStep({
+    artifacts: {
+      download,
+      paths: ["coverage/**"],
+      upload: [{ name: "coverage", paths: ["coverage/**"] }],
+    },
+    script: ["true"],
+  });

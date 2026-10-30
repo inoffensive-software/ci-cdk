@@ -78,3 +78,23 @@ as the file (see the corpus README and ADR 0005).
   the resolved data and each shared step body appears once in `definitions.steps` and again inline
   wherever the anchor is referenced.
 - Vendored as: `aligent-graphql-mesh.yml`, SHA-256 `eb5de70a1a61c8b93f43610527a5ab27fc8d9e441dd39cabb7eda4b2b9ca1a47`
+
+## artifacts-expanded
+
+- Repo: <https://github.com/snyk-schmidtty/goof-artifactory>
+- Commit: `6838e122fe6f749c7ff183e0fed0ab8dc415276c`
+- Path: `bitbucket-pipelines.yml`
+- Licence: Apache-2.0
+- Bytes: 1481
+- Lines: 39
+- Comparison: data
+- Why this entry: the map form of `artifacts` with `paths` and `download: true` on a step that also
+  runs two pipes - the expanded shape whose list-form sibling every earlier entry already exercises.
+- Vendored as: `artifacts-expanded.yml`, SHA-256 `043f661cc2ee991bac5316607fd05edbd48ea19bc24d1f5c6e08679c16ca2da6`
+
+## Documentation-derived fixtures
+
+Bitbucket documents the named `upload` entry and the name-list `download`, and no redistributable
+config uses either shape. The synthetic fixture in `artifacts-expanded.test.ts` is built from
+<https://support.atlassian.com/bitbucket-cloud/docs/child-pipeline-step-options/> retrieved
+2026-10-29; no file is vendored for it.

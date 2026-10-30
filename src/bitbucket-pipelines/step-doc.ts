@@ -10,6 +10,8 @@ import {
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
 import type {
+  Artifacts,
+  ArtifactUpload,
   Changesets,
   Clone,
   Condition,
@@ -113,13 +115,49 @@ export const conditionDoc = (condition: Condition): Doc =>
     ...entry("state", condition.state === undefined ? undefined : fromValue(condition.state)),
   ]);
 
+/** An artifacts map is everything the list form is not. */
+const isArtifactsMap = (artifacts: Artifacts): artifacts is Exclude<Artifacts, readonly string[]> =>
+  !Array.isArray(artifacts);
+
+/** An upload entry is `name` then `paths`, in that order. */
+const uploadDoc = (upload: ArtifactUpload): Doc =>
+  map([
+    { key: "name", value: fromValue(upload.name) },
+    { key: "paths", value: fromValue(upload.paths) },
+  ]);
+
+/** Artifacts: the path list as-is, or `download`, `paths`, `upload` with absent keys omitted. */
+const artifactsDoc = (artifacts: Artifacts | undefined): Doc | undefined => {
+  if (artifacts === undefined) {
+    return undefined;
+  }
+
+  if (!isArtifactsMap(artifacts)) {
+    return fromValue(artifacts);
+  }
+
+  return map([
+    ...entry(
+      "download",
+      artifacts.download === undefined ? undefined : fromValue(artifacts.download),
+    ),
+    ...entry("paths", artifacts.paths === undefined ? undefined : fromValue(artifacts.paths)),
+    ...entry(
+      "upload",
+      artifacts.upload === undefined
+        ? undefined
+        : seq(artifacts.upload.map((item) => uploadDoc(item))),
+    ),
+  ]);
+};
+
 /** The first half of a step's keys, in the schema's alphabetical order. */
 const headRows = (body: Step): readonly DocEntry[] => [
   ...entry(
     "after-script",
     body["after-script"] === undefined ? undefined : scriptDoc(body["after-script"]),
   ),
-  ...entry("artifacts", body.artifacts === undefined ? undefined : fromValue(body.artifacts)),
+  ...entry("artifacts", artifactsDoc(body.artifacts)),
   ...entry("caches", body.caches === undefined ? undefined : fromValue(body.caches)),
   ...entry("clone", cloneDoc(body.clone)),
   ...entry("condition", body.condition === undefined ? undefined : conditionDoc(body.condition)),
