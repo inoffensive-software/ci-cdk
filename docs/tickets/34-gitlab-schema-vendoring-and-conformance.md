@@ -13,13 +13,13 @@ Fetch the blob from `gitlab-org/gitlab` at commit
 
 **Blocked by:** 33 (Coverage gate and hidden templates).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The schema is vendored byte for byte as `test/schemas/gitlab-ci.json`, keeps its upstream `$id`,
+- [x] The schema is vendored byte for byte as `test/schemas/gitlab-ci.json`, keeps its upstream `$id`,
       and is excluded from formatting by the existing `test/schemas/*.json` ignore.
-- [ ] A test fails if the vendored bytes differ from the pinned SHA-256.
-- [ ] The conformance test validates every GitLab inventory document and every GitLab corpus entry's
+- [x] A test fails if the vendored bytes differ from the pinned SHA-256.
+- [x] The conformance test validates every GitLab inventory document and every GitLab corpus entry's
       rendered output, with `templates` entries removed before validation.
-- [ ] A deliberately invalid document fails the conformance test, so the check is not vacuous.
-- [ ] `ajv` remains the existing pinned dependency, draft-07, strict mode off; no new dependency.
-- [ ] `pnpm check` passes.
+- [x] A deliberately invalid document fails the conformance test, so the check is not vacuous.
+- [x] `ajv` remains the existing pinned dependency, draft-07, strict mode off; no new dependency.
+- [x] `pnpm check` passes.
