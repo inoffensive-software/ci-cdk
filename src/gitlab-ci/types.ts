@@ -12,7 +12,7 @@ export interface Job {
   readonly name: string;
   readonly stage?: string;
   readonly script: Script;
-  /** Job keywords this slice does not model, appended after `stage` and `script`. */
+  /** Job keywords the vocabulary does not model, appended after `stage` and `script`. */
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
@@ -21,8 +21,8 @@ export interface Pipeline {
   readonly stages?: readonly string[];
   readonly jobs: readonly Job[];
   /**
-   * Global keywords and hidden templates this slice does not model, appended after `stages` and the
-   * job entries: `image`, `workflow`, `variables`, `.template`, and their like.
+   * Global keywords and hidden templates the vocabulary does not model, appended after `stages` and
+   * the job entries: `image`, `workflow`, `variables`, `.template`, and their like.
    */
   readonly raw?: Readonly<Record<string, Value>>;
 }
