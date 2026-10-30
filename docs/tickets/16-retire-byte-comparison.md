@@ -9,15 +9,15 @@ express the key" are the same statement, which is what the exhaustiveness gate n
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] ADR 0007 records the decision, names the byte-equality retention clause of ADR 0005 and the
+- [x] ADR 0007 records the decision, names the byte-equality retention clause of ADR 0005 and the
       two-row-kind description in the corpus README and the ledger's docstring as the anchors it
       supersedes, and states that everything else in ADR 0005 stands.
-- [ ] `got`'s fixture expresses both `run` steps through the modelled field, and its corpus test
+- [x] `got`'s fixture expresses both `run` steps through the modelled field, and its corpus test
       asserts data equality only.
-- [ ] `PROVENANCE.md` records `data` for `got`, and the corpus README no longer claims any entry is
+- [x] `PROVENANCE.md` records `data` for `got`, and the corpus README no longer claims any entry is
       compared byte for byte.
-- [ ] The ledger contains no byte-fidelity rows and its docstring describes exactly one kind of row.
-- [ ] `got` still round-trips, and the ledger's set-equality tests pass with an empty list.
-- [ ] `pnpm check` passes.
+- [x] The ledger contains no byte-fidelity rows and its docstring describes exactly one kind of row.
+- [x] `got` still round-trips, and the ledger's set-equality tests pass with an empty list.
+- [x] `pnpm check` passes.

@@ -101,7 +101,7 @@ real GitHub Actions is covered, and point at the test that proves it.
 16. As a library consumer, I want my job order, `needs` shape and key order preserved exactly as
     before, so that widening the vocabulary does not churn files I already emit.
 
-17. As a provider author, I want one inventory fixture that exercises every modelled key, so that
+17. As a provider author, I want one small inventory set that exercises every modelled key, so that
     "modelled" has a single, reviewable definition.
 
 18. As a provider author, I want the inventory derived by rendering that fixture and parsing the
@@ -193,16 +193,19 @@ real GitHub Actions is covered, and point at the test that proves it.
    the vendored files. It adds no export and no production module. Its two inputs are the corpus and
    the inventory, and its output is a failure listing unmodelled paths.
 
-2. **"Modelled" is derived behaviourally.** One inventory fixture is a single `Workflow` that sets
-   every modelled key at every level, including each union arm that is expressible in one document.
-   The gate renders it with `{ header: "" }`, parses the output, and collects key paths. A key the
-   vocabulary gains but the fixture does not exercise is a false gap, which the gate reports and the
-   implementer fixes by extending the fixture; a key the fixture contains but the vocabulary cannot
-   emit is impossible, because the fixture is lowered by the same `toDoc` a consumer uses.
+2. **"Modelled" is derived behaviourally.** The inventory is a small set of definitions, not one
+   document: shapes that cannot coexist in a single workflow each get their own, namely `on` as a
+   string, a sequence and a map; `permissions` as a token and as a map; and the two arms of
+   `environment`, `concurrency`, `needs`, `runs-on` and `secrets`. Everything that can coexist stays
+   in one document, so the set stays small and reviewable. The gate renders each definition with
+   `{ header: "" }`, parses the output, and unions the key paths. A key the vocabulary gains but the
+   inventory does not exercise is a false gap, which the gate reports and the implementer fixes by
+   extending the inventory; a key the inventory contains but the vocabulary cannot emit is
+   impossible, because the inventory is lowered by the same `toDoc` a consumer uses.
 
-3. **The inventory fixture uses no `raw`.** A test asserts its rendered output contains no key sourced
-   from `raw`, so the inventory cannot claim grammar the vocabulary lacks. The fixture is also
-   schema-checked like every other emitted document.
+3. **The inventory uses no `raw`.** A test asserts no inventory document names `raw`, so the
+   inventory cannot claim grammar the vocabulary lacks. Each document is also schema-checked like
+   every other emitted document.
 
 4. **Key paths are structural, not positional.** A map key is kept; a sequence position is `[]`. So
    `jobs.<id>.steps[].with.<name>` is one path regardless of which job or which step index used it,
@@ -342,8 +345,8 @@ Specific decisions:
   ledger row that no fixture uses fails (already). A gate that cannot fail is not evidence.
 - The gate's report is sorted and de-duplicated, and asserted as a set of paths, not as a message
   string.
-- The inventory fixture is asserted to be `raw`-free, and to render a document that validates against
-  the vendored schema.
+- The inventory set is asserted to be `raw`-free, and every document it contains renders to something
+  that validates against the vendored schema.
 - Every declared author-named map path is asserted to occur in the inventory, so the wildcard list
   cannot rot silently.
 - `got` keeps an explicit test that it still round-trips after the byte assertion is removed, so
