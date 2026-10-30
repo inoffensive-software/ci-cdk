@@ -417,12 +417,10 @@ export const LABKIT: Pipeline = pipeline({
           changes: [".conformance-trigger-paths", "changes"],
         },
       ],
-      raw: {
-        trigger: {
-          project: "gitlab-org/quality/tooling/labkit-spec",
-          branch: "main",
-          strategy: "depend",
-        },
+      trigger: {
+        project: "gitlab-org/quality/tooling/labkit-spec",
+        branch: "main",
+        strategy: "depend",
       },
     }),
     job({

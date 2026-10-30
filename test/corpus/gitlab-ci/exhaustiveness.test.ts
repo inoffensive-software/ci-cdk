@@ -65,9 +65,8 @@ describe("exhaustiveness gate", () => {
     expect(unusedLedgerPaths(entries.flat(), LEDGER, LEDGER_RULES)).toStrictEqual([]);
   });
 
-  it("leaves one row, the trigger gap, after delivery and scheduling landed", () => {
-    expect(COVERAGE_DEBT).toHaveLength(1);
-    expect(COVERAGE_DEBT.map((row) => row.path)).toStrictEqual(["$.jobs[19].raw.trigger"]);
+  it("leaves an empty ledger: every corpus key has a modelled field", () => {
+    expect(COVERAGE_DEBT).toStrictEqual([]);
   });
 });
 

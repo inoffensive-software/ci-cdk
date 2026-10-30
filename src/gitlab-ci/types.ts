@@ -1,4 +1,5 @@
 import type { Scalar, Text, Value } from "../core/index.js";
+import type { Trigger } from "./trigger-types.js";
 
 /**
  * An arbitrary YAML scalar, for maps whose keys the author chooses. The type lives in core because
@@ -251,6 +252,8 @@ export interface Job {
   readonly environment?: Environment;
   /** The release this job creates; emitted as data, never submitted anywhere. */
   readonly release?: Release;
+  /** A downstream or child pipeline; emitted as data, and the target is never resolved. */
+  readonly trigger?: Trigger;
   /** An instance count, or a matrix of scalar rows that expands the job. */
   readonly parallel?: Parallel;
   /** A retry count, or the map with `when` conditions and `exit_codes`. */

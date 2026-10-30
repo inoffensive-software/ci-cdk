@@ -202,6 +202,12 @@ export const INVENTORY: readonly InventoryDocument[] = [
             milestones: ["v1.0"],
             released_at: "2026-01-01T00:00:00Z",
           },
+          trigger: {
+            project: "group/downstream",
+            branch: "main",
+            strategy: "depend",
+            inputs: { DEPLOY_ENV: "staging", RETRIES: 2 },
+          },
           parallel: {
             matrix: [
               { GO_VERSION: "1.26", SHARD: 1 },
@@ -261,6 +267,17 @@ export const INVENTORY: readonly InventoryDocument[] = [
           stage: "build",
           script: "make release",
           environment: "review/prod",
+          trigger: {
+            include: [
+              { local: ".gitlab/ci/child.yml" },
+              { project: "group/child", ref: "main", file: "ci/child.yml" },
+              {
+                component: "gitlab.com/components/child@1.0",
+                inputs: { CHILD_ENV: "staging" },
+              },
+            ],
+            strategy: "mirror",
+          },
           parallel: 2,
           retry: 2,
           timeout: "10 minutes",
@@ -269,6 +286,13 @@ export const INVENTORY: readonly InventoryDocument[] = [
           when: "on_success",
           resource_group: "releases",
           coverage: "/total coverage/",
+        }),
+        // `include` takes at most three entries, so the template and remote shapes need a second job.
+        job({
+          name: "child-remote",
+          trigger: {
+            include: [{ template: "Child.yml" }, { remote: "https://example.com/child.yml" }],
+          },
         }),
       ],
     }),

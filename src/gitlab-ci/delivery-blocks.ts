@@ -1,8 +1,10 @@
 import { DOC, entry, fromValue, map, present, type Doc, type LeafNode } from "../core/index.js";
+import { includeDoc } from "./blocks.js";
+import { type Trigger } from "./trigger-types.js";
 import { type AllowFailure, type Environment, type Parallel, type Release } from "./types.js";
 
-/** A leaf decides its own style; a bare environment name is a leaf, a map is this provider's shape. */
-const isLeaf = (value: Environment): value is LeafNode =>
+/** A leaf decides its own style; a bare name or path is a scalar, a map is this provider's shape. */
+const isLeaf = (value: Environment | Trigger): value is LeafNode =>
   typeof value === "object" && Object.hasOwn(value, DOC);
 
 const environmentOptionsDoc = (environment: Exclude<Environment, string | LeafNode>): Doc =>
@@ -31,6 +33,32 @@ export const releaseDoc = (release: Release): Doc =>
     ...entry("milestones", present(release.milestones)),
     ...entry("released_at", present(release.released_at)),
   ]);
+
+/**
+ * A trigger in GitLab's documented key order. A bare string is a child pipeline path; the map form is
+ * either a multi-project trigger (`project` is the discriminator) or a child trigger (`include`). The
+ * project, the branch and the include are emitted as written, never resolved.
+ */
+export const triggerDoc = (trigger: Trigger): Doc => {
+  if (typeof trigger === "string" || isLeaf(trigger)) {
+    return fromValue(trigger);
+  }
+
+  if ("project" in trigger) {
+    return map([
+      { key: "project", value: fromValue(trigger.project) },
+      ...entry("branch", present(trigger.branch)),
+      ...entry("ref", present(trigger.ref)),
+      ...entry("strategy", present(trigger.strategy)),
+      ...entry("inputs", trigger.inputs === undefined ? undefined : fromValue(trigger.inputs)),
+    ]);
+  }
+
+  return map([
+    { key: "include", value: includeDoc(trigger.include) },
+    ...entry("strategy", present(trigger.strategy)),
+  ]);
+};
 
 /**
  * A count stays a scalar; the matrix form lowers its rows whole, so each row keeps the author's key
