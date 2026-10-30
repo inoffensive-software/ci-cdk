@@ -1,6 +1,5 @@
-import { describe, expect, it } from "vitest";
-
 import type { Pipeline } from "../../../src/gitlab-ci/index.js";
+import { describeCoverageDebt } from "../coverage.js";
 import { keyPath } from "../paths.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { TERRAFORM_IMAGES } from "./terraform-images.fixture.js";
@@ -18,19 +17,4 @@ const rawPathsOf = (pipeline: Pipeline): readonly string[] => {
 
 const PIPELINES = [TERRAFORM_IMAGES];
 
-describe("coverage debt", () => {
-  it("declares exactly the raw paths the fixtures use, in both directions", () => {
-    const declared = COVERAGE_DEBT.map((debt) => debt.path).toSorted();
-    const used = PIPELINES.flatMap(rawPathsOf).toSorted();
-
-    expect(declared).toStrictEqual(used);
-  });
-
-  it("gives every declared path a reason", () => {
-    expect(COVERAGE_DEBT.every((debt) => debt.reason.trim() !== "")).toBe(true);
-  });
-
-  it("scans the fixtures", () => {
-    expect(PIPELINES).not.toHaveLength(0);
-  });
-});
+describeCoverageDebt({ fixtures: PIPELINES, rawPathsOf, debt: COVERAGE_DEBT });

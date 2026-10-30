@@ -1,6 +1,5 @@
-import { describe, expect, it } from "vitest";
-
 import type { Workflow } from "../../../src/github-actions/index.js";
+import { describeCoverageDebt } from "../coverage.js";
 import { keyPath } from "../paths.js";
 import { ANYHOW } from "./anyhow.fixture.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
@@ -30,19 +29,4 @@ const rawPathsOf = (workflow: Workflow): readonly string[] => {
 
 const WORKFLOWS = [GOT, ANYHOW, TRPC_MAIN];
 
-describe("coverage debt", () => {
-  it("declares exactly the raw paths the fixtures use, in both directions", () => {
-    const declared = COVERAGE_DEBT.map((debt) => debt.path).toSorted();
-    const used = WORKFLOWS.flatMap(rawPathsOf).toSorted();
-
-    expect(declared).toStrictEqual(used);
-  });
-
-  it("gives every declared path a reason", () => {
-    expect(COVERAGE_DEBT.every((debt) => debt.reason.trim() !== "")).toBe(true);
-  });
-
-  it("scans the fixtures", () => {
-    expect(WORKFLOWS).not.toHaveLength(0);
-  });
-});
+describeCoverageDebt({ fixtures: WORKFLOWS, rawPathsOf, debt: COVERAGE_DEBT });
