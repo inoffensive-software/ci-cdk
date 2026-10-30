@@ -21,6 +21,11 @@ interface VendoredSchema {
  */
 const VENDORED: readonly VendoredSchema[] = [
   {
+    file: "bitbucket-pipelines.json",
+    sha256: "b37319267d9922bd9f0a5142d657551ae844e136fa205068c8660622d66bcf64",
+    id: "https://bitbucket.org/product/features/pipelines",
+  },
+  {
     file: "gitlab-ci.json",
     sha256: "1c6eeb7d3a34c39996afbfe1ade220480eb05bbeae674e86d3c745dfeeded7fd",
     id: "https://gitlab.com/.gitlab-ci.yml",
