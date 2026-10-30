@@ -1,0 +1,13 @@
+stages:
+  - build
+.setup:
+  before_script:
+    - npm ci
+.versions:
+  parallel:
+    matrix:
+      - TERRAFORM_VERSION: "1.5"
+build:
+  stage: build
+  script:
+    - npm run build

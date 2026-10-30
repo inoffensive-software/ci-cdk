@@ -22,10 +22,6 @@ export const COVERAGE_DEBT: readonly CoverageDebt[] = [
     reason: "Global `variables` is a pipeline keyword the vocabulary does not model.",
   },
   {
-    path: '$.raw[".terraform-versions"]',
-    reason: "A hidden template is a pipeline entry the vocabulary does not model.",
-  },
-  {
     path: "$.jobs[0].raw.image",
     reason: "`image` is a job keyword the vocabulary does not model.",
   },

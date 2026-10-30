@@ -9,6 +9,19 @@ import { type Pipeline, job, pipeline } from "../../../src/gitlab-ci/index.js";
  */
 export const TERRAFORM_IMAGES: Pipeline = pipeline({
   stages: ["test", "build", "deploy"],
+  templates: {
+    ".terraform-versions": {
+      parallel: {
+        matrix: [
+          { TERRAFORM_BINARY_VERSION: "1.5.7", TERRAFORM_VERSION: "1.5" },
+          { TERRAFORM_BINARY_VERSION: "1.4.6", TERRAFORM_VERSION: "1.4" },
+          { TERRAFORM_BINARY_VERSION: "1.3.9", TERRAFORM_VERSION: "1.3" },
+          { TERRAFORM_BINARY_VERSION: "1.2.9", TERRAFORM_VERSION: "1.2" },
+          { TERRAFORM_BINARY_VERSION: "1.1.9", TERRAFORM_VERSION: "1.1" },
+        ],
+      },
+    },
+  },
   jobs: [
     job({
       name: "shell check",
@@ -99,17 +112,6 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
       PLATFORMS: "linux/amd64,linux/arm64",
       STABLE_IMAGE_NAME: "$CI_REGISTRY_IMAGE/stable:latest",
       STABLE_VERSION: "1.5",
-    },
-    ".terraform-versions": {
-      parallel: {
-        matrix: [
-          { TERRAFORM_BINARY_VERSION: "1.5.7", TERRAFORM_VERSION: "1.5" },
-          { TERRAFORM_BINARY_VERSION: "1.4.6", TERRAFORM_VERSION: "1.4" },
-          { TERRAFORM_BINARY_VERSION: "1.3.9", TERRAFORM_VERSION: "1.3" },
-          { TERRAFORM_BINARY_VERSION: "1.2.9", TERRAFORM_VERSION: "1.2" },
-          { TERRAFORM_BINARY_VERSION: "1.1.9", TERRAFORM_VERSION: "1.1" },
-        ],
-      },
     },
   },
 });

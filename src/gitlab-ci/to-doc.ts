@@ -1,6 +1,14 @@
-import { fail, fromValue, map, type Diagnostic, type Doc, type DocEntry } from "../core/index.js";
+import {
+  fail,
+  fromValue,
+  map,
+  type Diagnostic,
+  type Doc,
+  type DocEntry,
+  type Value,
+} from "../core/index.js";
 import { rawKeyPath } from "../core/paths.js";
-import { rawEntries } from "../core/raw.js";
+import { lowerRawBlock, rawEntries } from "../core/raw.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -25,15 +33,43 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
 };
 
 /**
+ * Hidden jobs and anchor-only entries. They lower as plain data and keep record order; a key without
+ * the leading dot would emit a second runnable entry at the document root, so it is refused.
+ */
+const templateEntries = (
+  templates: Readonly<Record<string, Value>> | undefined,
+  diagnostics: Diagnostic[],
+): readonly DocEntry[] => {
+  if (templates === undefined) {
+    return [];
+  }
+
+  return lowerRawBlock(templates, "$.templates", diagnostics).flatMap((item) => {
+    if (item.key.startsWith(".")) {
+      return [item];
+    }
+
+    diagnostics.push({
+      path: `$.templates[${JSON.stringify(item.key)}]`,
+      message: `template key "${item.key}" must start with "."`,
+      hint: 'prefix the name with a dot, or write it as a job in "jobs"',
+    });
+
+    return [];
+  });
+};
+
+/**
  * Validates the whole document, then lowers it. `jobs` is an array on the struct so composition is
  * spread and concat; it becomes a map keyed by name here, in array order, with `name` stripped from
- * the body. Raw entries come last at each level.
+ * the body. Hidden templates sit between `stages` and the jobs; raw entries come last at each level.
  */
 export const toDoc = (pipeline: Pipeline): Doc => {
   const diagnostics: Diagnostic[] = [...validate(pipeline)];
 
   const modelled = [
     ...entry("stages", pipeline.stages === undefined ? undefined : fromValue(pipeline.stages)),
+    ...templateEntries(pipeline.templates, diagnostics),
     ...pipeline.jobs.map((item, index) => ({
       key: item.name,
       value: jobDoc(item, `$.jobs[${index}]`, diagnostics),
@@ -45,6 +81,7 @@ export const toDoc = (pipeline: Pipeline): Doc => {
     ...rawEntries(
       "$",
       pipeline.raw,
+      // Template entries are in `modelled`, so a raw key equal to one collides like any other key.
       modelled,
       diagnostics,
       ["stages", ...pipeline.jobs.map((item) => item.name)],

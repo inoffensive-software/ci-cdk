@@ -23,6 +23,16 @@ const SCRIPT_ARRAY = (): Pipeline =>
     jobs: [job({ name: "unit", script: ["npm ci", "npm test", "npm run report"] })],
   });
 
+const WITH_TEMPLATES = (): Pipeline =>
+  pipeline({
+    stages: ["build"],
+    templates: {
+      ".setup": { before_script: ["npm ci"] },
+      ".versions": { parallel: { matrix: [{ TERRAFORM_VERSION: "1.5" }] } },
+    },
+    jobs: [job({ name: "build", stage: "build", script: ["npm run build"] })],
+  });
+
 const RAW_AT_BOTH_LEVELS = (): Pipeline =>
   pipeline({
     stages: ["build"],
@@ -73,6 +83,7 @@ const GOLDENS = {
   "format-raw.yml": () => bare(RAW_AT_BOTH_LEVELS()),
   "format-quoting.yml": () => bare(QUOTING()),
   "format-ordering.yml": () => bare(ORDERING()),
+  "format-templates.yml": () => bare(WITH_TEMPLATES()),
   "format-header-default.yml": () => render(SINGLE_JOB()),
 } satisfies Record<string, () => string>;
 
@@ -209,6 +220,12 @@ describe("ordering", () => {
 
     expect(Object.keys(parsed.zulu)).toStrictEqual(["stage", "script"]);
     expect(Object.keys(parsed.alpha)).toStrictEqual(["stage", "script", "coverage"]);
+  });
+
+  it("emits templates after stages and before the jobs, in record order", () => {
+    const parsed = parse(bare(WITH_TEMPLATES())) as object;
+
+    expect(Object.keys(parsed)).toStrictEqual(["stages", ".setup", ".versions", "build"]);
   });
 
   it("emits pipeline raw last, and job raw last, in insertion order", () => {
