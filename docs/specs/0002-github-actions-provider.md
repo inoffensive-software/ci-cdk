@@ -79,7 +79,7 @@ layer, and the next provider has a template rather than a blank directory.
 
 12. As a library consumer, I want `schedule` as a list of cron entries, so that a nightly job is one
     field.
-    
+
 13. As a library consumer, I want `workflow_dispatch` to accept typed inputs (string, boolean,
     choice, environment, with description, required and default), so that manual runs are typed
     rather than remembered.
@@ -189,7 +189,7 @@ layer, and the next provider has a template rather than a blank directory.
 
 48. As a maintainer, I want every `raw` block in a corpus fixture listed in a coverage-debt ledger,
     so that the remaining gap is a number and not a feeling.
-    
+
 49. As a maintainer, I want the emitted schema check and the corpus check to run in the normal test
     suite, so that neither needs a separate command.
 
@@ -224,8 +224,8 @@ layer, and the next provider has a template rather than a blank directory.
    - `matrix(key)` returns the same node shape as `expr` for `${{ matrix.<key> }}`.
    - `needs(id, output)` returns the same node shape as `expr` for
      `${{ needs.<id>.outputs.<output> }}`.
-   `matrix` and `needs` are sugar over `expr`; they exist because these two expressions are the
-   common case and getting the path wrong is a silent runtime failure.
+     `matrix` and `needs` are sugar over `expr`; they exist because these two expressions are the
+     common case and getting the path wrong is a silent runtime failure.
 
 7. **Builders are near-identity inference anchors.** `workflow`, `job` and `step` return their input
    unchanged apart from the type they pin. They do not validate, merge, default or clone.
@@ -245,7 +245,7 @@ layer, and the next provider has a template rather than a blank directory.
     - a `needs` entry naming a job that does not exist;
     - a `needs` cycle, reported with the members in order;
     - a job with both `steps` and `uses`, and a step with both `run` and `uses`.
-    All problems in one call are collected and thrown as a single `DiagnosticError`, as in core.
+      All problems in one call are collected and thrown as a single `DiagnosticError`, as in core.
 
 11. **Diagnostic paths follow the core notation.** `$.jobs[2].id` for a duplicate, `$.jobs[0].needs[1]`
     for a dangling edge, `$.jobs[1].steps[3]` for a step with two bodies. Keys that are not
@@ -283,8 +283,8 @@ layer, and the next provider has a template rather than a blank directory.
       `66d0623ae0bf88a5158e08885e031184f26965c0`
     - `chalk/chalk`, `.github/workflows/main.yml` at
       `72110019e147683f60e13fa0ff5c14a0c27cd9fe`
-    Both use `on` as a sequence, a matrix with numeric axis values, a `name` containing expressions,
-    and `permissions`. Between them they exercise the shapes this spec calls in scope.
+      Both use `on` as a sequence, a matrix with numeric axis values, a `name` containing expressions,
+      and `permissions`. Between them they exercise the shapes this spec calls in scope.
 
 18. **The upstream schema is vendored and checked with a validator.** `test/schemas/github-actions.json`
     is a pinned copy of the schema named in `docs/references/upstream-schemas.md`. It is draft-07 and

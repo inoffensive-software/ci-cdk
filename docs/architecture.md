@@ -125,14 +125,18 @@ Roughly eight exports and no CI nouns. A test asserts that no provider name appe
 
 ```
 src/github-actions/
-  index.ts      barrel; re-exports only
+  index.ts      barrel; re-exports render, toDoc and the vocabulary
   render.ts     render(wf) = renderDoc(toDoc(wf)), the call users make
   types.ts      the provider's structs and unions
   leaves.ts     expr, script, matrix, needs
-  to-doc.ts     the single lowering function
+  to-doc.ts     the single lowering function; public as `toDoc`
   validate.ts   document-level checks
   trigger.ts    the `on:` vocabulary
 ```
+
+`render` and `toDoc` are the public surface; the reasoning is in
+`docs/decisions/0003-to-doc-public.md`. Nothing else in a provider directory is imported by
+consumers.
 
 Providers import from core, never from a sibling provider. Duplicated vocabulary across providers
 is deliberate: `Cache` in GHA and `cache:` in GitLab differ in ways that only reveal themselves
