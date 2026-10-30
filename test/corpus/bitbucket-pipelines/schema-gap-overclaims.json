@@ -1,0 +1,26 @@
+[
+  {
+    "path": "$.definitions.steps",
+    "reason": "the schema documents reusable steps only through `definitions.pipelines`, but Bitbucket documents `definitions.steps` and every pipeline references one by name; the vocabulary models it"
+  },
+  {
+    "path": "$.pipelines.branches.*[].final.condition",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final",
+    "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline, and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.default[].final.condition",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines.tags.*[].final.condition",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].final.condition",
+    "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
+  }
+]
