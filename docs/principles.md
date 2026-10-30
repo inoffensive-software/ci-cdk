@@ -25,6 +25,12 @@ Further context can be found here: https://eddie.codes/posts/source-code-comment
 
 Settles: How and whether something should be documented as comments
 
+### Evergreen comments
+
+A comment describes the code as it is, not the work that produced it. State what the code does, why it does it and why not the alternative, all in the present tense. A ticket, issue, pull request, review or session closes as soon as a comment cites it, so the claim cannot be checked later and the comment decays. Cite a decision record only where that record is the durable source of the rule. Never use it as a history of how the code arrived.
+
+Settles: What a comment may reference.
+
 ## TDD
 
 There is a TDD skill in this repository. Given how unit testable this project is, TDD should be the default behaviour when developing. Our goal is to reach convergence with representing the DSLs of

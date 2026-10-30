@@ -1,9 +1,7 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-
 import { parse } from "yaml";
 
 import { type Workflow, render } from "../../../src/github-actions/index.js";
+import { keyPath, walkPaths, type YamlNode } from "../paths.js";
 import { INVENTORY } from "./inventory.js";
 
 /**
@@ -34,51 +32,6 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.on.*.inputs",
 ];
 
-/** A parsed YAML document, concrete all the way down so the walk needs no untyped parameter. */
-type YamlNode =
-  | string
-  | number
-  | boolean
-  | null
-  | readonly YamlNode[]
-  | { readonly [key: string]: YamlNode };
-
-const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
-
-/** The diagnostic notation, so a gate path reads like the path an author would be given. */
-const keyPath = (path: string, key: string): string =>
-  IDENTIFIER.test(key) ? `${path}.${key}` : `${path}[${JSON.stringify(key)}]`;
-
-const isRecord = (value: YamlNode): value is { readonly [key: string]: YamlNode } =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const isAuthorNamed = (path: string): boolean => AUTHOR_NAMED.includes(path);
-
-const walk = (node: YamlNode, path: string, paths: Set<string>): void => {
-  if (Array.isArray(node)) {
-    const itemPath = `${path}[]`;
-
-    paths.add(itemPath);
-
-    for (const item of node) {
-      walk(item, itemPath, paths);
-    }
-
-    return;
-  }
-
-  if (!isRecord(node)) {
-    return;
-  }
-
-  for (const [key, value] of Object.entries(node)) {
-    const childPath = isAuthorNamed(path) ? `${path}.*` : keyPath(path, key);
-
-    paths.add(childPath);
-    walk(value, childPath, paths);
-  }
-};
-
 /**
  * Every key path in a YAML document, with sequence positions and author-chosen names normalised.
  * The input is text, so the parse result crosses the boundary once here and is never seen as
@@ -86,11 +39,8 @@ const walk = (node: YamlNode, path: string, paths: Set<string>): void => {
  */
 export const keyPaths = (text: string): readonly string[] => {
   const document: YamlNode = parse(text);
-  const paths = new Set<string>();
 
-  walk(document, "$", paths);
-
-  return [...paths].toSorted();
+  return walkPaths(document, AUTHOR_NAMED);
 };
 
 /** The modelled set: the union of the inventory documents' paths, rendered exactly as a consumer's. */
@@ -187,7 +137,3 @@ export const filledRawPaths = (
 /** The failure text a reader needs: the path, and both ways to make it legal. */
 export const remediesFor = (path: string): string =>
   `${path} is not modelled; model it in the vocabulary, or express it through raw and declare it in the ledger`;
-
-/** Vendor files are named relative to the test that owns them. */
-export const vendored = (name: string): Promise<string> =>
-  readFile(join(import.meta.dirname, name), "utf8");

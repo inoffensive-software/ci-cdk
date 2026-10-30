@@ -14,10 +14,10 @@ import {
   translateLedgerPath,
   unique,
   unusedLedgerPaths,
-  vendored,
 } from "./exhaustiveness.js";
 import { anyhow, got } from "./fixtures.js";
 import { INVENTORY } from "./inventory.js";
+import { vendored } from "./vendored.js";
 
 interface Entry {
   readonly name: string;
@@ -35,7 +35,7 @@ const modelledSet = new Set(modelled);
 const ledger = COVERAGE_DEBT.map((debt) => debt.path);
 const declared = unique(ledger.map((path) => translateLedgerPath(path)));
 
-/** The ticket's assertion, in both directions: the difference is exactly what the ledger declares. */
+/** The corpus differs from the modelled set by exactly the ledger's raw paths. */
 const differenceOf = async (entry: Entry): Promise<readonly string[]> =>
   unique((await keyPaths(await vendored(entry.file))).filter((path) => !modelledSet.has(path)));
 
