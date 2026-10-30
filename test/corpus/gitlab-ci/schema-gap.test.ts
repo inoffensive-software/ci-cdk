@@ -65,6 +65,39 @@ describe("schema gap report", () => {
   });
 });
 
+/** A row covers its subtree only: a dotted child or a sequence under it, never a partial segment. */
+const subsumes = (row: string, path: string): boolean =>
+  path !== row && (path.startsWith(`${row}.`) || path.startsWith(`${row}[`));
+
+describe("gap row subsumption", () => {
+  it("needs no row for a path below a declared gap", () => {
+    const keyword: Gap = {
+      path: "$.*.artifacts",
+      reason: "invented",
+      category: "unmodelled",
+    };
+
+    const deeper = "$.*.artifacts.reports.junit[]";
+
+    expect(undeclaredSchemaPaths([keyword.path, deeper], [], [keyword])).toStrictEqual([]);
+  });
+
+  it("fails on the whole subtree when a top-level row is removed", () => {
+    const removed = "$.*.artifacts";
+    const withoutRow = GAPS.filter((gap) => gap.path !== removed);
+    const undeclared = undeclaredSchemaPaths(SCHEMA_PATHS, MODELLED_PATHS, withoutRow);
+
+    expect(undeclared).toContain(removed);
+    expect(undeclared.some((path) => subsumes(removed, path))).toBe(true);
+  });
+
+  it("keeps no row that another row already subsumes", () => {
+    const subsumed = GAP_PATHS.filter((path) => GAP_PATHS.some((row) => subsumes(row, path)));
+
+    expect(subsumed).toStrictEqual([]);
+  });
+});
+
 describe("hidden templates", () => {
   it("keeps hidden keys out of the modelled set", () => {
     expect(MODELLED_PATHS.filter((path) => isHidden(path))).toStrictEqual([]);

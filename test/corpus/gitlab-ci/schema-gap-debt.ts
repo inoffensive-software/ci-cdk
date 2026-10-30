@@ -34,12 +34,14 @@ const categoryOf = (value: string): GapCategory => {
 };
 
 /**
- * The roadmap of documented grammar this provider cannot emit, one row per schema path. Every row
+ * The roadmap of documented grammar this provider cannot emit, one row per missing keyword. Every row
  * came from the gate's own diff, never from the provider documentation, so the ledger measures the
- * schema rather than a reading of it. The rows are JSON because the first diff is 1097 of them: a
- * person writes the reasons, the walker names the paths, and the file stays a data ledger rather than
- * source that outgrows the line limit. Adding a row declares a path on purpose; deleting one is how a
- * gap closes. A schema refresh fails the gate until its new paths land here, per ADR 0011.
+ * schema rather than a reading of it. A row declares its whole subtree, so the first diff's 1097 leaf
+ * paths collapse to the 53 keywords that account for them: modelling a keyword reveals the next layer
+ * on the next run, and a row is only ever added when no row above it already covers the path. The rows
+ * are JSON so the ledger stays data rather than source that outgrows the line limit. Adding a row
+ * declares a path on purpose; deleting one is how a gap closes. A schema refresh fails the gate until
+ * its new paths land here, per ADR 0011.
  */
 export const GAPS: readonly Gap[] = debt.map((row) => ({
   path: row.path,

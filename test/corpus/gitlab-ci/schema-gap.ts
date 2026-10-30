@@ -34,15 +34,27 @@ export const SCHEMA_PATHS: readonly string[] = walkSchema(
 /** The modelled set, derived exactly as the exhaustiveness gate derives it. */
 export const MODELLED_PATHS: readonly string[] = inventoryPaths();
 
-/** Schema paths neither the inventory models nor a GAPS row declares. */
+/**
+ * A GAPS row declares its whole subtree: a row names the keyword the vocabulary is missing, so every
+ * path below it is debt that keyword already accounts for. The report therefore grows by keyword, not
+ * by leaf, and modelling one keyword reveals the next layer on the next run. A path is declared when
+ * a row names it, or names a dotted child (`path.`), or a sequence under it (`path[`).
+ */
 export const undeclaredSchemaPaths = (
   schema: readonly string[],
   modelled: readonly string[],
   gaps: readonly PathRow[],
 ): readonly string[] => {
-  const known = new Set([...modelled, ...gaps.map((gap) => gap.path)]);
+  const modelledSet = new Set(modelled);
+  const gapPaths = gaps.map((gap) => gap.path);
 
-  return unique(schema.filter((path) => !known.has(path)));
+  const isDeclared = (path: string): boolean =>
+    modelledSet.has(path) ||
+    gapPaths.some(
+      (gap) => path === gap || path.startsWith(`${gap}.`) || path.startsWith(`${gap}[`),
+    );
+
+  return unique(schema.filter((path) => !isDeclared(path)));
 };
 
 /** GAPS rows that name no schema path, so a row cannot outlive the schema entry it describes. */
