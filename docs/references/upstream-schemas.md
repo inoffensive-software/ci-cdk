@@ -16,9 +16,10 @@ these were found, and which lists the `fileMatch` globs each schema claims.
 
 ## Vendored copies
 
-| File                               | Source                                             | Copied     | SHA-256                                                            |
-| ---------------------------------- | -------------------------------------------------- | ---------- | ------------------------------------------------------------------ |
-| `test/schemas/github-actions.json` | `https://www.schemastore.org/github-workflow.json` | 2026-10-29 | `d10c9f4656e1bd5bc6727e9b35080e017dc167154726fca93da33c7a6bd1c4f3` |
+| File                               | Source                                                                                                                                   | Copied     | SHA-256                                                            |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------ |
+| `test/schemas/github-actions.json` | `https://www.schemastore.org/github-workflow.json`                                                                                       | 2026-10-29 | `d10c9f4656e1bd5bc6727e9b35080e017dc167154726fca93da33c7a6bd1c4f3` |
+| `test/schemas/gitlab-ci.json`      | `https://gitlab.com/gitlab-org/gitlab/-/raw/28aa2bf90771a11ecc2f86525bc8a70a49c4d810/app/assets/javascripts/editor/schema/ci.json` (MIT) | 2026-10-29 | `1c6eeb7d3a34c39996afbfe1ade220480eb05bbeae674e86d3c745dfeeded7fd` |
 
 Each copy is byte-identical to its source on the date shown, keeps the upstream `$id`, and refers
 only to its own `#/definitions/...`, so the check needs no network. Refresh by downloading the
