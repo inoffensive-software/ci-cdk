@@ -8,22 +8,22 @@ vocabulary ticket; it deletes the majority of the remaining ledger rows.
 
 **Blocked by:** 39 (Global vocabulary and Scalar).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `image` accepts `Text` or `{ name, entrypoint?, pull_policy? }` with the closed pull-policy
+- [x] `image` accepts `Text` or `{ name, entrypoint?, pull_policy? }` with the closed pull-policy
       union, and emits both forms.
-- [ ] `services` accepts strings and maps (`name`, `alias`, `entrypoint`, `command`, `variables`), in
+- [x] `services` accepts strings and maps (`name`, `alias`, `entrypoint`, `command`, `variables`), in
       author order.
-- [ ] `before_script` and `after_script` accept `Script` with the same lowering as `script`; a `ref`
+- [x] `before_script` and `after_script` accept `Script` with the same lowering as `script`; a `ref`
       leaf in any script position keeps its tag.
-- [ ] Job `variables` accepts `Record<string, Scalar>`; `tags` accepts a string array; `extends`
+- [x] Job `variables` accepts `Record<string, Scalar>`; `tags` accepts a string array; `extends`
       accepts a string or string array and is never resolved.
-- [ ] `cache` accepts one cache or an array with string or `key.files`/`prefix` keys, `paths`,
+- [x] `cache` accepts one cache or an array with string or `key.files`/`prefix` keys, `paths`,
       `policy`, `when`, `fallback_keys` and `untracked`.
-- [ ] `artifacts` accepts `paths`, `exclude`, `name`, `expire_in`, `expose_as`, `public`, `when` and
+- [x] `artifacts` accepts `paths`, `exclude`, `name`, `expire_in`, `expose_as`, `public`, `when` and
       `reports`, preserving report order.
-- [ ] Job emission inserts the new fields at the spec's fixed positions; a golden pins the full body.
-- [ ] Job `raw` collides with every new modelled key; no corpus entry uses `raw` for a modelled key.
-- [ ] The inventory exercises every new field without `raw`, and the ledger rows they replace are
+- [x] Job emission inserts the new fields at the spec's fixed positions; a golden pins the full body.
+- [x] Job `raw` collides with every new modelled key; no corpus entry uses `raw` for a modelled key.
+- [x] The inventory exercises every new field without `raw`, and the ledger rows they replace are
       deleted.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.
