@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Doc, DocEntry } from "../core/index.js";
-import { pipelineConfig, step, toDoc } from "./index.js";
+import { finalStep, parallel, pipelineConfig, stage, step, toDoc } from "./index.js";
 
 const entries = (doc: Doc): readonly DocEntry[] => {
   if (doc.kind !== "map") {
@@ -49,6 +49,14 @@ const firstSeqItem = (doc: Doc): Doc => {
 
 const firstItem = (doc: Doc): Doc => firstSeqItem(entry(entry(doc, "pipelines"), "default"));
 
+const seqItems = (doc: Doc): readonly Doc[] => {
+  if (doc.kind !== "seq") {
+    throw new Error("expected a sequence");
+  }
+
+  return doc.items;
+};
+
 describe("toDoc", () => {
   it("emits a step item as a map with exactly one key", () => {
     expect(keys(firstItem(DOC))).toStrictEqual(["step"]);
@@ -86,5 +94,47 @@ describe("toDoc", () => {
     );
 
     expect(keys(entry(entry(doc, "pipelines"), "branches"))).toStrictEqual(["main", "*"]);
+  });
+});
+
+describe("item forms", () => {
+  it("emits exactly one key for each item form", () => {
+    const doc = toDoc(
+      pipelineConfig({
+        pipelines: {
+          default: [
+            step({ script: ["test"] }),
+            parallel([step({ script: ["one"] }), step({ script: ["two"] })]),
+            stage({ name: "Deploy", steps: [step({ script: ["deploy"] })] }),
+            finalStep({ script: ["clean"] }),
+          ],
+        },
+      }),
+    );
+
+    const items = seqItems(entry(entry(doc, "pipelines"), "default"));
+
+    expect(items.map((item) => keys(item))).toStrictEqual([
+      ["step"],
+      ["parallel"],
+      ["stage"],
+      ["final"],
+    ]);
+  });
+
+  it("emits a stage's nested sequence under steps, never step", () => {
+    const doc = toDoc(
+      pipelineConfig({
+        pipelines: {
+          default: [stage({ name: "Deploy", steps: [step({ script: ["deploy"] })] })],
+        },
+      }),
+    );
+
+    const stageMap = entry(firstItem(doc), "stage");
+    const nested = seqItems(entry(stageMap, "steps"));
+
+    expect(keys(stageMap)).toStrictEqual(["name", "steps"]);
+    expect(nested.map((item) => keys(item))).toStrictEqual([["step"]]);
   });
 });

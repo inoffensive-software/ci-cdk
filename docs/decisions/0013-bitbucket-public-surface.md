@@ -15,20 +15,21 @@ is the file, but it is also each triggered entry inside it, so a `Pipeline` type
 whole document and one of its parts. The vocabulary also introduces a pipe, which is a struct inside
 a script sequence rather than a scalar leaf.
 
-This record covers the tracer slice. It names only the exports that exist now, and is extended as
-the item builders land so it always describes the surface that ships.
+This record covers the tracer slice and the item builders that complete the pipeline vocabulary. It
+names only the exports that exist now.
 
 ## Decision
 
-`@inoffensive/ci-cdk/bitbucket-pipelines` exports exactly five values and eight types:
+`@inoffensive/ci-cdk/bitbucket-pipelines` exports exactly eight values:
 
 - `render(config, options)`: lowering plus the existing emitter, forwarding core's `{ header }` only.
 - `toDoc(config)`: the ordered `Doc`, public for the same reason ADR 0003 records.
-- `pipelineConfig`, `step` and `pipe`: near-identity builders. `pipelineConfig` and `pipe` return
-  their input; `step` wraps a step body in the singular `step:` item key, which is the type that
-  keeps `step:` and `steps:` distinct.
-- the types `PipelineConfig`, `Pipelines`, `SelectorPipeline`, `PipelineItem`, `StepItem`, `Step`,
-  `ScriptItem` and `Pipe`.
+- `pipelineConfig`, `step`, `parallel`, `stage`, `finalStep` and `pipe`: near-identity builders.
+  `pipelineConfig` and `pipe` return their input; `step`, `parallel`, `stage` and `finalStep` each
+  wrap a body in its item key, which is the type that keeps `step:` and `steps:` distinct.
+- the types `PipelineConfig`, `Pipelines`, `SelectorPipeline`, `NamedPipeline`, `PipelineItem`,
+  `StepItem`, `ParallelItem`, `StageItem`, `Stage`, `FinalItem`, `FinalStep`, `Step`, `ScriptItem`
+  and `Pipe`.
 
 Nothing else in `src/bitbucket-pipelines/` is imported by a consumer: `validate` and the lowering
 helpers stay internal, and `toDoc` remains the only entry point that validates and the only one that
@@ -37,6 +38,12 @@ throws.
 The document type is `PipelineConfig`, not `Pipeline`, because Bitbucket uses "pipeline" for each
 triggered entry as well as for the file. A struct that names a whole file `Pipeline` would collide
 with the item vocabulary the next tickets add.
+
+`FinalStep` is `Step` without `deployment` and `fail-fast`, with `trigger` narrowed to
+`"automatic"`. Bitbucket forbids those options on a final step, so they are absent from the type
+rather than rejected at validation: a consumer cannot write them in the first place. `Stage` and
+`ParallelItem` keep the nested `steps` sequence inside the item wrapper, so the plural key appears
+only where the format wants it.
 
 The provider exports **no leaves**. A field that accepts an expression is typed with core's `Text`,
 so a leaf produced by any provider still lowers correctly through `fromValue`, but Bitbucket
@@ -48,13 +55,14 @@ This record follows ADR 0003 and ADR 0008 rather than revisiting them; it supers
 ## Consequences
 
 - A consumer learns one two-function surface and applies it to all three providers.
-- The barrel grows by five exports and no lifecycle: three builders, a lowering function, a renderer
+- The barrel grows by eight exports and no lifecycle: six builders, a lowering function, a renderer
   and the struct types.
 - Because no leaf exists, a non-plain scalar can only enter a Bitbucket document through a leaf built
   by another provider or by core. That is deliberate: style is a decision someone made, and this
   slice makes none for `${VAR}`.
-- `step` is the one builder that is not literally identity: it adds the item wrapper. That wrapper is
-  the point, because the singular `step:` key is a type rather than a naming convention.
+- `step`, `parallel`, `stage` and `finalStep` are the builders that are not literally identity: each
+  adds its item wrapper. That wrapper is the point, because the singular `step:` key and the plural
+  `steps:` sequence are a type rather than a naming convention.
 
 ## Alternatives
 

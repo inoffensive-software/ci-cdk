@@ -52,12 +52,46 @@ export interface Step {
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
-/** One pipeline item. The alias widens when the other item forms land. */
+/** One pipeline item. */
 export interface StepItem {
   readonly step: Step;
 }
 
-export type PipelineItem = StepItem;
+/** A parallel group: a bare sequence, or a map that also sets `fail-fast`. */
+export interface ParallelItem {
+  readonly parallel:
+    | readonly StepItem[]
+    | { readonly steps: readonly StepItem[]; readonly "fail-fast"?: boolean };
+}
+
+/** A stage, whose nested sequence is always `steps` rather than `step`. */
+export interface Stage {
+  readonly condition?: Condition;
+  readonly deployment?: Text;
+  readonly environment?: Text;
+  readonly name?: Text;
+  readonly steps: readonly StepItem[];
+  readonly trigger?: Trigger;
+  readonly raw?: Readonly<Record<string, Value>>;
+}
+
+export interface StageItem {
+  readonly stage: Stage;
+}
+
+/**
+ * A final step. `deployment`, `fail-fast` and a manual trigger are not expressible, because
+ * Bitbucket forbids them on the cleanup step.
+ */
+export type FinalStep = Omit<Step, "deployment" | "fail-fast" | "trigger"> & {
+  readonly trigger?: "automatic";
+};
+
+export interface FinalItem {
+  readonly final: FinalStep;
+}
+
+export type PipelineItem = StepItem | ParallelItem | StageItem | FinalItem;
 
 /** The memory sizes Bitbucket accepts for a step or pipeline. */
 export type Size = "1x" | "2x" | "4x" | "8x" | "16x" | "24x" | "32x";
@@ -104,12 +138,19 @@ export interface SelectorPipeline {
   readonly pipeline: readonly PipelineItem[];
 }
 
+/** One manually triggered pipeline: a name and the items it runs. */
+export interface NamedPipeline {
+  readonly name: string;
+  readonly pipeline: readonly PipelineItem[];
+}
+
 /** The trigger sections the provider models. Every other section is out of scope. */
 export interface Pipelines {
   readonly default?: readonly PipelineItem[];
   readonly branches?: readonly SelectorPipeline[];
   readonly tags?: readonly SelectorPipeline[];
   readonly "pull-requests"?: readonly SelectorPipeline[];
+  readonly custom?: readonly NamedPipeline[];
 }
 
 /**
@@ -130,5 +171,14 @@ export const pipelineConfig = (value: PipelineConfig): PipelineConfig => value;
 
 /** Wraps a step body in the singular `step:` key, so the item form is a type. */
 export const step = (value: Step): StepItem => ({ step: value });
+
+/** Wraps a parallel group, sequence or map, in the `parallel:` item key. */
+export const parallel = (value: ParallelItem["parallel"]): ParallelItem => ({ parallel: value });
+
+/** Wraps a stage body in the `stage:` item key. */
+export const stage = (value: Stage): StageItem => ({ stage: value });
+
+/** Wraps a cleanup step body in the `final:` item key. */
+export const finalStep = (value: FinalStep): FinalItem => ({ final: value });
 
 export const pipe = (value: Pipe): Pipe => value;

@@ -1,4 +1,4 @@
-export { pipe, pipelineConfig, step } from "./types.js";
+export { finalStep, parallel, pipe, pipelineConfig, stage, step } from "./types.js";
 
 export type {
   Cache,
@@ -6,8 +6,12 @@ export type {
   Clone,
   Condition,
   Definitions,
+  FinalItem,
+  FinalStep,
   Image,
+  NamedPipeline,
   Options,
+  ParallelItem,
   PipelineConfig,
   PipelineItem,
   Pipelines,
@@ -16,6 +20,8 @@ export type {
   SelectorPipeline,
   Service,
   Size,
+  Stage,
+  StageItem,
   Step,
   StepItem,
   Trigger,

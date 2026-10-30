@@ -1,0 +1,183 @@
+definitions:
+  caches:
+    yarn:
+      path: /usr/local/share/.cache/yarn/v6
+  services:
+    docker-extra-memory:
+      memory: 7168
+      type: docker
+  steps:
+    - step:
+        artifacts:
+          - node_modules/**
+        caches:
+          - yarn
+        name: 🧶 Install
+        script:
+          - yarn install
+    - step:
+        name: ⚙️ Test
+        script:
+          - FORCE_COLOR=true
+          - DESTINATION_BRANCH=origin/${DESTINATION_BRANCH:-$BITBUCKET_PR_DESTINATION_BRANCH}
+          - yarn nx affected:test --base=$DESTINATION_BRANCH --ci --code-coverage --parallel --max-parallel=3
+    - step:
+        name: 🕵️‍♀️ Code Quality
+        script:
+          - FORCE_COLOR=true
+          - DESTINATION_BRANCH=origin/${DESTINATION_BRANCH:-$BITBUCKET_PR_DESTINATION_BRANCH}
+          - yarn nx affected:lint --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+          - yarn nx format:check --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+          - yarn nx affected -t check-types --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+        size: 2x
+    - step:
+        artifacts:
+          - dist/**
+        name: 🏭 Build all packages
+        script:
+          - yarn nx run-many -t build
+    - step:
+        name: 🏗️ Build All Docker Containers
+        script:
+          - yarn nx run-many -t docker-build
+        services:
+          - docker
+    - step:
+        artifacts:
+          - "*.tar.gz"
+        name: 🏗️ Build Docker Container
+        script:
+          - yarn nx docker-build ${APPLICATION}
+          - docker save ${APPLICATION}:latest | gzip > ${APPLICATION}_latest.tar.gz
+        services:
+          - docker
+    - step:
+        name: 📦 Push to ECR
+        script:
+          - docker load --input ${APPLICATION}_latest.tar.gz
+          - docker tag ${APPLICATION}:latest ${IMAGE_NAME}:latest
+          - pipe: atlassian/aws-ecr-push-image:2.4.0
+            variables:
+              IMAGE_NAME: ${IMAGE_NAME}
+        services:
+          - docker
+image: node:18
+pipelines:
+  branches:
+    main:
+      - step:
+          artifacts:
+            - node_modules/**
+          caches:
+            - yarn
+          name: 🧶 Install
+          script:
+            - yarn install
+      - stage:
+          deployment: orocommerce
+          name: Deploy OroCommerce Mesh
+          steps:
+            - step:
+                artifacts:
+                  - "*.tar.gz"
+                name: 🏗️ Build Docker Container
+                script:
+                  - yarn nx docker-build ${APPLICATION}
+                  - docker save ${APPLICATION}:latest | gzip > ${APPLICATION}_latest.tar.gz
+                services:
+                  - docker
+            - step:
+                name: 📦 Push to ECR
+                script:
+                  - docker load --input ${APPLICATION}_latest.tar.gz
+                  - docker tag ${APPLICATION}:latest ${IMAGE_NAME}:latest
+                  - pipe: atlassian/aws-ecr-push-image:2.4.0
+                    variables:
+                      IMAGE_NAME: ${IMAGE_NAME}
+                services:
+                  - docker
+      - stage:
+          deployment: bigcommerce
+          name: Deploy BigCommerce Mesh
+          steps:
+            - step:
+                artifacts:
+                  - "*.tar.gz"
+                name: 🏗️ Build Docker Container
+                script:
+                  - yarn nx docker-build ${APPLICATION}
+                  - docker save ${APPLICATION}:latest | gzip > ${APPLICATION}_latest.tar.gz
+                services:
+                  - docker
+            - step:
+                name: 📦 Push to ECR
+                script:
+                  - docker load --input ${APPLICATION}_latest.tar.gz
+                  - docker tag ${APPLICATION}:latest ${IMAGE_NAME}:latest
+                  - pipe: atlassian/aws-ecr-push-image:2.4.0
+                    variables:
+                      IMAGE_NAME: ${IMAGE_NAME}
+                services:
+                  - docker
+  pull-requests:
+    "**":
+      - step:
+          artifacts:
+            - node_modules/**
+          caches:
+            - yarn
+          name: 🧶 Install
+          script:
+            - yarn install
+      - step:
+          artifacts:
+            - dist/**
+          name: 🏭 Build all packages
+          script:
+            - yarn nx run-many -t build
+      - parallel:
+          - step:
+              name: 🏗️ Build All Docker Containers
+              script:
+                - yarn nx run-many -t docker-build
+              services:
+                - docker
+          - step:
+              name: 🕵️‍♀️ Code Quality
+              script:
+                - FORCE_COLOR=true
+                - DESTINATION_BRANCH=origin/${DESTINATION_BRANCH:-$BITBUCKET_PR_DESTINATION_BRANCH}
+                - yarn nx affected:lint --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+                - yarn nx format:check --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+                - yarn nx affected -t check-types --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+              size: 2x
+          - step:
+              name: ⚙️ Test
+              script:
+                - FORCE_COLOR=true
+                - DESTINATION_BRANCH=origin/${DESTINATION_BRANCH:-$BITBUCKET_PR_DESTINATION_BRANCH}
+                - yarn nx affected:test --base=$DESTINATION_BRANCH --ci --code-coverage --parallel --max-parallel=3
+  custom:
+    owasp_scan:
+      - step:
+          name: OWASP Dependency Check
+          script:
+            - pipe: docker://aligent/owasp-dependency-check-pipe
+              variables:
+                SCAN_PATH: ./yarn.lock
+                SUPPRESSION_FILE_PATH: ./suppression.xml
+                CVSS_FAIL_LEVEL: "1"
+    renovate:
+      - step:
+          name: Run Renovate
+          script:
+            - pipe: docker://aligent/renovate-pipe:latest
+              variables:
+                RENOVATE_PASSWORD: $RENOVATE_PASSWORD
+                RENOVATE_USERNAME: $RENOVATE_USERNAME
+                GITHUB_COM_TOKEN: $GITHUB_COM_TOKEN
+                NPM_PUBLISH_TOKEN: $NPM_PUBLISH_TOKEN
+                CONFIG_FILE: renovate_config.js
+          services:
+            - docker-extra-memory
+          size: 2x
