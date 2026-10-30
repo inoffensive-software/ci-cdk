@@ -72,3 +72,15 @@ as the file (see the corpus README and ADR 0005).
 - Why this entry: `run-name`, `workflow_call` inputs, matrix rows that are objects, boolean `with`
   values, job `outputs`, `environment`, `shell` and `working-directory`, and `if` conditions reading
   `inputs`.
+
+## prisma-code-security
+
+- Repo: <https://github.com/prisma/prisma>
+- Commit: `1143e9310013a10c8d7f8a100491e844545320c2`
+- Path: `.github/workflows/pr-code-security.yml`
+- Licence: Apache-2.0, Copyright Prisma Data, Inc.
+- Vendored as: `prisma-code-security.yml`, SHA-256
+  `be23fe46d88bedfdb3703586e6f9cff2177f4093e70820f8dc9f78c16f918bf3`
+- Comparison: data
+- Why this entry: a job that runs in a `container` with an image, job-level `permissions` with two
+  scopes, `secrets: inherit` on a `uses` job that has no `runs-on`, and a numeric `with` value.
