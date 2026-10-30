@@ -1,3 +1,4 @@
+import { GITLAB_PAGES_DEBT } from "./gitlab-pages-debt.js";
 import { LABKIT_DEBT } from "./labkit-debt.js";
 import { TERRAFORM_IMAGES_DEBT } from "./terraform-images-debt.js";
 
@@ -18,4 +19,8 @@ export interface CoverageDebt {
  * One list per entry, because a job's rows are addressed by that fixture's job indexes: the union is
  * the ledger the coverage test and the gate compare against.
  */
-export const COVERAGE_DEBT: readonly CoverageDebt[] = [...TERRAFORM_IMAGES_DEBT, ...LABKIT_DEBT];
+export const COVERAGE_DEBT: readonly CoverageDebt[] = [
+  ...TERRAFORM_IMAGES_DEBT,
+  ...LABKIT_DEBT,
+  ...GITLAB_PAGES_DEBT,
+];
