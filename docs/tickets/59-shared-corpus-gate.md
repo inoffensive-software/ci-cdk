@@ -8,13 +8,13 @@ two provider-specific pieces as parameters. Today every provider re-implements t
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A shared module owns `unique`, `gapPaths`, `unusedLedgerPaths`, `filledRawPaths`, `remediesFor`
+- [x] A shared module owns `unique`, `gapPaths`, `unusedLedgerPaths`, `filledRawPaths`, `remediesFor`
       and the inventory-path union, with no CI nouns in it.
-- [ ] Each provider supplies only its `keyPaths` normalisation and its `rawPathsOf` walk; the three
+- [x] Each provider supplies only its `keyPaths` normalisation and its `rawPathsOf` walk; the three
       `exhaustiveness.ts` files shrink to those two pieces plus their `AUTHOR_NAMED` list.
-- [ ] The GitLab root and hidden-template normalisation and the Bitbucket selector rewrites stay
+- [x] The GitLab root and hidden-template normalisation and the Bitbucket selector rewrites stay
       provider-local.
-- [ ] Behaviour is identical: same assertions, same failures, same messages, same test counts.
-- [ ] `pnpm check` passes.
+- [x] Behaviour is identical: same assertions, same failures, same messages, same test counts.
+- [x] `pnpm check` passes.

@@ -1,6 +1,7 @@
 import { pathReasonRows, type ReportTable } from "../report.js";
 import { collapsePosition } from "./coverage-table.js";
-import { GAPS, OVERCLAIMS, type Gap, type GapCategory } from "./schema-gap.js";
+import { GAPS, OVERCLAIMS } from "./schema-gap.js";
+import type { Gap, GapCategory } from "./schema-gap.js";
 
 /** The per-row columns: what the schema allows and why it is not modelled. */
 const PATH_REASON_HEADER: readonly string[] = ["Path", "Reason"];

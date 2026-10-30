@@ -8,7 +8,7 @@ import { INVENTORY } from "./inventory.js";
 
 export { GAPS, GAP_CATEGORIES, OVERCLAIMS } from "./schema-gap-debt.js";
 
-export type { Gap, Overclaim } from "./schema-gap-debt.js";
+export type { Gap, GapCategory, Overclaim } from "./schema-gap-debt.js";
 
 export {
   gapRemedies,
