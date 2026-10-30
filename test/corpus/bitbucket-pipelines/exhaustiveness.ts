@@ -14,6 +14,26 @@ import { rawPathsOf } from "./raw-paths.js";
  * body of any selector entry. A test asserts every entry occurs in the inventory, so a typo excludes
  * nothing silently.
  */
+const SELECTORS: readonly string[] = [
+  "$.pipelines.default",
+  "$.pipelines.branches.*",
+  "$.pipelines.tags.*",
+  '$.pipelines["pull-requests"].*',
+  "$.pipelines.custom.*",
+];
+
+/** Every position a step body is written in, which is where a pipe's variables map can appear. */
+const STEP_BODIES: readonly string[] = [
+  "$.definitions.steps[].step",
+  ...SELECTORS.flatMap((section) => [
+    `${section}[].step`,
+    `${section}[].parallel[].step`,
+    `${section}[].parallel.steps[].step`,
+    `${section}[].stage.steps[].step`,
+    `${section}[].final`,
+  ]),
+];
+
 export const AUTHOR_NAMED: readonly string[] = [
   "$.definitions.caches",
   "$.definitions.services",
@@ -22,30 +42,10 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.pipelines.tags",
   '$.pipelines["pull-requests"]',
   "$.pipelines.custom",
-  '$.definitions.steps[].step["after-script"][].variables',
-  "$.definitions.steps[].step.script[].variables",
-  '$.pipelines.default[].step["after-script"][].variables',
-  "$.pipelines.default[].step.script[].variables",
-  '$.pipelines.default[].final["after-script"][].variables',
-  "$.pipelines.default[].final.script[].variables",
-  '$.pipelines.branches.*[].step["after-script"][].variables',
-  "$.pipelines.branches.*[].step.script[].variables",
-  '$.pipelines.branches.*[].stage.steps[].step["after-script"][].variables',
-  "$.pipelines.branches.*[].stage.steps[].step.script[].variables",
-  '$.pipelines.tags.*[].step["after-script"][].variables',
-  "$.pipelines.tags.*[].step.script[].variables",
-  '$.pipelines.tags.*[].parallel.steps[].step["after-script"][].variables',
-  "$.pipelines.tags.*[].parallel.steps[].step.script[].variables",
-  '$.pipelines["pull-requests"].*[].step["after-script"][].variables',
-  '$.pipelines["pull-requests"].*[].step.script[].variables',
-  '$.pipelines["pull-requests"].*[].parallel[].step["after-script"][].variables',
-  '$.pipelines["pull-requests"].*[].parallel[].step.script[].variables',
-  '$.pipelines["pull-requests"].*[].stage.steps[].step["after-script"][].variables',
-  '$.pipelines["pull-requests"].*[].stage.steps[].step.script[].variables',
-  '$.pipelines.custom.*[].step["after-script"][].variables',
-  "$.pipelines.custom.*[].step.script[].variables",
-  '$.pipelines.custom.*[].final["after-script"][].variables',
-  "$.pipelines.custom.*[].final.script[].variables",
+  ...STEP_BODIES.flatMap((body) => [
+    `${body}["after-script"][].variables`,
+    `${body}.script[].variables`,
+  ]),
 ];
 
 /**

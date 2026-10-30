@@ -12,11 +12,18 @@ export interface PathRow {
 const unique = (paths: readonly string[]): readonly string[] => [...new Set(paths)].toSorted();
 
 /**
- * A GAPS row declares its whole subtree: a row names the keyword the vocabulary is missing, so every
- * path below it is debt that keyword already accounts for. The report therefore grows by keyword, not
- * by leaf, and modelling one keyword reveals the next layer on the next run. A path is declared when
- * a row names it, or names a dotted child (`path.`), or a sequence under it (`path[`).
+ * A row declares its whole subtree: a row names a keyword, so every path below it is debt that
+ * keyword already accounts for. A path is declared when a row names it, or names a dotted child
+ * (`path.`), or a sequence under it (`path[`); a partial segment never counts.
+ *
+ * Both lists use this rule. On GAPS it grows the report by keyword rather than leaf, so modelling one
+ * keyword reveals the next layer on the next run. On OVERCLAIMS it lets one row stand for a shape the
+ * schema omits wholesale, such as a definition the document references everywhere.
  */
+export const subsumes = (row: string, path: string): boolean =>
+  path === row || path.startsWith(`${row}.`) || path.startsWith(`${row}[`);
+
+/** Schema paths neither modelled nor declared by a GAPS row. */
 export const undeclaredSchemaPaths = (
   schema: readonly string[],
   modelled: readonly string[],
@@ -26,10 +33,7 @@ export const undeclaredSchemaPaths = (
   const gapPaths = gaps.map((gap) => gap.path);
 
   const isDeclared = (path: string): boolean =>
-    modelledSet.has(path) ||
-    gapPaths.some(
-      (gap) => path === gap || path.startsWith(`${gap}.`) || path.startsWith(`${gap}[`),
-    );
+    modelledSet.has(path) || gapPaths.some((gap) => subsumes(gap, path));
 
   return unique(schema.filter((path) => !isDeclared(path)));
 };
@@ -58,30 +62,33 @@ export const orphanedGapPaths = (
   return unique(gaps.flatMap((gap) => (known.has(gap.path) ? [] : [gap.path])));
 };
 
-/** Modelled paths the schema lacks and OVERCLAIMS does not declare. */
+/** Modelled paths the schema lacks and no OVERCLAIMS row declares. */
 export const undeclaredOverclaimPaths = (
   schema: readonly string[],
   modelled: readonly string[],
   overclaims: readonly PathRow[],
 ): readonly string[] => {
   const allowed = new Set(schema);
-  const declared = new Set(overclaims.map((overclaim) => overclaim.path));
+  const declared = overclaims.map((overclaim) => overclaim.path);
 
-  return unique(modelled.filter((path) => !allowed.has(path) && !declared.has(path)));
+  return unique(
+    modelled.filter((path) => !allowed.has(path) && !declared.some((row) => subsumes(row, path))),
+  );
 };
 
-/** OVERCLAIMS rows that name no modelled path, or a path the schema already allows. */
+/** OVERCLAIMS rows that declare no modelled path the schema lacks. */
 export const unusedOverclaimPaths = (
   schema: readonly string[],
   modelled: readonly string[],
   overclaims: readonly PathRow[],
 ): readonly string[] => {
   const allowed = new Set(schema);
-  const modelledSet = new Set(modelled);
 
   return unique(
     overclaims.flatMap((overclaim) =>
-      !modelledSet.has(overclaim.path) || allowed.has(overclaim.path) ? [overclaim.path] : [],
+      modelled.some((path) => subsumes(overclaim.path, path) && !allowed.has(path))
+        ? []
+        : [overclaim.path],
     ),
   );
 };

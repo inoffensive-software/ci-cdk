@@ -10,6 +10,7 @@ import {
   OVERCLAIMS,
   SCHEMA_PATHS,
   gapRemedies,
+  subsumes,
   orphanedGapPaths,
   undeclaredOverclaimPaths,
   undeclaredSchemaPaths,
@@ -60,10 +61,6 @@ describe("schema gap report", () => {
   });
 });
 
-/** A row covers its subtree only: a dotted child or a sequence under it, never a partial segment. */
-const subsumes = (row: string, path: string): boolean =>
-  path !== row && (path.startsWith(`${row}.`) || path.startsWith(`${row}[`));
-
 describe("gap row subsumption", () => {
   it("needs no row for a path below a declared gap", () => {
     const keyword: Gap = {
@@ -87,9 +84,22 @@ describe("gap row subsumption", () => {
   });
 
   it("keeps no row that another row already subsumes", () => {
-    const subsumed = GAP_PATHS.filter((path) => GAP_PATHS.some((row) => subsumes(row, path)));
+    const subsumed = GAP_PATHS.filter((path) =>
+      GAP_PATHS.some((row) => row !== path && subsumes(row, path)),
+    );
 
     expect(subsumed).toStrictEqual([]);
+  });
+});
+
+describe("overclaim row subsumption", () => {
+  it("reports the whole subtree when a keyword row is removed", () => {
+    const removed = "$.definitions.steps";
+    const withoutRow = OVERCLAIMS.filter((overclaim) => overclaim.path !== removed);
+    const undeclared = undeclaredOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, withoutRow);
+
+    expect(undeclared).toContain(`${removed}[]`);
+    expect(undeclared.some((path) => subsumes(removed, path))).toBe(true);
   });
 });
 
@@ -134,7 +144,7 @@ describe("schema gap failure cases", () => {
   });
 
   it("reports an overclaim row for a path the schema already allows", () => {
-    const allowed = "$.pipelines.default[]";
+    const allowed = "$.options";
 
     expect(
       unusedOverclaimPaths(
