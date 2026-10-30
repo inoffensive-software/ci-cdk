@@ -118,7 +118,7 @@ const servicesDoc = (services: Readonly<Record<string, Container>>): Doc =>
 const strategyDoc = (strategy: Strategy): Doc =>
   map([
     ...entry("fail-fast", present(strategy["fail-fast"])),
-    ...entry("matrix", present(strategy.matrix)),
+    ...entry("matrix", strategy.matrix === undefined ? undefined : fromValue(strategy.matrix)),
     ...entry("max-parallel", present(strategy["max-parallel"])),
   ]);
 
@@ -171,6 +171,7 @@ export const toDoc = (workflow: Workflow): Doc => {
 
   const modelled = [
     { key: "name", value: fromValue(workflow.name) },
+    ...entry("run-name", present(workflow["run-name"])),
     { key: "on", value: onDoc(workflow.on) },
     ...entry(
       "permissions",

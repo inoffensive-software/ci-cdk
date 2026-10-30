@@ -60,6 +60,86 @@ describe("render", () => {
   });
 });
 
+describe("workflow_call", () => {
+  it("emits typed inputs with description, required and default", () => {
+    const text = render(
+      workflow({
+        name: "CI",
+        on: {
+          workflow_call: {
+            inputs: {
+              ref: {
+                type: "string",
+                description: "The ref to build",
+                required: true,
+                default: "main",
+              },
+              publish: { type: "boolean", description: "Publish the build", default: false },
+            },
+          },
+        },
+        jobs: [build("build", "true")],
+      }),
+      { header: "" },
+    );
+
+    expect(parse(text)).toStrictEqual({
+      name: "CI",
+      on: {
+        workflow_call: {
+          inputs: {
+            ref: {
+              type: "string",
+              description: "The ref to build",
+              required: true,
+              default: "main",
+            },
+            publish: { type: "boolean", description: "Publish the build", default: false },
+          },
+        },
+      },
+      jobs: { build: { "runs-on": "ubuntu-latest", steps: [{ run: "true" }] } },
+    });
+  });
+});
+
+describe("workflow_call empty", () => {
+  it("emits an empty workflow_call as null", () => {
+    const text = render(
+      workflow({ name: "CI", on: { workflow_call: {} }, jobs: [build("build", "true")] }),
+      { header: "" },
+    );
+
+    expect(parse(text)).toStrictEqual({
+      name: "CI",
+      on: { workflow_call: null },
+      jobs: { build: { "runs-on": "ubuntu-latest", steps: [{ run: "true" }] } },
+    });
+  });
+});
+
+describe("workflow_call input types", () => {
+  it("rejects a choice input on workflow_call", () => {
+    const value = workflow({
+      name: "CI",
+      // @ts-expect-error a choice input is rejected on workflow_call
+      on: {
+        workflow_call: {
+          inputs: {
+            target: {
+              type: "choice",
+              options: ["staging"],
+            },
+          },
+        },
+      },
+      jobs: [build("build", "true")],
+    });
+
+    expect(value.on).toBeDefined();
+  });
+});
+
 describe("declared order", () => {
   it("does not depend on the order the properties were written", () => {
     const defined = workflow({

@@ -30,6 +30,8 @@ export type {
   InputType,
   On,
   Triggers,
+  WorkflowCall,
+  WorkflowCallInput,
   WorkflowDispatch,
 } from "./trigger.js";
 

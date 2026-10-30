@@ -20,6 +20,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
     name: "main",
     workflow: workflow({
       name: "Inventory",
+      "run-name": "Inventory ${{ inputs.ref }}",
       on: {
         push: {
           branches: ["main"],
@@ -74,6 +75,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
               os: ["ubuntu-latest", "macos-latest"],
               node: [22, 24],
               experimental: [true, false],
+              settings: [{ host: "ubuntu-latest", target: "x86_64-unknown-linux-musl" }],
             },
           },
           environment: { name: "production", url: "https://example.com" },
@@ -217,6 +219,26 @@ export const INVENTORY: readonly InventoryDocument[] = [
           steps: [step({ run: "true" })],
         }),
       ],
+    }),
+  },
+  {
+    name: "workflow-call",
+    workflow: workflow({
+      name: "Inventory: workflow_call inputs",
+      on: {
+        workflow_call: {
+          inputs: {
+            ref: {
+              type: "string",
+              description: "The ref to build",
+              required: true,
+              default: "main",
+            },
+            publish: { type: "boolean", description: "Publish the build", default: false },
+          },
+        },
+      },
+      jobs: [job({ id: "build", "runs-on": "ubuntu-latest", steps: [step({ run: "true" })] })],
     }),
   },
   {

@@ -86,14 +86,27 @@ export interface EnvironmentInput extends CommonInput {
 /** Discriminated by `type`, so `options` is only legal on a choice input. */
 export type Input = StringInput | BooleanInput | ChoiceInput | EnvironmentInput;
 
+/** `workflow_call` accepts the string and boolean arms; choice and environment are dispatch-only. */
+export type WorkflowCallInput = StringInput | BooleanInput;
+
 export interface WorkflowDispatch {
   readonly inputs?: Readonly<Record<string, Input>>;
+}
+
+export interface WorkflowCall {
+  readonly inputs?: Readonly<Record<string, WorkflowCallInput>>;
 }
 
 /** A documented event that takes no options; it emits as `null`, the way a bare event is written. */
 type EmptyTrigger = Readonly<Record<string, never>>;
 
-type ConfiguredEvent = "push" | "pull_request" | "image_version" | "schedule" | "workflow_dispatch";
+type ConfiguredEvent =
+  | "push"
+  | "pull_request"
+  | "image_version"
+  | "schedule"
+  | "workflow_call"
+  | "workflow_dispatch";
 
 /**
  * The event map, closed over the documented event names. Every option key is the author's order,
@@ -104,6 +117,7 @@ export type Triggers = {
   readonly pull_request?: EventFilter;
   readonly image_version?: ImageVersionFilter;
   readonly schedule?: readonly CronEntry[];
+  readonly workflow_call?: WorkflowCall;
   readonly workflow_dispatch?: WorkflowDispatch;
 } & {
   readonly [Event in Exclude<EventName, ConfiguredEvent>]?: EmptyTrigger;

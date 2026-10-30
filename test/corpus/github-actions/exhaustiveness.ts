@@ -25,6 +25,7 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.permissions",
   "$.jobs.*.permissions",
   "$.jobs.*.strategy.matrix",
+  "$.jobs.*.strategy.matrix.*[]",
   "$.jobs.*.services",
   "$.jobs.*.container.env",
   "$.jobs.*.services.*.env",
