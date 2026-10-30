@@ -1,0 +1,25 @@
+image: node:18-bullseye
+pipelines:
+  default:
+    - step:
+        script:
+          - apt-get update && apt-get install -y default-jdk
+          - npm install
+          - npm test
+          - npm run lint:all
+          - npm run checktypes
+  branches:
+    master:
+      - step:
+          name: Publish to Atlassian Artifactory
+          oidc: true
+          script:
+            - apt-get update && apt-get install -y default-jdk
+            - npm install
+            - npm test
+            - npm run lint:all
+            - npm run checktypes
+            - pipe: docker://atlassian/packages-oidc-pipe:latest
+            - source .envrc
+            - echo "Publishing version $PACKAGE_VERSION to Atlassian Artifactory npm-public..."
+            - npm publish --userconfig=./.npmrc-public --@atlassian/atlassian-connect-express:registry="https://packages.atlassian.com/api/npm/npm-public/"

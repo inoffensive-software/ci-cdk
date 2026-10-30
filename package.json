@@ -13,6 +13,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./bitbucket-pipelines": {
+      "types": "./dist/bitbucket-pipelines/index.d.ts",
+      "default": "./dist/bitbucket-pipelines/index.js"
+    },
     "./github-actions": {
       "types": "./dist/github-actions/index.d.ts",
       "default": "./dist/github-actions/index.js"
