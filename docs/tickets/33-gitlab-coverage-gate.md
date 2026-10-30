@@ -1,6 +1,6 @@
-# 29: Coverage gate and hidden templates
+# 33: Coverage gate and hidden templates
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** The measurement GitLab lacks: a modelled-path inventory, an exhaustiveness gate over
 the corpus, and `templates` for hidden jobs and anchor-only entries. Until hidden templates leave

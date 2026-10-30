@@ -1,12 +1,12 @@
-# 34: Job fundamentals
+# 40: Job fundamentals
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** The job fields every real GitLab pipeline uses: `image`, `services`, `before_script`,
 `after_script`, `tags`, `extends`, job `variables`, `cache` and `artifacts`. This is the largest
 vocabulary ticket; it deletes the majority of the remaining ledger rows.
 
-**Blocked by:** 33 (Global vocabulary and Scalar).
+**Blocked by:** 39 (Global vocabulary and Scalar).
 
 **Status:** ready-for-agent
 

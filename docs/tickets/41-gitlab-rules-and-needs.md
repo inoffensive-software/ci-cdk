@@ -1,12 +1,12 @@
-# 35: Rules and needs
+# 41: Rules and needs
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** Typed job conditions and the DAG: `rules` with `if`, `changes`, `exists`, `when`,
 `allow_failure`, `variables` and `needs`, and `needs` with `job`, `optional`, `artifacts` and
 `parallel`.
 
-**Blocked by:** 34 (Job fundamentals).
+**Blocked by:** 40 (Job fundamentals).
 
 **Status:** ready-for-agent
 

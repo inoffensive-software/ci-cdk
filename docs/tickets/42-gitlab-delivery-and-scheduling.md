@@ -1,11 +1,11 @@
-# 36: Delivery and scheduling
+# 42: Delivery and scheduling
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** The remaining scheduling and delivery keys: `environment`, `release`, `parallel`,
 `retry`, `timeout`, `interruptible`, `allow_failure`, `when`, `resource_group` and `coverage`.
 
-**Blocked by:** 35 (Rules and needs).
+**Blocked by:** 41 (Rules and needs).
 
 **Status:** ready-for-agent
 

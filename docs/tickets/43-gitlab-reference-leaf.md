@@ -1,12 +1,12 @@
-# 37: The `!reference` leaf
+# 43: The `!reference` leaf
 
-**Spec:** `docs/specs/0005-gitlab-ci-breadth.md`
+**Spec:** `docs/specs/0006-gitlab-ci-breadth.md`
 
 **What to build:** `ref(segments)`, the first GitLab leaf. It emits a sequence carrying the
 `!reference` tag, so a templated script can be written as data and reused by any field that accepts
-`Text` or `Scalar`. The public-surface widening is recorded in ADR 0011.
+`Text` or `Scalar`. The public-surface widening is recorded in ADR 0012.
 
-**Blocked by:** 34 (Job fundamentals).
+**Blocked by:** 40 (Job fundamentals).
 
 **Status:** ready-for-agent
 
@@ -17,7 +17,7 @@
 - [ ] `ref` is accepted anywhere `Text` is accepted, including `script`, `before_script`,
       `after_script`, `image` and `variables` values, and inside script arrays.
 - [ ] The referenced path is never resolved or validated; a path that names nothing still renders.
-- [ ] ADR 0011 records the leaf as a widening of ADR 0008's surface, why a plain string cannot carry
+- [ ] ADR 0012 records the leaf as a widening of ADR 0008's surface, why a plain string cannot carry
       the tag, and that core is unchanged.
 - [ ] `toDoc` exposes the tagged node for one structural test; bytes remain the primary assertion.
 - [ ] `pnpm check` passes.
