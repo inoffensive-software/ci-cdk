@@ -36,6 +36,9 @@ Model the six families, each as a vertical slice with its own evidence:
 - Agent runtime: `definitions.agents` and the agent task form of a script item, inferred from the
   pinned schema. Marked unproven in the provider page because no config and no documentation
   evidence it.
+- The remaining schema keys with no config or page: artifact upload `type`, `capture-on`, `depth` and
+  `ignore-paths`; step `auth.system.scopes`; pipeline `labels`; static `image.aws` credentials; and
+  self-hosted runtime storage. They are modelled from the pinned schema and marked unproven.
 
 Every slice re-derives the gap and overclaim lists, so the report shrinks as the vocabulary grows.
 The provider page is regenerated once at the end, not per slice.
@@ -75,29 +78,41 @@ The provider page is regenerated once at the end, not per slice.
     vocabulary is expressible.
 16. As a library consumer, I want a script or after-script item to be an agent task, so that an
     agent runs in the step's sequence alongside commands and pipes.
-17. As a provider author, I want each new field to keep the schema's alphabetical position, so that a
+17. As a library consumer, I want an artifact upload to carry its type, capture-on rule, search
+    depth and ignore paths, so that a named upload is not limited to a name and a path list.
+18. As a library consumer, I want `step.auth.system.scopes`, so that the schema's per-step auth
+    form is expressible.
+19. As a library consumer, I want top-level `labels`, so that repository metadata on the pipeline is
+    expressible.
+20. As a maintainer, I want a schema-derived key marked unproven, so that inference is visible in
+    the same place as corpus-backed support.
+21. As a provider author, I want each new field to keep the schema's alphabetical position, so that a
     key's place in the file stays derivable.
-18. As a provider author, I want every new field to leave an absent value unemitted, so that adding
+22. As a provider author, I want every new field to leave an absent value unemitted, so that adding
     the vocabulary does not add empty keys.
-19. As a maintainer, I want one pinned corpus entry per evidenced family, so that the support claim
+23. As a maintainer, I want one pinned corpus entry per evidenced family, so that the support claim
     is measurable rather than documented.
-20. As a maintainer, I want the child-pipeline and agent slices to state their evidence level, so
+24. As a maintainer, I want the child-pipeline and agent slices to state their evidence level, so
     that a docs-derived or schema-derived shape is not presented as proven.
-21. As a maintainer, I want the gap list re-derived after each slice, so that a modelled keyword
+25. As a maintainer, I want the gap list re-derived after each slice, so that a modelled keyword
     disappears from the roadmap in the same change that models it.
-22. As a maintainer, I want the stale-row check to fail if a modelled keyword keeps its gap row, so
+26. As a maintainer, I want the stale-row check to fail if a modelled keyword keeps its gap row, so
     that the report cannot overstate the debt.
-23. As a maintainer, I want the inventory extended with each new key, so that the exhaustiveness gate
+27. As a maintainer, I want the inventory extended with each new key, so that the exhaustiveness gate
     and the coverage table keep meaning what they say.
-24. As a maintainer, I want the provider page to mark unproven families explicitly, so that a reader
+28. As a maintainer, I want the provider page to mark unproven families explicitly, so that a reader
     can tell corpus-backed support from schema-backed inference.
-25. As a maintainer, I want the final page regeneration to update Non-goals, coverage and the
+29. As a maintainer, I want the final page regeneration to update Non-goals, coverage and the
     documented-grammar block together, so that the claim and its debt stay one artefact.
 
 ## Implementation Decisions
 
 ### Common rules
 
+- Evidence decides a fixture's provenance, not whether a key is modelled. Every key the pinned
+  schema describes is modelled, from a corpus config, a documentation snippet or the schema itself.
+  Only cross-file resolution is excluded. A key with no corpus and no documentation is schema-derived
+  and is marked unproven on the provider page.
 - Each slice adds its types, lowering, validation where a document-level rule exists, tests, goldens
   and at least one corpus entry or an explicitly marked synthetic fixture.
 - Emission order stays the schema's alphabetical order at each level, with `raw` last.
@@ -271,9 +286,6 @@ export interface Runtime {
 ## Out of Scope
 
 - Imports, shared pipeline definitions and `export`: cross-file resolution is an architecture non-goal.
-- Step `auth` (`auth.system.scopes`) and `labels`: no real config and no documentation.
-- Artifact `capture-on`, `depth`, `ignore-paths` and upload `type`: no evidence.
-- `image.aws` static access keys; self-hosted runtime storage auth.
 - `definitions.runners`, the webitel shape, which the pinned schema does not describe.
 - Resolving child pipelines, triggers, agents or definitions at build time. They are emitted, never
   loaded or evaluated.
