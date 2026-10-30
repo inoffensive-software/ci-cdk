@@ -1,5 +1,5 @@
 import type { Diagnostic } from "../core/index.js";
-import type { Job, Workflow } from "./types.js";
+import type { Job, Step, Workflow } from "./types.js";
 
 const jobPath = (index: number): string => `$.jobs[${index}]`;
 
@@ -161,6 +161,14 @@ const cycles = (jobs: readonly Job[]): readonly Diagnostic[] => {
   return diagnostics;
 };
 
+/** Every step a job holds, including the ones nested in parallel groups, with its diagnostic path. */
+const jobSteps = (steps: readonly Step[], path: string): readonly (readonly [string, Step])[] =>
+  steps.flatMap((step, index) => {
+    const stepPath = `${path}.steps[${index}]`;
+
+    return [[stepPath, step] as const, ...jobSteps(step.parallel ?? [], `${stepPath}.parallel`)];
+  });
+
 const jobBodies = (jobs: readonly Job[]): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
@@ -172,12 +180,9 @@ const jobBodies = (jobs: readonly Job[]): readonly Diagnostic[] => {
       });
     }
 
-    for (const [stepIndex, step] of (job.steps ?? []).entries()) {
+    for (const [stepPath, step] of jobSteps(job.steps ?? [], jobPath(index))) {
       if (step.run !== undefined && step.uses !== undefined) {
-        diagnostics.push({
-          path: `${jobPath(index)}.steps[${stepIndex}]`,
-          message: 'a step has both "run" and "uses"',
-        });
+        diagnostics.push({ path: stepPath, message: 'a step has both "run" and "uses"' });
       }
     }
   }

@@ -19,6 +19,18 @@ as the file (see the corpus README and ADR 0005).
 - Why this entry: `on` as a sequence, `permissions`, a matrix with numeric axis values, a `name` and
   `runs-on` carrying expressions, and both job and step level keys.
 
+## curl-checksrc
+
+- Repo: <https://github.com/curl/curl>
+- Commit: `a4eed8c7f39c1a24f073f5889623b8fb99b50b1a`
+- Path: `.github/workflows/checksrc.yml`
+- Licence: curl, Copyright Daniel Stenberg and contributors
+- Vendored as: `curl-checksrc.yml`, SHA-256
+  `bfc66c0abeb6cfbfa3b6525ec7092873bcb58bd565356f71ae27d8802b804fea`
+- Comparison: data
+- Why this entry: a `background: true` step and its bare `wait-all:` in the same job, several
+  background steps named for a later wait, and a `timeout-minutes` on a `uses` step.
+
 ## anyhow
 
 - Repo: <https://github.com/dtolnay/anyhow>

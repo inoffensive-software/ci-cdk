@@ -58,10 +58,25 @@ const stepDoc = (step: Step, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("env", present(step.env)),
     ...entry("continue-on-error", present(step["continue-on-error"])),
     ...entry("timeout-minutes", present(step["timeout-minutes"])),
+    ...entry("background", present(step.background)),
+    ...entry("wait", present(step.wait)),
+    ...entry("wait-all", present(step["wait-all"])),
+    ...entry("cancel", present(step.cancel)),
+    ...entry("parallel", parallelDoc(step.parallel, path, diagnostics)),
   ];
 
   return map([...modelled, ...rawEntries(path, step.raw, modelled, diagnostics)]);
 };
+
+/** A group's steps are ordinary steps, so a nested `raw` key lands under the group's path. */
+const parallelDoc = (
+  steps: readonly Step[] | undefined,
+  path: string,
+  diagnostics: Diagnostic[],
+): Doc | undefined =>
+  steps === undefined
+    ? undefined
+    : seq(steps.map((item, index) => stepDoc(item, `${path}.parallel[${index}]`, diagnostics)));
 
 const runDefaultsDoc = (runDefaults: RunDefaults): Doc =>
   map([
