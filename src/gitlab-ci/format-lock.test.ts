@@ -7,23 +7,23 @@ import { type Pipeline, job, pipeline, render } from "./index.js";
 /** Header suppressed, the way every golden except the default-header one renders. */
 const bare = (value: Pipeline): string => render(value, { header: "" });
 
-const EMPTY_PIPELINE = (): Pipeline => pipeline({ jobs: [] });
+const emptyPipeline = (): Pipeline => pipeline({ jobs: [] });
 
-const STAGES_ONLY = (): Pipeline => pipeline({ stages: ["build", "test"], jobs: [] });
+const stagesOnly = (): Pipeline => pipeline({ stages: ["build", "test"], jobs: [] });
 
-const SINGLE_JOB = (): Pipeline =>
+const singleJob = (): Pipeline =>
   pipeline({
     stages: ["build"],
     jobs: [job({ name: "compile", stage: "build", script: "npm run build" })],
   });
 
-const SCRIPT_ARRAY = (): Pipeline =>
+const scriptArray = (): Pipeline =>
   pipeline({
     stages: ["test"],
     jobs: [job({ name: "unit", script: ["npm ci", "npm test", "npm run report"] })],
   });
 
-const WITH_TEMPLATES = (): Pipeline =>
+const withTemplates = (): Pipeline =>
   pipeline({
     stages: ["build"],
     templates: {
@@ -33,7 +33,7 @@ const WITH_TEMPLATES = (): Pipeline =>
     jobs: [job({ name: "build", stage: "build", script: ["npm run build"] })],
   });
 
-const RAW_AT_BOTH_LEVELS = (): Pipeline =>
+const rawAtBothLevels = (): Pipeline =>
   pipeline({
     stages: ["build"],
     jobs: [
@@ -62,10 +62,10 @@ const QUOTED_SCRIPTS = [
   "echo one\necho two",
 ] as const;
 
-const QUOTING = (): Pipeline =>
+const quoting = (): Pipeline =>
   pipeline({ jobs: [job({ name: "quotes", script: QUOTED_SCRIPTS })] });
 
-const ORDERING = (): Pipeline =>
+const ordering = (): Pipeline =>
   pipeline({
     stages: ["build", "test"],
     jobs: [
@@ -76,15 +76,15 @@ const ORDERING = (): Pipeline =>
 
 /** Every golden this file pins, rendered exactly as its snapshot holds it. */
 const GOLDENS = {
-  "format-empty-pipeline.yml": () => bare(EMPTY_PIPELINE()),
-  "format-stages-only.yml": () => bare(STAGES_ONLY()),
-  "format-single-job.yml": () => bare(SINGLE_JOB()),
-  "format-script-array.yml": () => bare(SCRIPT_ARRAY()),
-  "format-raw.yml": () => bare(RAW_AT_BOTH_LEVELS()),
-  "format-quoting.yml": () => bare(QUOTING()),
-  "format-ordering.yml": () => bare(ORDERING()),
-  "format-templates.yml": () => bare(WITH_TEMPLATES()),
-  "format-header-default.yml": () => render(SINGLE_JOB()),
+  "format-empty-pipeline.yml": () => bare(emptyPipeline()),
+  "format-stages-only.yml": () => bare(stagesOnly()),
+  "format-single-job.yml": () => bare(singleJob()),
+  "format-script-array.yml": () => bare(scriptArray()),
+  "format-raw.yml": () => bare(rawAtBothLevels()),
+  "format-quoting.yml": () => bare(quoting()),
+  "format-ordering.yml": () => bare(ordering()),
+  "format-templates.yml": () => bare(withTemplates()),
+  "format-header-default.yml": () => render(singleJob()),
 } satisfies Record<string, () => string>;
 
 /** A block scalar's header line: a key or dash, then `|` or `>`, then an optional chomping hint. */
@@ -159,15 +159,15 @@ describe("goldens", () => {
   });
 
   it("pins an empty pipeline as {} with one trailing newline", () => {
-    expect(bare(EMPTY_PIPELINE())).toBe("{}\n");
+    expect(bare(emptyPipeline())).toBe("{}\n");
   });
 
   it("pins a stages-only pipeline as the stages sequence and nothing else", () => {
-    expect(parse(bare(STAGES_ONLY()))).toStrictEqual({ stages: ["build", "test"] });
+    expect(parse(bare(stagesOnly()))).toStrictEqual({ stages: ["build", "test"] });
   });
 
   it("pins a single job's string script inline, with no block scalar", () => {
-    const text = bare(SINGLE_JOB());
+    const text = bare(singleJob());
 
     expect(text).toContain("  script: npm run build\n");
     expect(text).not.toMatch(/[|>]\s*$/mu);
@@ -178,37 +178,37 @@ describe("goldens", () => {
   });
 
   it("pins a script array in author order", () => {
-    expect(parse(bare(SCRIPT_ARRAY()))).toStrictEqual({
+    expect(parse(bare(scriptArray()))).toStrictEqual({
       stages: ["test"],
       unit: { script: ["npm ci", "npm test", "npm run report"] },
     });
   });
 
   it("pins every quoting trap back to the string that was written", () => {
-    expect(parse(bare(QUOTING()))).toStrictEqual({ quotes: { script: QUOTED_SCRIPTS } });
+    expect(parse(bare(quoting()))).toStrictEqual({ quotes: { script: QUOTED_SCRIPTS } });
   });
 });
 
 describe("header", () => {
   it("writes the default header as the first line with no blank line after it", () => {
-    const lines = render(SINGLE_JOB()).split("\n");
+    const lines = render(singleJob()).split("\n");
 
     expect(lines[0]).toBe(`# ${DEFAULT_HEADER}`);
     expect(lines[1]).toBe("stages:");
   });
 
   it("writes no header at all when the header is empty", () => {
-    const text = render(SINGLE_JOB(), { header: "" });
+    const text = render(singleJob(), { header: "" });
 
     expect(text.startsWith("stages:\n")).toBe(true);
     expect(text).not.toContain("#");
-    expect(text).toBe(bare(SINGLE_JOB()));
+    expect(text).toBe(bare(singleJob()));
   });
 });
 
 describe("ordering", () => {
   it("emits stages before the jobs and the jobs in array order", () => {
-    const text = bare(ORDERING());
+    const text = bare(ordering());
 
     expect(text.startsWith("stages:\n")).toBe(true);
     expect(text.indexOf("zulu:")).toBeLessThan(text.indexOf("alpha:"));
@@ -216,20 +216,20 @@ describe("ordering", () => {
   });
 
   it("emits a job's stage before its script and its raw entries last", () => {
-    const parsed = parse(bare(ORDERING())) as { zulu: object; alpha: object };
+    const parsed = parse(bare(ordering())) as { zulu: object; alpha: object };
 
     expect(Object.keys(parsed.zulu)).toStrictEqual(["stage", "script"]);
     expect(Object.keys(parsed.alpha)).toStrictEqual(["stage", "script", "coverage"]);
   });
 
   it("emits templates after stages and before the jobs, in record order", () => {
-    const parsed = parse(bare(WITH_TEMPLATES())) as object;
+    const parsed = parse(bare(withTemplates())) as object;
 
     expect(Object.keys(parsed)).toStrictEqual(["stages", ".setup", ".versions", "build"]);
   });
 
   it("emits pipeline raw last, and job raw last, in insertion order", () => {
-    const parsed = parse(bare(RAW_AT_BOTH_LEVELS())) as { build: object };
+    const parsed = parse(bare(rawAtBothLevels())) as { build: object };
 
     expect(Object.keys(parsed)).toStrictEqual([
       "stages",
@@ -258,7 +258,7 @@ describe("byte contract", () => {
   });
 
   it("renders the same pipeline struct identically twice", () => {
-    const value = RAW_AT_BOTH_LEVELS();
+    const value = rawAtBothLevels();
 
     expect(bare(value)).toBe(bare(value));
   });
