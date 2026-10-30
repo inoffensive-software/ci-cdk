@@ -27,19 +27,15 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
       name: "shell check",
       stage: "test",
       script: ["shellcheck src/**/*.sh"],
-      raw: {
-        image: "koalaman/shellcheck-alpine:v0.9.0",
-        before_script: ["shellcheck --version"],
-      },
+      image: "koalaman/shellcheck-alpine:v0.9.0",
+      before_script: ["shellcheck --version"],
     }),
     job({
       name: "dockerfile check",
       stage: "test",
       script: ["hadolint --ignore DL3059 --ignore DL3006 --ignore DL3018 Dockerfile"],
-      raw: {
-        image: "hadolint/hadolint:latest-alpine",
-        before_script: ["hadolint --version"],
-      },
+      image: "hadolint/hadolint:latest-alpine",
+      before_script: ["hadolint --version"],
     }),
     job({
       name: "build terraform",
@@ -48,15 +44,13 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
         "docker buildx create --use",
         'docker buildx build --platform "$PLATFORMS" --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg TERRAFORM_BINARY_VERSION=$TERRAFORM_BINARY_VERSION --file Dockerfile --tag "$TERRAFORM_IMAGE_NAME" --provenance=false --push .',
       ],
-      raw: {
-        extends: ".terraform-versions",
-        services: ["$DOCKER_DIND_IMAGE"],
-        image: "$DOCKER_DIND_IMAGE",
-        before_script: [
-          "docker run --rm --privileged tonistiigi/binfmt",
-          'docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"',
-        ],
-      },
+      extends: ".terraform-versions",
+      services: ["$DOCKER_DIND_IMAGE"],
+      image: "$DOCKER_DIND_IMAGE",
+      before_script: [
+        "docker run --rm --privileged tonistiigi/binfmt",
+        'docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"',
+      ],
     }),
     job({
       name: "release-terraform",
@@ -71,12 +65,12 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
       variables: {
         RELEASE_IMAGE_NAME: "$CI_REGISTRY_IMAGE/releases/$TERRAFORM_VERSION",
       },
+      extends: ".terraform-versions",
+      image: {
+        name: "gcr.io/go-containerregistry/crane:debug",
+        entrypoint: [""],
+      },
       raw: {
-        extends: ".terraform-versions",
-        image: {
-          name: "gcr.io/go-containerregistry/crane:debug",
-          entrypoint: [""],
-        },
         rules: [{ if: "$CI_COMMIT_TAG" }],
       },
     }),
@@ -84,9 +78,9 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
       name: "release",
       stage: "deploy",
       script: 'echo "Creating release $CI_COMMIT_TAG"',
+      image: "registry.gitlab.com/gitlab-org/release-cli:latest",
       raw: {
         needs: ["release-terraform"],
-        image: "registry.gitlab.com/gitlab-org/release-cli:latest",
         rules: [{ if: "$CI_COMMIT_TAG" }],
         release: {
           tag_name: "$CI_COMMIT_TAG",

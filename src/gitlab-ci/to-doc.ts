@@ -5,11 +5,21 @@ import {
   type Diagnostic,
   type Doc,
   type DocEntry,
+  type Text,
   type Value,
 } from "../core/index.js";
 import { rawKeyPath } from "../core/paths.js";
 import { lowerRawBlock, rawEntries } from "../core/raw.js";
-import { defaultDoc, includeDoc, variablesDoc, workflowDoc } from "./blocks.js";
+import {
+  artifactsDoc,
+  cacheDoc,
+  defaultDoc,
+  imageDoc,
+  includeDoc,
+  servicesDoc,
+  variablesDoc,
+  workflowDoc,
+} from "./blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -27,26 +37,49 @@ const PIPELINE_RESERVED: readonly string[] = [
 ];
 
 /**
- * Job keys that are struct identity or modelled at this level, so raw may not repeat them. `script`
- * and `variables` stay reserved even when the job omits them: the field, never `raw`, is how a job
- * carries them, so an absent one cannot be smuggled in through the escape hatch.
+ * Job keys that are struct identity or modelled at this level, so raw may not repeat them. Every
+ * one stays reserved even when the job omits it: the field, never `raw`, is how a job carries the
+ * keyword, so an absent one cannot be smuggled in through the escape hatch.
  */
-const JOB_RESERVED: readonly string[] = ["name", "stage", "script", "variables"];
+const JOB_RESERVED: readonly string[] = [
+  "name",
+  "stage",
+  "extends",
+  "tags",
+  "image",
+  "services",
+  "variables",
+  "cache",
+  "artifacts",
+  "before_script",
+  "script",
+  "after_script",
+];
 
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
 
+const present = (value: Text | readonly Text[] | undefined): Doc | undefined =>
+  value === undefined ? undefined : fromValue(value);
+
 /**
- * `stage`, `variables`, `script`, then raw. `name` is struct identity and never enters the body; a
- * job with none of the fields lowers to an empty map, which is the shape a fragment uses to override
- * an included job.
+ * A job's body in the spec's fixed order. Absent fields emit nothing, so a fragment stays a fragment;
+ * a job with none of them lowers to an empty map.
  */
 const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("stage", item.stage === undefined ? undefined : fromValue(item.stage)),
+    ...entry("extends", present(item.extends)),
+    ...entry("tags", present(item.tags)),
+    ...entry("image", item.image === undefined ? undefined : imageDoc(item.image)),
+    ...entry("services", item.services === undefined ? undefined : servicesDoc(item.services)),
     ...entry("variables", item.variables === undefined ? undefined : variablesDoc(item.variables)),
-    ...entry("script", item.script === undefined ? undefined : fromValue(item.script)),
+    ...entry("cache", item.cache === undefined ? undefined : cacheDoc(item.cache)),
+    ...entry("artifacts", item.artifacts === undefined ? undefined : artifactsDoc(item.artifacts)),
+    ...entry("before_script", present(item.before_script)),
+    ...entry("script", present(item.script)),
+    ...entry("after_script", present(item.after_script)),
   ];
 
   return map([
