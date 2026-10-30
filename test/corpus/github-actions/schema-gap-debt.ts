@@ -241,9 +241,5 @@ export const GAPS: readonly Gap[] = [
   },
 ];
 
-/**
- * Modelled paths the schema does not enumerate. An empty list means every key the vocabulary writes
- * is in the schema; a row is added only when the schema drops one, and its reason says whether the
- * schema is stale or the walk cannot express the key.
- */
+/** A modelled path the schema does not enumerate; ADR 0011 says when a row is due. */
 export const OVERCLAIMS: readonly Overclaim[] = [];

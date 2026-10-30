@@ -241,9 +241,7 @@ const walkNode = (walk: Walk, node: SchemaNode, path: string, refs: readonly str
     walkNode(walk, resolve(walk.root, ref), path, [...refs, ref]);
   }
 
-  // Draft-07 ignores keywords beside a `$ref`, but the vendored schema uses that position to add
-  // keys the target lacks, so the node contributes both. Reading only the target would hide those
-  // keys and understate the grammar.
+  // Draft-07 ignores a `$ref`'s siblings; the vendored schema uses them to add keys. See ADR 0011.
   walkUnion(walk, node, path, refs);
   walkProperties(walk, node, path, refs);
   walkItems(walk, node, path, refs);
