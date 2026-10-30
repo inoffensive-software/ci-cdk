@@ -117,6 +117,38 @@ describe("emission", () => {
       await expect(renderDoc(doc)).toMatchFileSnapshot("__snapshots__/block-script.txt");
     });
 
+    describe("styles and tags", () => {
+      it("pins a literal block with no trailing newline", async () => {
+        const doc = map([{ key: "run", value: block("echo hi\nnpm test") }]);
+
+        await expect(renderDoc(doc)).toMatchFileSnapshot(
+          "__snapshots__/block-no-trailing-newline.txt",
+        );
+      });
+
+      it("pins a literal block with trailing newlines", async () => {
+        const doc = map([{ key: "run", value: block("echo hi\n\n\n") }]);
+
+        await expect(renderDoc(doc)).toMatchFileSnapshot(
+          "__snapshots__/block-trailing-newlines.txt",
+        );
+      });
+
+      it("pins folded text", async () => {
+        const doc = map([
+          { key: "note", value: scalar("one folded sentence", { style: "folded" }) },
+        ]);
+
+        await expect(renderDoc(doc)).toMatchFileSnapshot("__snapshots__/folded-text.txt");
+      });
+
+      it("pins a tagged scalar", async () => {
+        const doc = map([{ key: "ref", value: tagged("!reference", scalar("*.default")) }]);
+
+        await expect(renderDoc(doc)).toMatchFileSnapshot("__snapshots__/tagged-scalar.txt");
+      });
+    });
+
     it("pins a document with no header", async () => {
       await expect(emit(nestedMap, "")).toMatchFileSnapshot("__snapshots__/header-off.txt");
     });
@@ -218,6 +250,22 @@ describe("emission", () => {
   });
 
   describe("styles", () => {
+    it("honours every style the text allows", () => {
+      expect(styled("plain text", "plain")).toBe("value: plain text\n");
+      expect(styled("it's fine", "single")).toBe("value: 'it''s fine'\n");
+      expect(styled('say "hi"', "double")).toBe('value: "say \\"hi\\""\n');
+      expect(styled("echo hi\nnpm test\n", "literal")).toBe("value: |\n  echo hi\n  npm test\n");
+      expect(styled("one folded sentence", "folded")).toBe("value: >-\n  one folded sentence\n");
+    });
+
+    it("keeps the style it was given when the text would also be plain", () => {
+      expect(styled("plain text", "literal")).toBe("value: |-\n  plain text\n");
+      expect(styled("plain text", "double")).toBe('value: "plain text"\n');
+      expect(renderDoc(map([{ key: "run", value: block("npm test") }]), { header: "" })).toBe(
+        "run: |-\n  npm test\n",
+      );
+    });
+
     it("emits a literal block with its newlines intact", () => {
       expect(styled("line1\n\nline2\n", "literal")).toBe("value: |\n  line1\n\n  line2\n");
     });
@@ -230,6 +278,54 @@ describe("emission", () => {
 
     it("keeps trailing blank lines inside a literal block", () => {
       expect(styled("a\n\n\n", "literal")).toBe("value: |+\n  a\n\n\n");
+    });
+
+    // The goldens pin the style; these tests pin the text each style carries.
+    it("reads literal block text back byte for byte", () => {
+      const text = "echo hi\n\nnpm test\n";
+
+      expect(
+        parse(renderDoc(map([{ key: "run", value: block(text) }]), { header: "" })),
+      ).toStrictEqual({ run: text });
+    });
+
+    it("reads a literal block with no trailing newline back without adding one", () => {
+      const text = "echo hi\nnpm test";
+
+      expect(
+        parse(renderDoc(map([{ key: "run", value: block(text) }]), { header: "" })),
+      ).toStrictEqual({ run: text });
+    });
+
+    it("reads a literal block with trailing newlines back with all of them", () => {
+      const text = "echo hi\n\n\n";
+
+      expect(
+        parse(renderDoc(map([{ key: "run", value: block(text) }]), { header: "" })),
+      ).toStrictEqual({ run: text });
+    });
+
+    it("reads folded text back as the text it was given", () => {
+      const text = "one folded sentence";
+
+      expect(parse(styled(text, "folded"))).toStrictEqual({ value: text });
+    });
+
+    it("keeps a folded newline as content rather than folding it away", () => {
+      const text = "line one\nline two";
+
+      expect(parse(styled(text, "folded"))).toStrictEqual({ value: text });
+    });
+
+    it("reads a tagged scalar back to the same value", () => {
+      const doc = parseDocument(
+        renderDoc(map([{ key: "ref", value: tagged("!reference", scalar("*.default")) }]), {
+          header: "",
+        }),
+      );
+
+      expect(doc.errors).toStrictEqual([]);
+      expect(doc.toJS()).toStrictEqual({ ref: "*.default" });
     });
 
     it("emits single-quoted text", () => {
@@ -348,8 +444,14 @@ describe("emission", () => {
       expect(emit(null)).toBe("null\n");
     });
 
-    it("quotes a string containing a newline rather than folding it", () => {
-      expect(emit({ a: "line1\nline2" })).toBe('a: "line1\\nline2"\n');
+    it("quotes a string containing a newline rather than folding it into a block", () => {
+      const text = "line1\nline2";
+      const out = emit({ a: text });
+
+      // `fromValue` lowers plain data as plain: the emitter quotes the newline instead of choosing a
+      // block, and the exact bytes prove no block header was written.
+      expect(out).toBe('a: "line1\\nline2"\n');
+      expect(parse(out)).toStrictEqual({ a: text });
     });
 
     it("lowers a DOC-carrying leaf and keeps the style it chose", () => {

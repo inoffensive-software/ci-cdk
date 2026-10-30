@@ -228,7 +228,9 @@ and nothing else. The serializer is selected by `renderDoc` and is not a paramet
   style cannot express zero entries.
 - Key order is entry order, never sorted. Duplicate keys inside one map are a diagnostic, not
   last-wins.
-- Output is LF only and ends with exactly one newline, including when the document is empty.
+- Output is LF only and ends with exactly one newline, including when the document is empty. The one
+  exception is an open block scalar whose text ends in blank lines: those are content, and closing
+  them would change the value.
 - Shell text is whatever the `Doc` says it is. `fromValue` never produces a literal block, so plain
   data is never turned into one by surprise.
 
@@ -237,9 +239,9 @@ and nothing else. The serializer is selected by `renderDoc` and is not a paramet
 `Serializer` is an interface with one member rendering a `Doc` to text under the same options.
 The YAML implementation builds a yaml `Document` from the tree, attaches the header as
 `commentBefore` on the root, and stringifies with the pinned options. `renderDoc` normalises the
-result: strip trailing whitespace on each line, collapse trailing newlines to one, and fail if the
-serializer produced a blank line or a `---` marker, since both indicate the pinned options were
-bypassed.
+result: strip trailing whitespace on each line, collapse trailing newlines to one unless the document
+ends inside a block scalar, and fail if the serializer produced a blank line outside a block or a
+`---` marker, since both indicate the pinned options were bypassed.
 
 ### Dependency
 
