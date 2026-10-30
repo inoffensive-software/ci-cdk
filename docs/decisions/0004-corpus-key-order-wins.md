@@ -22,10 +22,12 @@ changes the bytes a consumer's diff sees.
 
 Where the pinned corpus and the documented order disagree, the corpus order wins:
 
-- `Job.strategy` is emitted before `environment`, `outputs`, `env`, `defaults` and `steps` - directly
-  after `runs-on`, where both pinned configs put it.
-- `Strategy` emits `fail-fast`, then `matrix`, then `max-parallel`. `max-parallel` has no corpus
-  evidence yet, so it keeps its documented position until an entry says otherwise.
+- `Job.strategy` is emitted directly after `runs-on`, which is where the vendored entry puts it. The
+  evidence covers its position before `steps`; placing it ahead of `environment`, `concurrency`,
+  `outputs`, `env`, `defaults` and `timeout-minutes` follows from that single move and has no corpus
+  evidence yet, because no pinned config sets both.
+- `Strategy` emits `fail-fast`, then `matrix`, then `max-parallel`. `fail-fast` before `matrix` is
+  evidence; `max-parallel` keeps its documented position until an entry says otherwise.
 
 This supersedes the "matching the order GitHub documents" clause of spec 0002 decision 8 and the
 "documented key order" comment on `Job`; the fixed-order half of that decision still holds. A future
@@ -44,9 +46,9 @@ vendored file.
 
 ## Alternatives
 
-- **Keep the documented order and drop the entry.** Rejected: both pinned configs in spec 0002 are
-  written this way, so the corpus would contain no matrix job and the "supports" claim would be a
-  claim about a config we chose not to test.
+- **Keep the documented order and drop the entry.** Rejected: both configs pinned by spec 0002 are
+  written this way, so no vendored entry would contain a matrix job and the "supports" claim would be
+  a claim about a config we chose not to test.
 - **Normalise key order when comparing.** Rejected: it would re-read through a YAML parser and hide
   exactly the byte differences the corpus exists to catch.
 - **Express `strategy` through `raw` for this entry.** Rejected: `raw` appends after the modelled

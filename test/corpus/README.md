@@ -49,8 +49,9 @@ becomes a declared row in the ledger. It is never worked around by editing the v
 
 ## Coverage debt
 
-`coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why the
-vocabulary cannot express it yet. `coverage.test.ts` walks the fixtures and asserts set equality in
+`coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why the DSL
+cannot express it yet, either because the key is unmodelled or because the modelled key's emitted
+style differs from upstream. `coverage.test.ts` walks the fixtures and asserts set equality in
 both directions - a fixture that starts using `raw` without a row fails, and a row no fixture uses
 fails. Adding a row is a deliberate widening of the escape hatch; deleting one is how a gap closes.
 The fraction of the corpus needing `raw` is the roadmap.
