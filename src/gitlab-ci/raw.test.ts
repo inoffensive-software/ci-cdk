@@ -42,7 +42,7 @@ describe("raw placement", () => {
       { header: "" },
     );
 
-    expect(Object.keys(parse(text) as object)).toStrictEqual([
+    expect(Object.keys(parse(text))).toStrictEqual([
       "stages",
       "build",
       "image",
@@ -68,7 +68,7 @@ describe("job raw placement", () => {
       { header: "" },
     );
 
-    const parsed = parse(text) as { build: object };
+    const parsed = parse(text);
 
     expect(Object.keys(parsed.build)).toStrictEqual([
       "stage",
@@ -81,7 +81,7 @@ describe("job raw placement", () => {
 
   it("keeps modelled keys first however the struct is written", () => {
     const text = render(withRawJob({ needs: ["prep"] }), { header: "" });
-    const parsed = parse(text) as { build: object };
+    const parsed = parse(text);
 
     expect(Object.keys(parsed)).toStrictEqual(["build"]);
     expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "needs"]);
@@ -123,10 +123,7 @@ describe("raw values", () => {
       { header: "" },
     );
 
-    const parsed = parse(text) as {
-      image: string;
-      ".template": { before_script: readonly string[] };
-    };
+    const parsed = parse(text);
 
     expect(Object.keys(parsed)).toStrictEqual(["build", "image", ".template"]);
     expect(parsed.image).toBe("node:24");

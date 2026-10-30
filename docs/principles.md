@@ -61,7 +61,11 @@ Settles: the recurring "these look the same, should we factor them out". Not yet
 
 Naming of functions should describe what it does: e.g. `omitUndefined` is preferable to `compact`.
 
-Name a module-level binding whose value is data in `SCREAMING_SNAKE_CASE`. Data is a literal, a template literal, a regular expression, an array, a record, a symbol, or an instance produced once by a call, such as `new Ajv(...)` or `defineRule({...})`. Keep `camelCase` when the value is a function, including an arrow function bound with `const`. A reader can then tell a shared value from a function at a glance. Leave locals, parameters, destructured bindings, type aliases, interfaces and classes alone.
+Name a module-level binding whose value is invariant data in `SCREAMING_SNAKE_CASE`. Data is a literal, a template literal, a regular expression, an array, a record, a symbol, or an instance produced once by a call, such as `new Ajv(...)` or `defineRule({...})`. Keep `camelCase` when the value is a function, including an arrow function bound with `const`. A reader can then tell a shared value from a function at a glance. Leave locals, parameters, destructured bindings, type aliases, interfaces and classes alone.
+
+    This:     const COVERAGE_DEBT: readonly Debt[] = [...]                    // invariant data
+              const renderPipeline = (value: Pipeline): string => ...        // function
+    Not this: const RENDER_PIPELINE = (value: Pipeline): string => ...
 
 Keep the current name of a binding the package publishes, such as `yamlSerializer`. A convention change does not rename a consumer's import.
 

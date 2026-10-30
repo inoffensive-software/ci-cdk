@@ -3,9 +3,10 @@ import type { Job, Pipeline } from "./types.js";
 
 /**
  * A key at the document root that configures the pipeline; a job with one of these names would be
- * read as a setting, so it is refused rather than emitted.
+ * read as a setting, so it is refused rather than emitted. The exhaustiveness gate reads the same
+ * list to tell a keyword from a job name in the corpus.
  */
-const GLOBAL_KEYWORDS: readonly string[] = [
+export const GLOBAL_KEYWORDS: readonly string[] = [
   "default",
   "include",
   "stages",

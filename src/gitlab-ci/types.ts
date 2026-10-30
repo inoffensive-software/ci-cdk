@@ -16,13 +16,22 @@ export interface Job {
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
-/** `stages` is emitted exactly as written; `jobs` becomes a map keyed by name in array order. */
+/**
+ * `stages` is emitted exactly as written; hidden templates are emitted after it in record order;
+ * `jobs` becomes a map keyed by name in array order.
+ */
 export interface Pipeline {
   readonly stages?: readonly string[];
+  /**
+   * Hidden jobs and anchor-only entries: author data, not vocabulary. Every key must start with `.`
+   * and is emitted at the document root, before the job entries, in record order. Values are plain
+   * data of any shape and are never validated or resolved.
+   */
+  readonly templates?: Readonly<Record<string, Value>>;
   readonly jobs: readonly Job[];
   /**
-   * Global keywords and hidden templates the vocabulary does not model, appended after `stages` and
-   * the job entries: `image`, `workflow`, `variables`, `.template`, and their like.
+   * Global keywords the vocabulary does not model, appended after `stages`, the templates and the job
+   * entries: `image`, `workflow`, `variables`, and their like.
    */
   readonly raw?: Readonly<Record<string, Value>>;
 }

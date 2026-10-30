@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
-import { render } from "../../../src/gitlab-ci/index.js";
+import { render } from "@inoffensive/ci-cdk/gitlab-ci";
 import { TERRAFORM_IMAGES } from "./terraform-images.fixture.js";
 import { readVendored } from "../vendored.js";
 
