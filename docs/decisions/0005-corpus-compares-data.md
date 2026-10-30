@@ -48,7 +48,9 @@ This supersedes, and is the record for, these anchors:
   `dtolnay/anyhow`, because it exercises a needs graph, a reusable-workflow job, two matrices, a
   schedule trigger and job and step `env`, none of which `got` or `chalk` reach;
 - `docs/architecture.md`'s "Corpus round-trip ... asserted byte-identical" and "a provider is done
-  when the corpus round-trips byte-identically" lines. "Done" now means every entry matches as data.
+  when the corpus round-trips byte-identically" lines, plus the same rule in
+  `docs/providers/README.md`. Those lines have since been rewritten to point at this record; "done"
+  now means every entry matches as data.
 
 Everything else about the corpus still holds: entries are pinned by commit, vendored verbatim, never
 edited, and licence-recorded, and any key the vocabulary cannot express is still `raw` plus a

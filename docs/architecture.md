@@ -134,6 +134,7 @@ src/github-actions/
   types.ts      the provider's structs and unions
   leaves.ts     expr, script, matrix, needs
   to-doc.ts     the single lowering function; public as `toDoc`
+  on-doc.ts     `on:` lowered to a Doc, so a bare event becomes `null`
   validate.ts   document-level checks
   trigger.ts    the `on:` vocabulary
 ```
@@ -210,7 +211,7 @@ Each step is testable on its own, and later steps assume the earlier ones.
 4. `src/github-actions/types.ts` and `leaves.ts`: the vocabulary, and `expr`/`script` returning
    `DOC` leaves.
 5. `to-doc.ts` and `validate.ts`, then `render.ts`, then the first whole-workflow golden.
-6. One corpus entry: the smallest real config, reproduced byte for byte.
+6. One corpus entry: the smallest real config, reproduced as data (ADR 0005).
 7. Breadth: more corpus entries until the exhaustiveness test reports nothing unmodelled.
 
 The order matters because `Doc` is the seam every other decision depends on, and the corpus cannot
@@ -228,15 +229,16 @@ None outstanding.
 - **Determinism**: two renders through fresh module graphs, byte-identical.
 - **YAML traps**: `on:` as a key, `yes`/`no`, `1.10`, and an expression containing `: `.
 - **Corpus round-trip**: a pinned set of real public configs, each reproduced by a test under
-  `test/corpus/<provider>/` and asserted byte-identical. Pinned by commit so upstream changes cannot
-  break the build.
+  `test/corpus/<provider>/` and compared as parsed data (ADR 0005); an entry that also matches byte
+  for byte asserts that too. Pinned by commit so upstream changes cannot break the build.
 - **Exhaustiveness**: any key in the corpus the DSL cannot express fails the test, unless covered
   by `raw`, in which case it is reported as coverage debt. The fraction of the corpus needing
   `raw` is the roadmap.
 
 ## Provider "done"
 
-A provider is done when the corpus round-trips byte-identically, every corpus key is either
-modelled or counted against `raw`, and the document-level validations (duplicate ids, dangling
-references, cycles) run in `toDoc`. Coverage of the written spec is not the target; coverage of
-real configs is, because it is measurable and the spec is not.
+A provider is done when the corpus round-trips, every corpus key is either modelled or counted
+against `raw`, and the document-level validations (duplicate ids, dangling references, cycles) run in
+`toDoc`. Round-trip means equal as parsed data (ADR 0005), with byte equality asserted for the entries
+that reach it. Coverage of the written spec is not the target; coverage of real configs is, because it
+is measurable and the spec is not.
