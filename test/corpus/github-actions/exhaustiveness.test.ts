@@ -19,6 +19,7 @@ import { ANYHOW } from "./anyhow.fixture.js";
 import { GOT } from "./got.fixture.js";
 import { INVENTORY } from "./inventory.js";
 import { TRPC_MAIN } from "./trpc-main.fixture.js";
+import { TRPC_RELEASE } from "./trpc-release.fixture.js";
 import { readVendored } from "../vendored.js";
 
 interface Entry {
@@ -31,6 +32,7 @@ const ENTRIES: readonly Entry[] = [
   { name: "got", file: "got.yml", workflow: GOT },
   { name: "anyhow", file: "anyhow.yml", workflow: ANYHOW },
   { name: "trpc-main", file: "trpc-main.yml", workflow: TRPC_MAIN },
+  { name: "trpc-release", file: "trpc-release.yml", workflow: TRPC_RELEASE },
 ];
 
 const MODELLED = inventoryPaths();

@@ -5,6 +5,7 @@ import { ANYHOW } from "./anyhow.fixture.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { GOT } from "./got.fixture.js";
 import { TRPC_MAIN } from "./trpc-main.fixture.js";
+import { TRPC_RELEASE } from "./trpc-release.fixture.js";
 
 /** Every raw key a fixture wrote, at the level it wrote it. */
 const rawPathsOf = (workflow: Workflow): readonly string[] => {
@@ -27,6 +28,6 @@ const rawPathsOf = (workflow: Workflow): readonly string[] => {
   return paths;
 };
 
-const WORKFLOWS = [GOT, ANYHOW, TRPC_MAIN];
+const WORKFLOWS = [GOT, ANYHOW, TRPC_MAIN, TRPC_RELEASE];
 
 describeCoverageDebt({ fixtures: WORKFLOWS, rawPathsOf, debt: COVERAGE_DEBT });
