@@ -42,34 +42,32 @@ export const GITLAB_PAGES: Pipeline = pipeline({
       },
     }),
   ],
-  raw: {
-    workflow: {
+  workflow: {
+    rules: [
+      { if: "$CI_MERGE_REQUEST_IID" },
+      { if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH" },
+      { if: "$CI_COMMIT_TAG" },
+      { if: "$CI_COMMIT_BRANCH =~ /^[\\d-]+-stable(-ee)?$/" },
+      { if: "$CI_COMMIT_BRANCH =~ /^security\\//" },
+    ],
+  },
+  include: [
+    { local: ".gitlab/ci/prepare.yml" },
+    { local: ".gitlab/ci/test.yml" },
+    {
+      component: "${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@2.1.0",
       rules: [
-        { if: "$CI_MERGE_REQUEST_IID" },
-        { if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH" },
-        { if: "$CI_COMMIT_TAG" },
-        { if: "$CI_COMMIT_BRANCH =~ /^[\\d-]+-stable(-ee)?$/" },
-        { if: "$CI_COMMIT_BRANCH =~ /^security\\//" },
+        {
+          if: '$CI_SERVER_HOST == "gitlab.com" && $CI_PROJECT_PATH == "gitlab-org/gitlab-pages"',
+        },
+        {
+          if: '$CI_SERVER_HOST == "gitlab.com" && $CI_PROJECT_PATH == "gitlab-org/security/gitlab-pages"',
+        },
       ],
     },
-    include: [
-      { local: ".gitlab/ci/prepare.yml" },
-      { local: ".gitlab/ci/test.yml" },
-      {
-        component: "${CI_SERVER_FQDN}/gitlab-org/components/danger-review/danger-review@2.1.0",
-        rules: [
-          {
-            if: '$CI_SERVER_HOST == "gitlab.com" && $CI_PROJECT_PATH == "gitlab-org/gitlab-pages"',
-          },
-          {
-            if: '$CI_SERVER_HOST == "gitlab.com" && $CI_PROJECT_PATH == "gitlab-org/security/gitlab-pages"',
-          },
-        ],
-      },
-    ],
-    default: {
-      image: "golang:1.26",
-      tags: ["gitlab-org"],
-    },
+  ],
+  default: {
+    image: "golang:1.26",
+    tags: ["gitlab-org"],
   },
 });

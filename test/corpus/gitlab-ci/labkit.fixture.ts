@@ -172,11 +172,11 @@ export const LABKIT: Pipeline = pipeline({
     job({
       name: "warm-go-mod-cache",
       stage: "prepare",
+      variables: {
+        GOMODCACHE: "$CI_PROJECT_DIR/.cache/go-mod",
+      },
       script: ["go mod download", "cd v2 && go mod download"],
       raw: {
-        variables: {
-          GOMODCACHE: "$CI_PROJECT_DIR/.cache/go-mod",
-        },
         cache: {
           key: {
             files: ["go.sum", "v2/go.sum"],
@@ -234,15 +234,15 @@ export const LABKIT: Pipeline = pipeline({
     job({
       name: "lint",
       stage: "validate",
+      variables: {
+        GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint",
+      },
       script: ["./scripts/golangci-lint.sh"],
       raw: {
         extends: ".go-cache",
         image: {
           name: "${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/golangci-lint:${GL_ASDF_GOLANGCI_LINT_VERSION}",
           entrypoint: ["/bin/bash", "-c"],
-        },
-        variables: {
-          GOLANGCI_LINT_CACHE: "$CI_PROJECT_DIR/.cache/golangci-lint",
         },
         cache: [
           {
@@ -306,6 +306,11 @@ export const LABKIT: Pipeline = pipeline({
     job({
       name: "integration:postgres",
       stage: "validate",
+      variables: {
+        FF_NETWORK_PER_BUILD: 1,
+        POSTGRES_DSN: "postgres://labkit:labkit@postgres:5432/labkit_test?sslmode=disable",
+        PGBOUNCER_DSN: "postgres://labkit:labkit@pgbouncer:5432/labkit_test?sslmode=disable",
+      },
       script: ["cd v2", "go test -v -tags integration -count=1 -timeout=60s ./postgres/"],
       raw: {
         extends: ".go-cache",
@@ -325,11 +330,6 @@ export const LABKIT: Pipeline = pipeline({
             changes: [".postgres-integration-trigger-paths", "changes"],
           },
         ],
-        variables: {
-          FF_NETWORK_PER_BUILD: 1,
-          POSTGRES_DSN: "postgres://labkit:labkit@postgres:5432/labkit_test?sslmode=disable",
-          PGBOUNCER_DSN: "postgres://labkit:labkit@pgbouncer:5432/labkit_test?sslmode=disable",
-        },
         services: [
           {
             name: "postgres:18-alpine",
@@ -360,41 +360,47 @@ export const LABKIT: Pipeline = pipeline({
     }),
     job({
       name: "integration:redis",
+      variables: {
+        REDIS_TEST_SKIP: "Cluster|Sentinel",
+        REDIS_ADDR: "127.0.0.1:6379",
+      },
       raw: {
         extends: ".integration-redis-base",
-        variables: {
-          REDIS_TEST_SKIP: "Cluster|Sentinel",
-          REDIS_ADDR: "127.0.0.1:6379",
-        },
         before_script: ["v2/redis/testdata/ci/setup-single.sh"],
       },
     }),
     job({
       name: "integration:redis:cluster",
+      variables: {
+        REDIS_TEST_RUN: "Cluster",
+        REDIS_CLUSTER_ADDRS: "127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003",
+      },
       raw: {
         extends: ".integration-redis-base",
-        variables: {
-          REDIS_TEST_RUN: "Cluster",
-          REDIS_CLUSTER_ADDRS: "127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003",
-        },
         before_script: ["v2/redis/testdata/ci/setup-cluster.sh"],
       },
     }),
     job({
       name: "integration:redis:sentinel",
+      variables: {
+        REDIS_TEST_RUN: "Sentinel",
+        REDIS_SENTINEL_ADDRS: "127.0.0.1:26379",
+        REDIS_SENTINEL_MASTER: "mymaster",
+      },
       raw: {
         extends: ".integration-redis-base",
-        variables: {
-          REDIS_TEST_RUN: "Sentinel",
-          REDIS_SENTINEL_ADDRS: "127.0.0.1:26379",
-          REDIS_SENTINEL_MASTER: "mymaster",
-        },
         before_script: ["v2/redis/testdata/ci/setup-sentinel.sh"],
       },
     }),
     job({
       name: "integration:azure",
       stage: "validate",
+      variables: {
+        FF_NETWORK_PER_BUILD: 1,
+        OBJECTSTORE2_AZURE_CONNECTION_STRING:
+          "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;",
+        OBJECTSTORE2_AZURE_STORAGE_DOMAIN: "azurite:10000",
+      },
       script: [
         "cd v2",
         "go test -v -tags integration -count=1 -timeout=60s ./objectstore/providers/azure/",
@@ -415,12 +421,6 @@ export const LABKIT: Pipeline = pipeline({
             changes: [".azure-integration-trigger-paths", "changes"],
           },
         ],
-        variables: {
-          FF_NETWORK_PER_BUILD: 1,
-          OBJECTSTORE2_AZURE_CONNECTION_STRING:
-            "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;",
-          OBJECTSTORE2_AZURE_STORAGE_DOMAIN: "azurite:10000",
-        },
         services: [
           {
             name: "mcr.microsoft.com/azure-storage/azurite:3.37.0",
@@ -441,11 +441,11 @@ export const LABKIT: Pipeline = pipeline({
     job({
       name: "conformance-spec",
       stage: "validate",
+      variables: {
+        LABKIT_SHA: "$CI_COMMIT_SHA",
+      },
       raw: {
         needs: [],
-        variables: {
-          LABKIT_SHA: "$CI_COMMIT_SHA",
-        },
         rules: [
           {
             if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
@@ -480,12 +480,12 @@ export const LABKIT: Pipeline = pipeline({
             },
           ],
         },
-        variables: {
-          BUILD_TAGS: "fips",
-          CGO_ENABLED: 1,
-          GOLANG_FIPS: 1,
-          OPENSSL_FORCE_FIPS_MODE: 1,
-        },
+      },
+      variables: {
+        BUILD_TAGS: "fips",
+        CGO_ENABLED: 1,
+        GOLANG_FIPS: 1,
+        OPENSSL_FORCE_FIPS_MODE: 1,
       },
     }),
     job({
@@ -502,11 +502,11 @@ export const LABKIT: Pipeline = pipeline({
             },
           ],
         },
-        variables: {
-          BUILD_TAGS: "fips",
-          GOFIPS140: "v1.0.0",
-          FIPS_EXPECT_NATIVE_MODULE: "1",
-        },
+      },
+      variables: {
+        BUILD_TAGS: "fips",
+        GOFIPS140: "v1.0.0",
+        FIPS_EXPECT_NATIVE_MODULE: "1",
       },
     }),
     job({
@@ -547,56 +547,54 @@ export const LABKIT: Pipeline = pipeline({
       },
     }),
   ],
-  raw: {
-    default: {
-      image: "golang:${GL_ASDF_GOLANG_VERSION}",
-      tags: ["gitlab-org"],
-    },
-    workflow: {
-      rules: [
-        {
-          if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
-        },
-        {
-          if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS",
-          when: "never",
-        },
-        {
-          if: "$CI_COMMIT_BRANCH",
-        },
-        {
-          if: "$CI_COMMIT_TAG",
-        },
-      ],
-    },
-    include: [
+  default: {
+    image: "golang:${GL_ASDF_GOLANG_VERSION}",
+    tags: ["gitlab-org"],
+  },
+  workflow: {
+    rules: [
       {
-        local: ".gitlab-ci-asdf-versions.yml",
+        if: '$CI_PIPELINE_SOURCE == "merge_request_event"',
       },
       {
-        project: "gitlab-com/gl-infra/common-ci-tasks",
-        ref: "v5.23",
-        file: "templates/standard.yml",
+        if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS",
+        when: "never",
       },
       {
-        project: "gitlab-com/gl-infra/common-ci-tasks",
-        ref: "v5.23",
-        file: "templates/golang.yml",
+        if: "$CI_COMMIT_BRANCH",
       },
       {
-        component: "gitlab.com/gitlab-com/gl-infra/common-ci-tasks/danger@v5.23",
-      },
-      {
-        component: "gitlab.com/components/markdownlint/markdownlint@2.1.0",
-        inputs: {
-          job_name: "markdownlint",
-          stage: "validate",
-        },
+        if: "$CI_COMMIT_TAG",
       },
     ],
-    variables: {
-      REPO_NAME: "gitlab.com/gitlab-org/labkit",
-      SAST_EXCLUDED_ANALYZERS: "eslint,gosec,nodejs-scan",
+  },
+  include: [
+    {
+      local: ".gitlab-ci-asdf-versions.yml",
     },
+    {
+      project: "gitlab-com/gl-infra/common-ci-tasks",
+      ref: "v5.23",
+      file: "templates/standard.yml",
+    },
+    {
+      project: "gitlab-com/gl-infra/common-ci-tasks",
+      ref: "v5.23",
+      file: "templates/golang.yml",
+    },
+    {
+      component: "gitlab.com/gitlab-com/gl-infra/common-ci-tasks/danger@v5.23",
+    },
+    {
+      component: "gitlab.com/components/markdownlint/markdownlint@2.1.0",
+      inputs: {
+        job_name: "markdownlint",
+        stage: "validate",
+      },
+    },
+  ],
+  variables: {
+    REPO_NAME: "gitlab.com/gitlab-org/labkit",
+    SAST_EXCLUDED_ANALYZERS: "eslint,gosec,nodejs-scan",
   },
 });

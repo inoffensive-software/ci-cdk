@@ -1,0 +1,22 @@
+default:
+  image: node:24
+  tags:
+    - docker
+include:
+  - local: .gitlab/ci/prepare.yml
+  - component: gitlab.com/c/danger@1.0
+stages:
+  - build
+variables:
+  CI: "true"
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH
+.setup:
+  before_script:
+    - npm ci
+build:
+  stage: build
+  script:
+    - npm run build
+image: node:24

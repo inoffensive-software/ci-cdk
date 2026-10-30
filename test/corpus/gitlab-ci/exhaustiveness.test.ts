@@ -5,6 +5,7 @@ import { readVendored } from "../vendored.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { type CorpusEntry, GITLAB_ENTRIES } from "./entries.js";
 import {
+  AUTHOR_NAMED,
   filledRawPaths,
   gapPaths,
   inventoryPaths,
@@ -24,23 +25,131 @@ const AUTHORED_TEMPLATES = INVENTORY.flatMap((document) =>
   Object.keys(document.pipeline.templates ?? {}),
 );
 
+const EXPECTED_MODELLED: readonly string[] = [
+  "$.*",
+  "$.*.script",
+  "$.*.script[]",
+  "$.*.stage",
+  "$.*.variables",
+  "$.*.variables.*",
+  "$.default",
+  "$.default.after_script",
+  "$.default.after_script[]",
+  "$.default.artifacts",
+  "$.default.artifacts.exclude",
+  "$.default.artifacts.exclude[]",
+  "$.default.artifacts.expire_in",
+  "$.default.artifacts.expose_as",
+  "$.default.artifacts.name",
+  "$.default.artifacts.paths",
+  "$.default.artifacts.paths[]",
+  "$.default.artifacts.public",
+  "$.default.artifacts.reports",
+  "$.default.artifacts.reports.junit",
+  "$.default.artifacts.reports.junit[]",
+  "$.default.artifacts.when",
+  "$.default.before_script",
+  "$.default.before_script[]",
+  "$.default.cache",
+  "$.default.cache.key",
+  "$.default.cache.key.files",
+  "$.default.cache.key.files[]",
+  "$.default.cache.paths",
+  "$.default.cache.paths[]",
+  "$.default.cache[]",
+  "$.default.cache[].fallback_keys",
+  "$.default.cache[].fallback_keys[]",
+  "$.default.cache[].key",
+  "$.default.cache[].key.files",
+  "$.default.cache[].key.files[]",
+  "$.default.cache[].key.prefix",
+  "$.default.cache[].paths",
+  "$.default.cache[].paths[]",
+  "$.default.cache[].policy",
+  "$.default.cache[].untracked",
+  "$.default.cache[].when",
+  "$.default.image",
+  "$.default.image.entrypoint",
+  "$.default.image.entrypoint[]",
+  "$.default.image.name",
+  "$.default.image.pull_policy",
+  "$.default.interruptible",
+  "$.default.retry",
+  "$.default.retry.exit_codes",
+  "$.default.retry.exit_codes[]",
+  "$.default.retry.max",
+  "$.default.retry.when",
+  "$.default.retry.when[]",
+  "$.default.services",
+  "$.default.services[]",
+  "$.default.services[].alias",
+  "$.default.services[].command",
+  "$.default.services[].command[]",
+  "$.default.services[].entrypoint",
+  "$.default.services[].entrypoint[]",
+  "$.default.services[].name",
+  "$.default.services[].variables",
+  "$.default.services[].variables.*",
+  "$.default.tags",
+  "$.default.tags[]",
+  "$.default.timeout",
+  "$.include",
+  "$.include.local",
+  "$.include[]",
+  "$.include[].component",
+  "$.include[].file",
+  "$.include[].file[]",
+  "$.include[].inputs",
+  "$.include[].inputs.*",
+  "$.include[].integrity",
+  "$.include[].local",
+  "$.include[].project",
+  "$.include[].ref",
+  "$.include[].remote",
+  "$.include[].rules",
+  "$.include[].rules[]",
+  "$.include[].rules[].changes",
+  "$.include[].rules[].changes.compare_to",
+  "$.include[].rules[].changes.paths",
+  "$.include[].rules[].changes.paths[]",
+  "$.include[].rules[].exists",
+  "$.include[].rules[].exists[]",
+  "$.include[].rules[].if",
+  "$.include[].rules[].when",
+  "$.include[].template",
+  "$.stages",
+  "$.stages[]",
+  "$.variables",
+  "$.variables.*",
+  "$.workflow",
+  "$.workflow.auto_cancel",
+  "$.workflow.auto_cancel.on_job_failure",
+  "$.workflow.auto_cancel.on_new_commit",
+  "$.workflow.name",
+  "$.workflow.rules",
+  "$.workflow.rules[]",
+  "$.workflow.rules[].exists",
+  "$.workflow.rules[].exists[]",
+  "$.workflow.rules[].if",
+  "$.workflow.rules[].variables",
+  "$.workflow.rules[].variables.*",
+  "$.workflow.rules[].when",
+];
+
 const corpusPathsOf = async (entry: CorpusEntry): Promise<readonly string[]> =>
   keyPaths(await readVendored(import.meta.dirname, entry.file));
 
 describe("inventory", () => {
   it("models exactly the keys the vocabulary currently emits", () => {
-    expect(MODELLED).toStrictEqual([
-      "$.*",
-      "$.*.script",
-      "$.*.script[]",
-      "$.*.stage",
-      "$.stages",
-      "$.stages[]",
-    ]);
+    expect(MODELLED).toStrictEqual(EXPECTED_MODELLED);
   });
 
   it("uses no raw anywhere", () => {
     expect(INVENTORY.flatMap((document) => rawPathsOf(document.pipeline))).toStrictEqual([]);
+  });
+
+  it("names only author-named maps the inventory actually emits", () => {
+    expect(AUTHOR_NAMED.filter((path) => !MODELLED.includes(`${path}.*`))).toStrictEqual([]);
   });
 
   it("authors a hidden template, which is data rather than modelled vocabulary", () => {
@@ -64,8 +173,8 @@ describe("exhaustiveness gate", () => {
     expect(unusedLedgerPaths(entries.flat(), LEDGER)).toStrictEqual([]);
   });
 
-  it("leaves eighty-eight rows, all vocabulary gaps, after the hidden template moved to templates", () => {
-    expect(COVERAGE_DEBT).toHaveLength(88);
+  it("leaves sixty-eight rows, all vocabulary gaps, after the global vocabulary and job variables landed", () => {
+    expect(COVERAGE_DEBT).toHaveLength(68);
   });
 });
 

@@ -1,5 +1,7 @@
 stages:
   - build
+variables:
+  CI: "true"
 build:
   stage: build
   script: make
@@ -10,8 +12,6 @@ build:
     paths:
       - dist/
 image: node:24
-variables:
-  CI: "true"
 .template:
   before_script:
     - npm ci

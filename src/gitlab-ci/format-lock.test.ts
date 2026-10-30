@@ -36,6 +36,7 @@ const withTemplates = (): Pipeline =>
 const rawAtBothLevels = (): Pipeline =>
   pipeline({
     stages: ["build"],
+    variables: { CI: "true" },
     jobs: [
       job({
         name: "build",
@@ -46,9 +47,21 @@ const rawAtBothLevels = (): Pipeline =>
     ],
     raw: {
       image: "node:24",
-      variables: { CI: "true" },
       ".template": { before_script: ["npm ci"] },
     },
+  });
+
+/** One pipeline with every global key set, so the spec's fixed order is pinned on bytes. */
+const globals = (): Pipeline =>
+  pipeline({
+    default: { image: "node:24", tags: ["docker"] },
+    include: [{ local: ".gitlab/ci/prepare.yml" }, { component: "gitlab.com/c/danger@1.0" }],
+    stages: ["build"],
+    variables: { CI: "true" },
+    workflow: { rules: [{ if: "$CI_COMMIT_BRANCH" }] },
+    templates: { ".setup": { before_script: ["npm ci"] } },
+    jobs: [job({ name: "build", stage: "build", script: ["npm run build"] })],
+    raw: { image: "node:24" },
   });
 
 /** One string per YAML trap the serializer has to quote, plus a multi-line command. */
@@ -84,6 +97,7 @@ const GOLDENS = {
   "format-quoting.yml": () => bare(quoting()),
   "format-ordering.yml": () => bare(ordering()),
   "format-templates.yml": () => bare(withTemplates()),
+  "format-globals.yml": () => bare(globals()),
   "format-header-default.yml": () => render(singleJob()),
 } satisfies Record<string, () => string>;
 
@@ -227,15 +241,32 @@ describe("ordering", () => {
 
     expect(Object.keys(parsed)).toStrictEqual(["stages", ".setup", ".versions", "build"]);
   });
+});
+
+describe("global ordering", () => {
+  it("emits the globals in the spec's order, before the templates and the jobs", () => {
+    const parsed = parse(bare(globals()));
+
+    expect(Object.keys(parsed)).toStrictEqual([
+      "default",
+      "include",
+      "stages",
+      "variables",
+      "workflow",
+      ".setup",
+      "build",
+      "image",
+    ]);
+  });
 
   it("emits pipeline raw last, and job raw last, in insertion order", () => {
     const parsed = parse(bare(rawAtBothLevels()));
 
     expect(Object.keys(parsed)).toStrictEqual([
       "stages",
+      "variables",
       "build",
       "image",
-      "variables",
       ".template",
     ]);
     expect(Object.keys(parsed.build)).toStrictEqual([

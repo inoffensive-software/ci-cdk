@@ -35,20 +35,13 @@ describe("raw placement", () => {
         jobs: [job({ name: "build", stage: "build", script: "npm ci" })],
         raw: {
           image: "node:24",
-          workflow: { rules: [{ if: "$CI_COMMIT_BRANCH" }] },
-          variables: { A: "b" },
+          cache: { paths: [".npm"] },
         },
       }),
       { header: "" },
     );
 
-    expect(Object.keys(parse(text))).toStrictEqual([
-      "stages",
-      "build",
-      "image",
-      "workflow",
-      "variables",
-    ]);
+    expect(Object.keys(parse(text))).toStrictEqual(["stages", "build", "image", "cache"]);
   });
 });
 
@@ -61,7 +54,7 @@ describe("job raw placement", () => {
             name: "build",
             stage: "build",
             script: "npm ci",
-            raw: { needs: ["prep"], rules: [], variables: { X: "1" } },
+            raw: { needs: ["prep"], rules: [], allow_failure: true },
           }),
         ],
       }),
@@ -75,7 +68,7 @@ describe("job raw placement", () => {
       "script",
       "needs",
       "rules",
-      "variables",
+      "allow_failure",
     ]);
   });
 
@@ -91,7 +84,7 @@ describe("job raw placement", () => {
 describe("raw values", () => {
   it("round-trips maps, sequences, numbers, booleans, nulls and quoted strings", () => {
     const raw = {
-      variables: {
+      custom: {
         PLAIN: "value",
         NUMBERISH: "1.10",
         BOOLEANISH: "yes",
@@ -235,11 +228,11 @@ describe("raw boundary failures", () => {
     const refused = pipeline({
       jobs: [],
       // @ts-expect-error a Date is not plain data
-      raw: { variables: { BROKEN: new Date(0) } },
+      raw: { custom: { BROKEN: new Date(0) } },
     });
 
     expect(pairsOf(() => toDoc(refused))).toStrictEqual([
-      { path: "$.raw.variables.BROKEN", message: "a Date is not plain data" },
+      { path: "$.raw.custom.BROKEN", message: "a Date is not plain data" },
     ]);
   });
 

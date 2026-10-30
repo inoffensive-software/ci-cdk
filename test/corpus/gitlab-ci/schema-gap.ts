@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 
 import { schemaFromText, walkSchema } from "../../schemas/walk.js";
-import { inventoryPaths } from "./exhaustiveness.js";
+import { AUTHOR_NAMED, inventoryPaths } from "./exhaustiveness.js";
 
 export { GAPS, GAP_CATEGORIES, OVERCLAIMS } from "./schema-gap-debt.js";
 
@@ -18,9 +18,9 @@ const unique = (paths: readonly string[]): readonly string[] => [...new Set(path
  * GitLab's root mixes pipeline keywords with job names. The schema states the rule itself: every
  * keyword is a named property, and `additionalProperties` carries `job`, so a named key stays literal
  * and any other key becomes `$.*`. Hidden templates are a `patternProperties` branch at the same
- * root, which is the same wildcard, so they can neither add a path nor hide one.
+ * root, which is the same wildcard, so they can neither add a path nor hide one. The author-named
+ * list is the gate's own, so a scalar map's keys compare as one position on both sides.
  */
-const AUTHOR_NAMED: readonly string[] = [];
 
 /**
  * The documented grammar: every key path the vendored schema allows from its root, normalised by the
