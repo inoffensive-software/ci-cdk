@@ -10,8 +10,10 @@ import {
   OVERCLAIMS,
   SCHEMA_PATHS,
   gapRemedies,
-  subsumes,
   orphanedGapPaths,
+  staleGapPaths,
+  staleGapRemedies,
+  subsumes,
   undeclaredOverclaimPaths,
   undeclaredSchemaPaths,
   unusedOverclaimPaths,
@@ -28,6 +30,10 @@ describe("schema gap gate", () => {
 
   it("declares no gap the schema does not allow", () => {
     expect(orphanedGapPaths(SCHEMA_PATHS, GAPS)).toStrictEqual([]);
+  });
+
+  it("declares no gap the vocabulary already models", () => {
+    expect(staleGapPaths(MODELLED_PATHS, GAPS)).toStrictEqual([]);
   });
 
   it("declares every modelled path the schema lacks", () => {
@@ -100,6 +106,19 @@ describe("overclaim row subsumption", () => {
 
     expect(undeclared).toContain(`${removed}[]`);
     expect(undeclared.some((path) => subsumes(removed, path))).toBe(true);
+  });
+});
+
+describe("stale gap rows", () => {
+  it("reports a GAPS row for a path the vocabulary already models", () => {
+    const stale: Gap = {
+      path: "$.pipelines.default[].invented",
+      reason: "invented",
+      category: "unmodelled",
+    };
+
+    expect(staleGapPaths([...MODELLED_PATHS, stale.path], [stale])).toStrictEqual([stale.path]);
+    expect(staleGapRemedies(stale.path)).toContain("delete the row");
   });
 });
 
