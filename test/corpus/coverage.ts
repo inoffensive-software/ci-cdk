@@ -18,9 +18,11 @@ interface CoverageOptions<Fixture> {
  * Asserts the provider's coverage ledger against its fixtures, in both directions. The walker stays
  * with the provider because the structures differ; only the assertions are shared.
  */
-export const describeCoverageDebt = <Fixture>(options: CoverageOptions<Fixture>): void => {
-  const { fixtures, rawPathsOf, debt } = options;
-
+export const describeCoverageDebt = <Fixture>({
+  fixtures,
+  rawPathsOf,
+  debt,
+}: CoverageOptions<Fixture>): void => {
   describe("coverage debt", () => {
     it("declares exactly the raw paths the fixtures use, in both directions", () => {
       const declared = debt.map((row) => row.path).toSorted();
