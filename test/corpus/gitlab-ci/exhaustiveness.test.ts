@@ -64,8 +64,8 @@ describe("exhaustiveness gate", () => {
     expect(unusedLedgerPaths(entries.flat(), LEDGER)).toStrictEqual([]);
   });
 
-  it("leaves eighty-two rows, all vocabulary gaps, after the hidden template moved to templates", () => {
-    expect(COVERAGE_DEBT).toHaveLength(82);
+  it("leaves eighty-eight rows, all vocabulary gaps, after the hidden template moved to templates", () => {
+    expect(COVERAGE_DEBT).toHaveLength(88);
   });
 });
 

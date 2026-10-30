@@ -43,3 +43,17 @@ package has no schema entry for the tag, so it drops the tag and keeps the tag's
 `[".name", "changes"]`. The fixture therefore writes that array, and the data comparison cannot tell
 a reference from a literal two-element list. The tag is invisible to this comparison by construction;
 a tag-aware assertion is ticket 43. Nothing else about the entry depends on it.
+
+## gitlab-pages
+
+- Repo: <https://gitlab.com/gitlab-org/gitlab-pages>
+- Commit: `80b941cceb10cb8c18e6cb09314a20ff08847f3e`
+- Path: `.gitlab-ci.yml`
+- Licence: MIT, Copyright GitLab Inc.
+- Vendored as: `gitlab-pages.yml`, SHA-256
+  `99145262691ca02eb9faf0e6181d5dbde33bea4025c5ff1f5709386d81f2cd17`
+- Comparison: data
+- Why this entry: the include-heavy shape the other two entries miss - two local includes and a
+  component include carrying its own `rules`, `workflow` rules, `default` image and tags, a hidden
+  `.common` template with `variables` and a pull-only `cache`, and one job whose `needs: []`,
+  `extends`, `script` and push-policy `cache` override that template.
