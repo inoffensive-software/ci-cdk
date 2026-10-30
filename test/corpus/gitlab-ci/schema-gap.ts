@@ -10,6 +10,10 @@ export { GAPS, OVERCLAIMS } from "./schema-gap-debt.js";
 
 export type { Gap, Overclaim } from "./schema-gap-debt.js";
 
+export type { GapCategory } from "../../schemas/gap-debt.js";
+
+export { GAP_CATEGORIES } from "../../schemas/gap-debt.js";
+
 export {
   gapRemedies,
   orphanedGapPaths,

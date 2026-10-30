@@ -1,0 +1,38 @@
+default:
+  image:
+    name: golang:1.26
+    entrypoint:
+      - ""
+    pull_policy: if-not-present
+  services:
+    - postgres:16
+    - name: redis:7
+      alias: cache
+  tags:
+    - gitlab-org
+  before_script:
+    - make deps
+  after_script: echo done
+  cache:
+    key:
+      files:
+        - go.sum
+      prefix: go-
+    paths:
+      - .cache/go
+    policy: pull
+  artifacts:
+    paths:
+      - dist/
+    when: always
+    reports:
+      junit:
+        - report.xml
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+    exit_codes:
+      - 137
+  timeout: 1h 30m
+  interruptible: true
