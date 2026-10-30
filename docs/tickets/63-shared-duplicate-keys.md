@@ -9,13 +9,13 @@ the provider.
 **Blocked by:** 62 (Core value helpers the providers keep re-writing), because both touch core and the
 provider validate modules.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Core exposes one helper that groups items by a caller-supplied key and returns each duplicated key
+- [x] Core exposes one helper that groups items by a caller-supplied key and returns each duplicated key
       with all of its positions.
-- [ ] GitHub Actions `duplicateIds`, GitLab `duplicateStages` and `duplicateJobNames`, and Bitbucket's
+- [x] GitHub Actions `duplicateIds`, GitLab `duplicateStages` and `duplicateJobNames`, and Bitbucket's
       duplicate selector patterns and custom pipeline names use it; each keeps its own message text and
       its own path segments.
-- [ ] Diagnostic paths and messages are byte-identical to today's, asserted by the existing tests with
+- [x] Diagnostic paths and messages are byte-identical to today's, asserted by the existing tests with
       no edits beyond imports.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.
