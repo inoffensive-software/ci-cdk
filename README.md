@@ -1,4 +1,4 @@
-# @inoffensive/ci
+# @inoffensive/ci-cdk
 
 A typed TypeScript DSL that compiles to CI provider configuration. You write a `ci.ts`, run the
 CLI, and get committed YAML for the providers you target. No runtime dependency on this package:
@@ -17,14 +17,14 @@ tsconfig.test.json   extends the above, typechecks src/ + vitest.config.ts, noEm
 .fallowrc.json       fallow config (JSONC); entry points detected from package.json
 ```
 
-Single package, no workspace: this repo _is_ `@inoffensive/ci`. Providers are directories inside it,
+Single package, no workspace: this repo _is_ `@inoffensive/ci-cdk`. Providers are directories inside it,
 not separate packages -- they ship together, at one version, to one audience, so a package boundary
 would only add build plumbing. Each provider still owns its vocabulary, types, and tests, and gets
 its own subpath export:
 
 ```ts
-import { defineConfig } from "@inoffensive/ci";
-import { githubActions } from "@inoffensive/ci/github-actions";
+import { defineConfig } from "@inoffensive/ci-cdk";
+import { githubActions } from "@inoffensive/ci-cdk/github-actions";
 
 export default defineConfig(githubActions(/* ... */));
 ```
@@ -50,9 +50,9 @@ pnpm test             # vitest run
 pnpm test:watch       # vitest
 pnpm lint             # oxlint
 pnpm fallow           # dead code + duplication + complexity; any subcommand: pnpm fallow health
-pnpm format           # oxfmt, writes
-pnpm format:check     # oxfmt --check
-pnpm check            # format:check -> compile -> typecheck -> lint -> test -> fallow
+pnpm fmt           # oxfmt, writes
+pnpm fmt:check     # oxfmt --check
+pnpm check            # fmt:check -> compile -> typecheck -> lint -> test -> fallow
 ```
 
 Provider emitters assert their YAML with `expect(...).toMatchFileSnapshot("__snapshots__/<name>.yml")`
@@ -63,7 +63,7 @@ from the test file next to the emitter, so the golden files are reviewable in th
 - TypeScript 7.x, ESM only, `module`/`moduleResolution: nodenext`, strict flag set inline in
   `tsconfig.json` (see below).
 - Build is `tsc` alone; no bundler. `exports` points straight at the emitted files.
-- oxlint for linting (`.oxlintrc.json`), oxfmt for formatting (`.oxfmtrc.json`).
+- oxlint for linting (`.oxlintrc.json`), oxfmt for fmtting (`.oxfmtrc.json`).
 - fallow for dead code, duplication, complexity, and architecture (`.fallowrc.json`, JSONC, so it
   carries comments; fallow owns validation of that file, not tsc). It runs clean on zero config --
   entry points are read from `package.json` `exports`/`bin`, so nothing is listed by hand. The config
@@ -74,36 +74,3 @@ from the test file next to the emitter, so the golden files are reviewable in th
   PR-scoped gate. `fallow doctor` diagnoses project detection without changing anything.
 - Versioning and publishing are not wired yet: changesets plus a provenance-enabled release workflow
   are the intended path.
-
-## TypeScript configuration
-
-`tsconfig.json` holds every option; `tsconfig.test.json` only re-includes the test files. Notable
-settings beyond `strict: true`, and what they buy:
-
-- `noUncheckedIndexedAccess` -- `map[key]` and `arr[0]` are `T | undefined`, because index access is
-  unsafe by default.
-- `exactOptionalPropertyTypes` -- `{ a?: string }` rejects `{ a: undefined }`; absent and undefined
-  stay distinct.
-- `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch` -- subclass renames,
-  missing returns, and accidental fallthrough become errors instead of silent behavior.
-- `noPropertyAccessFromIndexSignature` -- `obj.foo` is banned on index signatures, forcing `obj["foo"]`
-  so typos are visible.
-- `noUnusedLocals` / `noUnusedParameters` -- dead code fails the build; prefix `_` to mark a
-  parameter intentionally unused.
-- `allowUnreachableCode: false`, `allowUnusedLabels: false`, `useUnknownInCatchVariables`,
-  `strictBuiltinIteratorReturn` -- no unreachable code, no stray labels, `catch` binds `unknown`,
-  iterators yield `T | undefined`.
-- `verbatimModuleSyntax` -- no import elision or hidden CJS interop; type-only imports must say
-  `import type`.
-- `isolatedModules` / `moduleDetection: force` -- every file is an independently transpilable module.
-- `noUncheckedSideEffectImports` -- a bare `import "./x"` that resolves to nothing is an error.
-- `erasableSyntaxOnly` -- no `enum`, `namespace`, or parameter properties, only syntax Node can strip.
-- `module`/`moduleResolution: nodenext` -- resolve exactly like Node; ESM imports need extensions.
-- `skipLibCheck: false` -- dependency `.d.ts` files are typechecked too. Combined with `lib: ["esnext"]`
-  this is why `@types/node` and `"types": ["node"]` are required: vitest's own types reference Node
-  globals.
-- `target: esnext`, `lib: ["esnext"]` -- no DOM globals leak into Node code; add `"dom"` explicitly
-  if a browser target ever shows up.
-
-If a flag genuinely does not fit, override it per-file with a nested config rather than weakening the
-root one; `erasableSyntaxOnly` is the first candidate if you ever need a real `enum`.

@@ -1,5 +1,5 @@
 {
-  "name": "@inoffensive/ci",
+  "name": "@inoffensive/ci-cdk",
   "version": "0.0.0",
   "description": "Typed TypeScript DSL that compiles to CI provider configuration.",
   "license": "ISC",
@@ -33,9 +33,9 @@
     "test:watch": "vitest",
     "lint": "oxlint",
     "fallow": "fallow",
-    "format": "oxfmt .",
-    "format:check": "oxfmt --check .",
-    "check": "pnpm format:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test && pnpm fallow"
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check .",
+    "check": "pnpm fmt:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test && pnpm fallow"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
