@@ -196,10 +196,13 @@ const entriesFor = (
 const TABLE_HEADER: readonly string[] = ["Area", "Modelled paths", "Corpus entries"];
 
 /** Column padding matches the markdown formatter, so `pnpm fmt` does not rewrite the block. */
-const formatTable = (rows: readonly (readonly string[])[]): string => {
-  const all = [TABLE_HEADER, ...rows];
+export const formatTable = (
+  header: readonly string[],
+  rows: readonly (readonly string[])[],
+): string => {
+  const all = [header, ...rows];
 
-  const widths = TABLE_HEADER.map((_, column) =>
+  const widths = header.map((_, column) =>
     Math.max(...all.map((row) => (row[column] ?? "").length)),
   );
 
@@ -208,7 +211,7 @@ const formatTable = (rows: readonly (readonly string[])[]): string => {
 
   const separator = `| ${widths.map((width) => "-".repeat(width)).join(" | ")} |`;
 
-  return [line(TABLE_HEADER), separator, ...rows.map((row) => line(row))].join("\n");
+  return [line(header), separator, ...rows.map((row) => line(row))].join("\n");
 };
 
 /**
@@ -232,7 +235,7 @@ export const renderCoverageTable = (
     return [area.name, cells, entries.length === 0 ? "—" : entries.join(", ")];
   });
 
-  return formatTable(rows);
+  return formatTable(TABLE_HEADER, rows);
 };
 
 /** The open-gaps section: the ledger, or a sentence saying there is none. */
