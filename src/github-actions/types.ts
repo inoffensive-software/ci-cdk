@@ -1,4 +1,4 @@
-import type { Text } from "../core/index.js";
+import type { Text, Value } from "../core/index.js";
 import type { On } from "./trigger.js";
 
 /** A shell or action step, in GitHub's documented key order. */
@@ -14,6 +14,8 @@ export interface Step {
   readonly env?: Readonly<Record<string, Text>>;
   readonly "continue-on-error"?: boolean | Text;
   readonly "timeout-minutes"?: number;
+  /** Keys the vocabulary does not model, emitted in this step's body after the modelled keys. */
+  readonly raw?: Readonly<Record<string, Value>>;
 }
 
 /**
@@ -117,6 +119,8 @@ export interface Job {
   readonly uses?: string;
   readonly with?: Readonly<Record<string, Text>>;
   readonly secrets?: Secrets;
+  /** Keys the vocabulary does not model, emitted in this job's body after the modelled keys. */
+  readonly raw?: Readonly<Record<string, Value>>;
 }
 
 export interface Workflow {
@@ -127,6 +131,11 @@ export interface Workflow {
   readonly defaults?: Defaults;
   readonly concurrency?: Concurrency;
   readonly jobs: readonly Job[];
+  /**
+   * Keys the vocabulary does not model. Lowered after the modelled keys, in author order, and
+   * checked by the core boundary parser like any other plain data.
+   */
+  readonly raw?: Readonly<Record<string, Value>>;
 }
 
 /**

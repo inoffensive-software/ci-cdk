@@ -1,9 +1,11 @@
 import {
+  DiagnosticError,
   block,
   fail,
   fromValue,
   map,
   seq,
+  type Diagnostic,
   type Doc,
   type DocEntry,
   type Text,
@@ -22,6 +24,92 @@ import type {
 } from "./types.js";
 import { validate } from "./validate.js";
 
+const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
+
+/** The core path notation, repeated so a raw diagnostic points at what the author wrote. */
+const keyPath = (path: string, key: string): string =>
+  IDENTIFIER.test(key) ? `${path}.${key}` : `${path}[${JSON.stringify(key)}]`;
+
+/** `fromValue` reports from `$`; re-root its paths at the raw block it was given. */
+const rebase = (prefix: string, diagnostic: Diagnostic): Diagnostic =>
+  diagnostic.hint === undefined
+    ? { path: `${prefix}${diagnostic.path.slice(1)}`, message: diagnostic.message }
+    : {
+        path: `${prefix}${diagnostic.path.slice(1)}`,
+        message: diagnostic.message,
+        hint: diagnostic.hint,
+      };
+
+/**
+ * The raw block as entries, or none when the boundary refused it. Lowering the whole block at once
+ * is what makes the container itself checked: a cast that passes a `Map`, a `Set` or an array is
+ * reported, not silently dropped.
+ */
+const lowerRawBlock = (
+  raw: Readonly<Record<string, Value>>,
+  rawPath: string,
+  diagnostics: Diagnostic[],
+): readonly DocEntry[] => {
+  try {
+    const doc = fromValue(raw);
+
+    if (doc.kind !== "map") {
+      diagnostics.push({ path: rawPath, message: "raw must be a plain record of keys to values" });
+
+      return [];
+    }
+
+    return doc.entries;
+  } catch (error) {
+    if (!(error instanceof DiagnosticError)) {
+      throw error;
+    }
+
+    diagnostics.push(...error.diagnostics.map((diagnostic) => rebase(rawPath, diagnostic)));
+
+    return [];
+  }
+};
+
+/**
+ * Keys the vocabulary does not model, appended after the modelled keys at their own level. A key
+ * that is already emitted here is refused rather than duplicated; `reserved` covers keys that are
+ * struct identity and never appear in the body.
+ *
+ * Author order holds for every key a JavaScript record keeps in insertion order; integer-like keys
+ * sort first, as they do everywhere else in this library.
+ */
+const rawEntries = (
+  path: string,
+  raw: Readonly<Record<string, Value>> | undefined,
+  modelled: readonly DocEntry[],
+  diagnostics: Diagnostic[],
+  reserved: readonly string[] = [],
+): readonly DocEntry[] => {
+  if (raw === undefined) {
+    return [];
+  }
+
+  const rawPath = keyPath(path, "raw");
+  const taken = new Set([...modelled.map((entry) => entry.key), ...reserved]);
+  const kept: DocEntry[] = [];
+
+  for (const item of lowerRawBlock(raw, rawPath, diagnostics)) {
+    if (taken.has(item.key)) {
+      diagnostics.push({
+        path: keyPath(rawPath, item.key),
+        message: `raw key "${item.key}" is already emitted at this level`,
+        hint: "use the modelled field, or remove the raw entry",
+      });
+      continue;
+    }
+
+    kept.push(item);
+  }
+
+  return kept;
+};
+
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
@@ -39,8 +127,8 @@ const run = (value: Text | undefined): Doc | undefined => {
   return typeof value === "string" ? block(value) : fromValue(value);
 };
 
-const stepDoc = (step: Step): Doc =>
-  map([
+const stepDoc = (step: Step, path: string, diagnostics: Diagnostic[]): Doc => {
+  const modelled = [
     ...entry("id", present(step.id)),
     ...entry("if", present(step.if)),
     ...entry("name", present(step.name)),
@@ -52,7 +140,10 @@ const stepDoc = (step: Step): Doc =>
     ...entry("env", present(step.env)),
     ...entry("continue-on-error", present(step["continue-on-error"])),
     ...entry("timeout-minutes", present(step["timeout-minutes"])),
-  ]);
+  ];
+
+  return map([...modelled, ...rawEntries(path, step.raw, modelled, diagnostics)]);
+};
 
 const runDefaultsDoc = (runDefaults: RunDefaults): Doc =>
   map([
@@ -109,8 +200,8 @@ const strategyDoc = (strategy: Strategy): Doc =>
     ...entry("max-parallel", present(strategy["max-parallel"])),
   ]);
 
-const jobDoc = (job: Job): Doc =>
-  map([
+const jobDoc = (job: Job, path: string, diagnostics: Diagnostic[]): Doc => {
+  const modelled = [
     ...entry("name", present(job.name)),
     ...entry("permissions", job.permissions === undefined ? undefined : fromValue(job.permissions)),
     ...entry("needs", present(job.needs)),
@@ -127,7 +218,14 @@ const jobDoc = (job: Job): Doc =>
     ...entry("outputs", present(job.outputs)),
     ...entry("env", present(job.env)),
     ...entry("defaults", job.defaults === undefined ? undefined : defaultsDoc(job.defaults)),
-    ...entry("steps", job.steps === undefined ? undefined : seq(job.steps.map(stepDoc))),
+    ...entry(
+      "steps",
+      job.steps === undefined
+        ? undefined
+        : seq(
+            job.steps.map((item, index) => stepDoc(item, `${path}.steps[${index}]`, diagnostics)),
+          ),
+    ),
     ...entry("timeout-minutes", present(job["timeout-minutes"])),
     ...entry("strategy", job.strategy === undefined ? undefined : strategyDoc(job.strategy)),
     ...entry("continue-on-error", present(job["continue-on-error"])),
@@ -136,7 +234,10 @@ const jobDoc = (job: Job): Doc =>
     ...entry("uses", present(job.uses)),
     ...entry("with", present(job.with)),
     ...entry("secrets", present(job.secrets)),
-  ]);
+  ];
+
+  return map([...modelled, ...rawEntries(path, job.raw, modelled, diagnostics, ["id"])]);
+};
 
 /**
  * Validates the whole document, collects every problem, then lowers it. `jobs` is an array on the
@@ -144,13 +245,9 @@ const jobDoc = (job: Job): Doc =>
  * with `id` stripped from the body.
  */
 export const toDoc = (workflow: Workflow): Doc => {
-  const diagnostics = validate(workflow);
+  const diagnostics: Diagnostic[] = [...validate(workflow)];
 
-  if (diagnostics.length > 0) {
-    fail(...diagnostics);
-  }
-
-  return map([
+  const modelled = [
     { key: "name", value: fromValue(workflow.name) },
     { key: "on", value: fromValue(workflow.on) },
     ...entry(
@@ -168,7 +265,20 @@ export const toDoc = (workflow: Workflow): Doc => {
     ),
     {
       key: "jobs",
-      value: map(workflow.jobs.map((job) => ({ key: job.id, value: jobDoc(job) }))),
+      value: map(
+        workflow.jobs.map((job, index) => ({
+          key: job.id,
+          value: jobDoc(job, `$.jobs[${index}]`, diagnostics),
+        })),
+      ),
     },
-  ]);
+  ];
+
+  const doc = map([...modelled, ...rawEntries("$", workflow.raw, modelled, diagnostics)]);
+
+  if (diagnostics.length > 0) {
+    fail(...diagnostics);
+  }
+
+  return doc;
 };
