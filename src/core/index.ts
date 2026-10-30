@@ -13,6 +13,8 @@ export type {
   Text,
 } from "./doc.js";
 
+export { duplicatesBy } from "./duplicates.js";
+
 export { DiagnosticError, fail, formatDiagnostics } from "./errors.js";
 
 export type { Diagnostic } from "./errors.js";

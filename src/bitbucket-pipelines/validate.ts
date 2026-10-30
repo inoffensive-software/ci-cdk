@@ -1,3 +1,4 @@
+import { duplicatesBy } from "../core/index.js";
 import type { Diagnostic } from "../core/index.js";
 import { keyPath } from "../core/paths.js";
 import { pipelineProblems } from "./item-problems.js";
@@ -59,7 +60,7 @@ const selectorProblems = (
 
   const sectionPath = keyPath("$.pipelines", section);
   const diagnostics: Diagnostic[] = [];
-  const seen = new Set<string>();
+  const repeated = duplicatesBy(entries, (entry) => entry.pattern);
 
   for (const [index, selector] of entries.entries()) {
     const patternPath = `${sectionPath}[${index}].pattern`;
@@ -69,13 +70,13 @@ const selectorProblems = (
       diagnostics.push({ path: patternPath, message: "pattern must not be empty" });
     }
 
-    if (seen.has(selector.pattern)) {
+    const occurrences = repeated.get(selector.pattern);
+
+    if (occurrences !== undefined && occurrences[0] !== index) {
       diagnostics.push({
         path: patternPath,
         message: `duplicate pattern "${selector.pattern}": two pipelines for one branch`,
       });
-    } else {
-      seen.add(selector.pattern);
     }
 
     if (selector.pipeline.length === 0) {
@@ -98,7 +99,7 @@ const customProblems = (entries: readonly NamedPipeline[] | undefined): readonly
   }
 
   const diagnostics: Diagnostic[] = [];
-  const seen = new Set<string>();
+  const repeated = duplicatesBy(entries, (entry) => entry.name);
 
   for (const [index, entry] of entries.entries()) {
     const namePath = `$.pipelines.custom[${index}].name`;
@@ -108,13 +109,13 @@ const customProblems = (entries: readonly NamedPipeline[] | undefined): readonly
       diagnostics.push({ path: namePath, message: "custom pipeline name must not be empty" });
     }
 
-    if (seen.has(entry.name)) {
+    const occurrences = repeated.get(entry.name);
+
+    if (occurrences !== undefined && occurrences[0] !== index) {
       diagnostics.push({
         path: namePath,
         message: `duplicate custom pipeline "${entry.name}": two pipelines share one name`,
       });
-    } else {
-      seen.add(entry.name);
     }
 
     if (entry.pipeline.length === 0) {

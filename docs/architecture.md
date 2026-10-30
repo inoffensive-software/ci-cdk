@@ -114,6 +114,7 @@ describe the thing without naming a provider? If not, it belongs in a provider d
 
 ```
 src/core/doc.ts         the Doc union, Scalar and its constructors (map, seq, scalar, block, tagged)
+src/core/duplicates.ts  duplicatesBy(): the keys claimed more than once, each with all their positions
 src/core/fields.ts      entry(): the absent-field guard; present(): lower a field or leave it absent
 src/core/from-value.ts  fromValue(unknown) -> Doc: the boundary parser
 src/core/canonical-number.ts  the canonical-number predicate fromValue and the serializer share

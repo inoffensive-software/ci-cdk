@@ -1,3 +1,4 @@
+import { duplicatesBy } from "../core/index.js";
 import type { Diagnostic } from "../core/index.js";
 import type { Job, Pipeline } from "./types.js";
 
@@ -33,30 +34,10 @@ const namePath = (index: number): string => `${jobPath(index)}.name`;
 
 const scriptPath = (index: number): string => `${jobPath(index)}.script`;
 
-const positionsOf = (values: readonly string[]): ReadonlyMap<string, readonly number[]> => {
-  const positions = new Map<string, number[]>();
-
-  for (const [index, value] of values.entries()) {
-    const found = positions.get(value);
-
-    if (found === undefined) {
-      positions.set(value, [index]);
-    } else {
-      found.push(index);
-    }
-  }
-
-  return positions;
-};
-
 const duplicateStages = (stages: readonly string[]): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
-  for (const [stage, indexes] of positionsOf(stages)) {
-    if (indexes.length < 2) {
-      continue;
-    }
-
+  for (const [stage, indexes] of duplicatesBy(stages, (value) => value)) {
     const message = `duplicate stage "${stage}": ${indexes.map((index) => stagePath(index)).join(" and ")}`;
 
     for (const index of indexes) {
@@ -116,11 +97,7 @@ const jobNameProblems = (jobs: readonly Job[]): readonly Diagnostic[] => {
 const duplicateJobNames = (jobs: readonly Job[]): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
-  for (const [name, indexes] of positionsOf(jobs.map((item) => item.name))) {
-    if (indexes.length < 2) {
-      continue;
-    }
-
+  for (const [name, indexes] of duplicatesBy(jobs, (item) => item.name)) {
     const message = `duplicate job name "${name}": ${indexes.map((index) => namePath(index)).join(" and ")}`;
 
     for (const index of indexes) {
