@@ -63,8 +63,8 @@ describe("exhaustiveness gate", () => {
     expect(unusedLedgerPaths(entries.flat(), LEDGER)).toStrictEqual([]);
   });
 
-  it("leaves twenty-four rows, all vocabulary gaps, after the job fundamentals landed", () => {
-    expect(COVERAGE_DEBT).toHaveLength(24);
+  it("leaves six rows, all vocabulary gaps, after rules and needs landed", () => {
+    expect(COVERAGE_DEBT).toHaveLength(6);
   });
 });
 

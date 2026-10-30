@@ -37,9 +37,7 @@ export const GITLAB_PAGES: Pipeline = pipeline({
         paths: [".GOPATH/pkg/mod/"],
         policy: "push",
       },
-      raw: {
-        needs: [],
-      },
+      needs: [],
     }),
   ],
   workflow: {

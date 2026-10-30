@@ -43,7 +43,8 @@ const rawAtBothLevels = (): Pipeline =>
         stage: "build",
         script: "make",
         artifacts: { paths: ["dist/"] },
-        raw: { needs: [], rules: [{ if: "$CI_COMMIT_BRANCH" }] },
+        needs: [],
+        rules: [{ if: "$CI_COMMIT_BRANCH" }],
       }),
     ],
     raw: {
@@ -272,10 +273,10 @@ describe("global ordering", () => {
     ]);
     expect(Object.keys(parsed.build)).toStrictEqual([
       "stage",
-      "artifacts",
-      "script",
       "needs",
       "rules",
+      "artifacts",
+      "script",
     ]);
   });
 });

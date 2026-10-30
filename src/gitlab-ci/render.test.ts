@@ -117,7 +117,7 @@ describe("stages", () => {
 
 describe("script", () => {
   it("omits the key entirely when the job declares no script", () => {
-    const text = render(pipeline({ jobs: [job({ name: "markdownlint", raw: { needs: [] } })] }), {
+    const text = render(pipeline({ jobs: [job({ name: "markdownlint", needs: [] })] }), {
       header: "",
     });
 
