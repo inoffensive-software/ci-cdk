@@ -49,10 +49,21 @@ const describe = (error: ErrorObject): string => {
 /**
  * Parses emitted YAML and validates the data against `test/schemas/<provider>.json`, collecting every
  * violation. The text is the boundary: what the emitter wrote is the only thing under test.
+ *
+ * Root keys starting with `.` are dropped first. GitLab accepts them as anchor-only data that
+ * `extends` points at, never a job or a global; the schema describes jobs and globals, so it cannot
+ * judge that data, and validating it would report the provider's own parser as the error. The rule
+ * applies to every provider because a hidden key is author data by definition, and removes nothing
+ * else.
  */
 export const problemsFor = (provider: string, text: string): readonly SchemaProblem[] => {
   const validate = validatorFor(provider);
-  const document: unknown = parse(text);
+  const parsed: unknown = parse(text);
+
+  const document =
+    parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)
+      ? Object.fromEntries(Object.entries(parsed).filter(([key]) => !key.startsWith(".")))
+      : parsed;
 
   if (validate(document)) {
     return [];

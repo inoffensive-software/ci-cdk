@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { job, render, step, workflow } from "../../src/github-actions/index.js";
+import {
+  job as gitlabJob,
+  pipeline as gitlabPipeline,
+  render as gitlabRender,
+} from "../../src/gitlab-ci/index.js";
 import { problemsFor, type SchemaProblem } from "./validate.js";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
@@ -105,6 +110,22 @@ const unmodelledRaw = (): string =>
     { header: "" },
   );
 
+/** A pipeline whose only flaw is a `raw` job key no GitLab schema knows, built through the public API. */
+const unmodelledGitlabRaw = (): string =>
+  gitlabRender(
+    gitlabPipeline({
+      jobs: [
+        gitlabJob({
+          name: "build",
+          stage: "build",
+          script: "npm ci",
+          raw: { "not-a-gitlab-key": true },
+        }),
+      ],
+    }),
+    { header: "" },
+  );
+
 const remoteReferences = (schema: string): readonly string[] =>
   [...schema.matchAll(/"\$ref":\s*"([^"]+)"/gu)].flatMap((match) => {
     const reference = match[1] ?? "";
@@ -145,6 +166,12 @@ describe("schema conformance", () => {
     expect(problems).toContain(
       '/jobs/build must NOT have additional properties: "not-a-github-key"',
     );
+  });
+
+  it("rejects a GitLab document carrying an unmodelled key through raw", () => {
+    const problems = described(problemsFor("gitlab-ci", unmodelledGitlabRaw()));
+
+    expect(problems).toContain('/build must NOT have additional properties: "not-a-gitlab-key"');
   });
 
   it("vendors a self-contained schema with no remote references", () => {
