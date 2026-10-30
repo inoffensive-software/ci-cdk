@@ -26,7 +26,6 @@ export type {
   CronEntry,
   EventFilter,
   EventName,
-  ImageVersionFilter,
   Input,
   InputType,
   On,

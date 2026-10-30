@@ -11,7 +11,6 @@ export type EventName =
   | "discussion_comment"
   | "fork"
   | "gollum"
-  | "image_version"
   | "issue_comment"
   | "issues"
   | "label"
@@ -48,12 +47,6 @@ export interface EventFilter {
 /** The only option an event with activity types takes: the types that fire the run. */
 export interface TypesFilter {
   readonly types?: readonly string[];
-}
-
-/** The filters `image_version` accepts; both support glob patterns. */
-export interface ImageVersionFilter {
-  readonly names?: readonly string[];
-  readonly versions?: readonly string[];
 }
 
 export interface CronEntry {
@@ -111,13 +104,7 @@ export interface WorkflowCall {
 /** A documented event that takes no options; it emits as `null`, the way a bare event is written. */
 type EmptyTrigger = Readonly<Record<string, never>>;
 
-type ConfiguredEvent =
-  | "push"
-  | "pull_request"
-  | "image_version"
-  | "schedule"
-  | "workflow_call"
-  | "workflow_dispatch";
+type ConfiguredEvent = "push" | "pull_request" | "schedule" | "workflow_call" | "workflow_dispatch";
 
 /** The events whose only documented option is the activity types that fire them. */
 type TypedEvent =
@@ -147,7 +134,6 @@ type TypedEvent =
 export type Triggers = {
   readonly push?: EventFilter;
   readonly pull_request?: EventFilter;
-  readonly image_version?: ImageVersionFilter;
   readonly schedule?: readonly CronEntry[];
   readonly workflow_call?: WorkflowCall;
   readonly workflow_dispatch?: WorkflowDispatch;

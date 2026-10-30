@@ -12,32 +12,32 @@ export const GAPS: readonly Gap[] = [
   {
     path: "$.jobs.*.services.*.command",
     reason:
-      "a Docker `CMD` override for one service container, passed as arguments after the image name, and combined with `entrypoint` when both are given",
-    category: "unmodelled",
+      "a Docker `CMD` override for one service container; the service `command`/`entrypoint` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using it",
+    category: "out-of-scope",
   },
   {
     path: "$.jobs.*.services.*.entrypoint",
     reason:
-      "a Docker `ENTRYPOINT` override for one service container, a single executable given as a string",
-    category: "unmodelled",
+      "a Docker `ENTRYPOINT` override for one service container; the service `command`/`entrypoint` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using it",
+    category: "out-of-scope",
   },
   {
     path: "$.jobs.*.snapshot",
     reason:
-      "asks the job to build a custom runner image from its steps, either as an image name string or as a mapping of `image-name` and an optional `version`",
-    category: "unmodelled",
+      "the `snapshot` job key in both its string and mapping forms; the `snapshot` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using it",
+    category: "out-of-scope",
   },
   {
     path: "$.jobs.*.snapshot.version",
     reason:
-      "the major version a generated image is built under, a string such as `1` or `1.2`, in the mapping form of `snapshot`",
-    category: "unmodelled",
+      "the version of the mapping form of `snapshot`; the `snapshot` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using the key",
+    category: "out-of-scope",
   },
   {
     path: '$.jobs.*.snapshot["image-name"]',
     reason:
-      "the name a generated image is published under, the required key of the mapping form of `snapshot`",
-    category: "unmodelled",
+      "the image name of the mapping form of `snapshot`; the `snapshot` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using the key",
+    category: "out-of-scope",
   },
   {
     path: "$.jobs.*.steps[].parallel[].parallel",
