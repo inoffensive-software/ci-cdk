@@ -1,37 +1,9 @@
+import { type Gap, type Overclaim, gapCategoryOf } from "../../schemas/gap-debt.js";
 import debt from "./schema-gap-debt.json" with { type: "json" };
 
-/**
- * The only categories a gap may carry. `unmodelled` is debt the provider should pay; `out-of-scope`
- * is a shape the provider document already names as a non-goal; `schema-noise` is grammar the schema
- * permits that GitLab does not document.
- */
-export const GAP_CATEGORIES = ["unmodelled", "out-of-scope", "schema-noise"] as const;
+export { GAP_CATEGORIES } from "../../schemas/gap-debt.js";
 
-export type GapCategory = (typeof GAP_CATEGORIES)[number];
-
-/** A schema path the vocabulary cannot emit, with the debt it represents. */
-export interface Gap {
-  readonly path: string;
-  readonly reason: string;
-  readonly category: GapCategory;
-}
-
-/** A modelled path the schema does not enumerate, with the disagreement named. */
-export interface Overclaim {
-  readonly path: string;
-  readonly reason: string;
-}
-
-/** The category a row claims, refused here so an open string cannot reach the report. */
-const categoryOf = (value: string): GapCategory => {
-  const found = GAP_CATEGORIES.find((category) => category === value);
-
-  if (found === undefined) {
-    throw new Error(`${JSON.stringify(value)} is not a gap category`);
-  }
-
-  return found;
-};
+export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
 
 /**
  * The roadmap of documented grammar this provider cannot emit, one row per missing keyword. Every row
@@ -46,7 +18,7 @@ const categoryOf = (value: string): GapCategory => {
 export const GAPS: readonly Gap[] = debt.map((row) => ({
   path: row.path,
   reason: row.reason,
-  category: categoryOf(row.category),
+  category: gapCategoryOf(row.category),
 }));
 
 /**
