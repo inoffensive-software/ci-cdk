@@ -5,13 +5,12 @@ import type { IncludeEntry } from "./types.js";
 export type TriggerStrategy = "depend" | "mirror";
 
 /**
- * A multi-project trigger: the project to run, the branch or ref, and what to pass. Every value is
+ * A multi-project trigger: the project to run, the branch, and what to pass. Every value is
  * data; the target is never looked up.
  */
 export interface ProjectTrigger {
   readonly project: Text;
   readonly branch?: Text;
-  readonly ref?: Text;
   readonly strategy?: TriggerStrategy;
   readonly inputs?: Readonly<Record<string, Scalar>>;
 }

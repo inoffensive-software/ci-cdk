@@ -33,14 +33,14 @@ describe("job trigger: multi-project", () => {
     const parsed = body({
       trigger: {
         project: "${DOWNSTREAM_PROJECT}",
-        ref: "release/1.5",
+        branch: "release/1.5",
         inputs: { VERSION: "1.5", SHARDS: 4 },
       },
     });
 
     expect(parsed["trigger"]).toStrictEqual({
       project: "${DOWNSTREAM_PROJECT}",
-      ref: "release/1.5",
+      branch: "release/1.5",
       inputs: { VERSION: "1.5", SHARDS: 4 },
     });
   });

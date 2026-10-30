@@ -48,7 +48,6 @@ export const triggerDoc = (trigger: Trigger): Doc => {
     return map([
       { key: "project", value: fromValue(trigger.project) },
       ...entry("branch", present(trigger.branch)),
-      ...entry("ref", present(trigger.ref)),
       ...entry("strategy", present(trigger.strategy)),
       ...entry("inputs", trigger.inputs === undefined ? undefined : fromValue(trigger.inputs)),
     ]);
