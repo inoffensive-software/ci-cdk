@@ -9,7 +9,7 @@ import {
   job as gitlabJob,
   pipeline as gitlabPipeline,
   render as gitlabRender,
-} from "../../src/gitlab-ci/index.js";
+} from "@inoffensive/ci-cdk/gitlab-ci";
 import { INVENTORY } from "../corpus/gitlab-ci/inventory.js";
 import { problemsFor, type SchemaProblem } from "./validate.js";
 
@@ -134,6 +134,14 @@ const remoteReferences = (schema: string): readonly string[] =>
     return reference.startsWith("#/") ? [] : [reference];
   });
 
+/** Every schema problem across the GitLab inventory, named by the inventory document that caused it. */
+const gitlabInventoryProblems = (): readonly string[] =>
+  INVENTORY.flatMap((document) =>
+    problemsFor("gitlab-ci", gitlabRender(document.pipeline, { header: "" })).map(
+      (problem) => `${document.name}: ${problem.path} ${problem.message}`,
+    ),
+  );
+
 const ALL = fixtures();
 const VALID = ALL.filter((fixture) => !NEGATIVE_FIXTURES.includes(fixture.path));
 
@@ -177,14 +185,7 @@ describe("schema conformance", () => {
 
   it("validates every GitLab inventory document", () => {
     expect(INVENTORY.length).toBeGreaterThan(0);
-
-    const problems = INVENTORY.flatMap((document) =>
-      problemsFor("gitlab-ci", gitlabRender(document.pipeline, { header: "" })).map(
-        (problem) => `${document.name}: ${problem.path} ${problem.message}`,
-      ),
-    );
-
-    expect(problems).toStrictEqual([]);
+    expect(gitlabInventoryProblems()).toStrictEqual([]);
   });
 
   it("vendors a self-contained schema with no remote references", () => {
