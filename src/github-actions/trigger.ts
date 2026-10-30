@@ -90,7 +90,7 @@ export interface WorkflowDispatch {
   readonly inputs?: Readonly<Record<string, Input>>;
 }
 
-/** A documented event that takes no options; it emits as an empty map. */
+/** A documented event that takes no options; it emits as `null`, the way a bare event is written. */
 type EmptyTrigger = Readonly<Record<string, never>>;
 
 type ConfiguredEvent = "push" | "pull_request" | "image_version" | "schedule" | "workflow_dispatch";

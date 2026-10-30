@@ -1,0 +1,11 @@
+name: CI
+on:
+  push: null
+  pull_request: null
+  workflow_call: null
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |-
+          npm test

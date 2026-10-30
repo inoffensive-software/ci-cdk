@@ -11,6 +11,7 @@ import {
   type Text,
   type Value,
 } from "../core/index.js";
+import { onDoc } from "./on-doc.js";
 import type {
   Concurrency,
   Container,
@@ -253,7 +254,7 @@ export const toDoc = (workflow: Workflow): Doc => {
 
   const modelled = [
     { key: "name", value: fromValue(workflow.name) },
-    { key: "on", value: fromValue(workflow.on) },
+    { key: "on", value: onDoc(workflow.on) },
     ...entry(
       "permissions",
       workflow.permissions === undefined ? undefined : fromValue(workflow.permissions),

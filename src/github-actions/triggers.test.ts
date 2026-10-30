@@ -33,8 +33,16 @@ describe("trigger shapes", () => {
     expect(renderOn("workflow_call")).toContain("on: workflow_call\n");
   });
 
-  it("emits an event with no options as an empty map", () => {
-    expect(renderOn({ workflow_call: {} })).toContain("on:\n  workflow_call: {}\n");
+  it("emits an event with no options as a null, the way a bare event is written", () => {
+    expect(renderOn({ workflow_call: {} })).toContain("on:\n  workflow_call: null\n");
+  });
+});
+
+describe("bare event golden", () => {
+  it("pins events with no options beside a configured one", async () => {
+    await expect(renderOn({ push: {}, pull_request: {}, workflow_call: {} })).toMatchFileSnapshot(
+      "__snapshots__/bare-events.yml",
+    );
   });
 });
 

@@ -7,7 +7,7 @@ Pinned real-world configs. Each provider's scope is defined by this corpus rathe
 
 ```
 test/corpus/<provider>/<name>.yml          the upstream config, vendored verbatim
-test/corpus/<provider>/<name>.test.ts      reproduces it and asserts byte equality
+test/corpus/<provider>/<name>.test.ts      reproduces it and asserts equal data
 test/corpus/<provider>/fixtures.ts         the definition each entry reproduces, one export per entry
 test/corpus/<provider>/coverage-debt.ts    the ledger of raw paths the fixtures need, with reasons
 test/corpus/<provider>/coverage.test.ts    asserts the ledger against the fixtures, both ways
@@ -15,20 +15,23 @@ test/corpus/<provider>/PROVENANCE.md       repo, commit SHA, path, licence for e
 ```
 
 Definitions live in `fixtures.ts` rather than in the test so the ledger can walk every fixture in one
-place; a `<name>.test.ts` loads its vendored file and compares the rendered string.
+place; a `<name>.test.ts` loads its vendored file and compares the data.
 
 ## Comparison rule
 
-A corpus test renders the equivalent definition with `render(workflow, { header: "" })` and asserts
-the whole string equals the vendored bytes. Nothing is normalised and nothing is re-read through a
-YAML parser: a CRLF line ending, a missing trailing newline, a quoting difference or a trailing space
-each fail the test.
+A corpus test renders the definition with `render(workflow, { header: "" })` and compares **data, not
+bytes**: the vendored file and the rendered output are both parsed with the `yaml` package, and the
+two values must be deeply equal.
 
-That rule is what makes selection the hard part. The format contract permits exactly one comment
-line at the top (which the corpus suppresses) and no blank lines, so an upstream config containing
-comments or blank lines cannot be reproduced byte for byte and is **not** a corpus entry. The same
-applies to any other mismatch: if a config cannot be reproduced as-is it stays out, or the mismatch
-becomes a declared row in the ledger. It is never worked around by editing the vendored file.
+Maps are unordered in YAML and styles are presentation, so key order, quoting, block versus flow
+collections, blank lines and comment-free-ness do not affect the result. Everything that carries
+meaning does: a missing key, a key the vocabulary cannot emit at all, a wrong value, a wrong nesting,
+or a scalar of the wrong type (a quoted `"10"` where upstream has the number `10`). Editing the
+vendored file remains forbidden: if the data cannot be expressed, that is a coverage gap.
+
+The header is suppressed because the vendored file has none. Byte equality is still asserted where an
+entry achieves it - `got` does - and `PROVENANCE.md` says which entries are byte-identical and which
+match data only. ADR 0005 records why the rule is semantic.
 
 ## Rules
 
@@ -49,9 +52,12 @@ becomes a declared row in the ledger. It is never worked around by editing the v
 
 ## Coverage debt
 
-`coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why the DSL
-cannot express it yet, either because the key is unmodelled or because the modelled key's emitted
-style differs from upstream. `coverage.test.ts` walks the fixtures and asserts set equality in
-both directions - a fixture that starts using `raw` without a row fails, and a row no fixture uses
-fails. Adding a row is a deliberate widening of the escape hatch; deleting one is how a gap closes.
-The fraction of the corpus needing `raw` is the roadmap.
+`coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why. Two kinds
+of row are legal. Most are vocabulary gaps: the key is not modelled. The rest exist only because an
+entry is also checked byte for byte (see `got`), where the modelled field exists but its emitted style
+differs from the file; those rows would disappear if that entry were compared as data only.
+
+`coverage.test.ts` walks the fixtures and asserts set equality in both directions - a fixture that
+starts using `raw` without a row fails, and a row no fixture uses fails. Adding a row is a deliberate
+widening of the escape hatch; deleting one is how a gap closes. The vocabulary-gap rows are the
+roadmap; the byte-fidelity rows are not.
