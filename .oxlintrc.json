@@ -48,6 +48,7 @@
         "minimumDescriptionLength": 10
       }
     ],
+    "typescript/no-explicit-any": "error",
     "oxc/no-accumulating-spread": "error",
     "anti-slop/no-array-filter-map": "error",
     "anti-slop/no-reduce-accumulator-copy": "error",
@@ -70,5 +71,13 @@
     "unicorn/prefer-global-this": "error",
     "unicorn/prefer-node-protocol": "error",
     "unicorn/no-abusive-eslint-disable": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/core/from-value.ts"],
+      "rules": {
+        "anti-slop/no-unknown-parameters": "off"
+      }
+    }
+  ]
 }

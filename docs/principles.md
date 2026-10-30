@@ -36,7 +36,9 @@ Settles: How tasks should be approached.
 
 End to end typesafety is non-negotiable. Do not use casts to satisfy (but lie) to the typechecker. When writing tests create re-usable mock functions if type-safe arrangement is verbose.
 
-Settles: How to leverage the Typescript compiler and how to think about typesafety
+`any` is never acceptable: it is unchecked by definition. `unknown` is acceptable, but only at a boundary, meaning the one function that takes untyped input and returns a valid type. Nothing downstream may see it. A cast is not a boundary; it asserts without checking. `Value` in core is the type data has once it has crossed.
+
+Settles: How to leverage the Typescript compiler, how to think about typesafety, and where untyped input is allowed to enter
 
 ## Not an ORM
 

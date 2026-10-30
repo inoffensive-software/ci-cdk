@@ -79,6 +79,9 @@ pnpm fmt            # oxfmt, writes
 - Value-level, not struct-level: `fromValue` on a whole struct bypasses the typed layer and lets
   unmodelled keys through silently.
 
+- The vendored anti-slop rules reject `unknown` in parameters and in dictionary values. The public
+  API uses the precise `Value` type instead; see "Open decisions" in `docs/architecture.md`.
+
 ## Tests
 
 Colocated: `src/foo.test.ts`, golden files in `src/__snapshots__/`. Every provider ships golden
