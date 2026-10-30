@@ -64,8 +64,9 @@ is the record for paths, hashes and licences; every entry is compared as data.
 
 ## Quirks
 
-- **`on` is a key.** YAML 1.1 reads a bare `on` as boolean true; the parser this package emits for
-  and compares against treats it as the string key GitHub expects, so it is written plainly as `on:`.
+- **`on` is a key.** YAML 1.1 would read a bare `on` as boolean true; the `yaml` package this
+  repository emits with treats it as the string key GitHub expects, so it is written plainly as
+  `on:`. The corpus comparison parses it back the same way, so an `on:` key never becomes `true`.
 - **A bare event lowers to `null`.** `on: { push: {} }` emits `push: null`, which is the value a bare
   `push:` parses to. See [ADR 0006](../decisions/0006-bare-event-emits-null.md).
 - **`strategy` precedes the job body.** It is emitted directly after `runs-on`, ahead of `steps` and
