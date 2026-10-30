@@ -1,3 +1,4 @@
+import { duplicatesBy } from "../core/index.js";
 import type { Diagnostic } from "../core/index.js";
 import type { Job, Step, Workflow } from "./types.js";
 
@@ -17,25 +18,9 @@ const needsOf = (job: Job): readonly string[] => {
 };
 
 const duplicateIds = (jobs: readonly Job[]): readonly Diagnostic[] => {
-  const positions = new Map<string, number[]>();
-
-  for (const [index, job] of jobs.entries()) {
-    const found = positions.get(job.id);
-
-    if (found === undefined) {
-      positions.set(job.id, [index]);
-    } else {
-      found.push(index);
-    }
-  }
-
   const diagnostics: Diagnostic[] = [];
 
-  for (const [id, indexes] of positions) {
-    if (indexes.length < 2) {
-      continue;
-    }
-
+  for (const [id, indexes] of duplicatesBy(jobs, (job) => job.id)) {
     const message = `duplicate job id "${id}": ${indexes.map((index) => idPath(index)).join(" and ")}`;
 
     for (const index of indexes) {
