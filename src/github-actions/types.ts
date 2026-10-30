@@ -28,21 +28,104 @@ export interface Strategy {
   readonly "max-parallel"?: number;
 }
 
+export type PermissionLevel = "read" | "write" | "none";
+
+export type PermissionScope =
+  | "actions"
+  | "artifact-metadata"
+  | "attestations"
+  | "checks"
+  | "code-quality"
+  | "contents"
+  | "copilot-requests"
+  | "deployments"
+  | "discussions"
+  | "id-token"
+  | "issues"
+  | "packages"
+  | "pages"
+  | "pull-requests"
+  | "security-events"
+  | "statuses"
+  | "vulnerability-alerts";
+
+/** `read-all`, `write-all`, or a scope map in the author's order. */
+export type Permissions =
+  | "read-all"
+  | "write-all"
+  | Readonly<Partial<Record<PermissionScope, PermissionLevel>>>;
+
+export interface RunDefaults {
+  readonly shell?: Text;
+  readonly "working-directory"?: Text;
+}
+
+export interface Defaults {
+  readonly run?: RunDefaults;
+}
+
+export interface ConcurrencyGroup {
+  readonly group: Text;
+  readonly "cancel-in-progress"?: boolean | Text;
+}
+
+export type Concurrency = string | ConcurrencyGroup;
+
+/** Credentials lower in author order, so a password can be written before a username. */
+export interface Credentials {
+  readonly username?: Text;
+  readonly password?: Text;
+}
+
+export interface Container {
+  readonly image: Text;
+  readonly credentials?: Credentials;
+  readonly env?: Readonly<Record<string, Text>>;
+  readonly ports?: readonly (string | number)[];
+  readonly volumes?: readonly string[];
+  readonly options?: string;
+}
+
+export interface EnvironmentTarget {
+  readonly name: Text;
+  readonly url?: Text;
+}
+
+export type Environment = string | EnvironmentTarget;
+
+export type Secrets = "inherit" | Readonly<Record<string, Text>>;
+
 /** A job, in GitHub's documented key order. `id` is the map key, never a field in the output. */
 export interface Job {
   readonly id: string;
   readonly name?: Text;
+  readonly permissions?: Permissions;
   readonly needs?: string | readonly string[];
   readonly if?: Text;
-  readonly "runs-on": string;
+  readonly "runs-on"?: string;
+  readonly environment?: Environment;
+  readonly concurrency?: Concurrency;
   readonly outputs?: Readonly<Record<string, Text>>;
-  readonly steps: readonly Step[];
+  readonly env?: Readonly<Record<string, Text>>;
+  readonly defaults?: Defaults;
+  readonly steps?: readonly Step[];
+  readonly "timeout-minutes"?: number;
   readonly strategy?: Strategy;
+  readonly "continue-on-error"?: boolean | Text;
+  readonly container?: Container;
+  readonly services?: Readonly<Record<string, Container>>;
+  readonly uses?: string;
+  readonly with?: Readonly<Record<string, Text>>;
+  readonly secrets?: Secrets;
 }
 
 export interface Workflow {
   readonly name: string;
   readonly on: On;
+  readonly permissions?: Permissions;
+  readonly env?: Readonly<Record<string, Text>>;
+  readonly defaults?: Defaults;
+  readonly concurrency?: Concurrency;
   readonly jobs: readonly Job[];
 }
 

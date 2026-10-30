@@ -1,6 +1,24 @@
 export { job, step, workflow } from "./types.js";
 
-export type { Job, MatrixValue, Step, Strategy, Workflow } from "./types.js";
+export type {
+  Concurrency,
+  ConcurrencyGroup,
+  Container,
+  Credentials,
+  Defaults,
+  Environment,
+  EnvironmentTarget,
+  Job,
+  MatrixValue,
+  PermissionLevel,
+  PermissionScope,
+  Permissions,
+  RunDefaults,
+  Secrets,
+  Step,
+  Strategy,
+  Workflow,
+} from "./types.js";
 
 export type {
   CronEntry,
