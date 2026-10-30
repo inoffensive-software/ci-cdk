@@ -8,39 +8,19 @@
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },
   {
-    "path": "$.pipelines.branches.*[].stage.steps[].step.condition",
-    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage and the walk reads `properties` without `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
-  },
-  {
     "path": "$.pipelines.custom.*[].final",
     "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline, and the vocabulary models one here"
-  },
-  {
-    "path": "$.pipelines.custom.*[].stage.steps[].step.condition",
-    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage and the walk reads `properties` without `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
   },
   {
     "path": "$.pipelines.default[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },
   {
-    "path": "$.pipelines.default[].stage.steps[].step.condition",
-    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage and the walk reads `properties` without `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
-  },
-  {
     "path": "$.pipelines.tags.*[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },
   {
-    "path": "$.pipelines.tags.*[].stage.steps[].step.condition",
-    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage and the walk reads `properties` without `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
-  },
-  {
     "path": "$.pipelines[\"pull-requests\"].*[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
-  },
-  {
-    "path": "$.pipelines[\"pull-requests\"].*[].stage.steps[].step.condition",
-    "reason": "the schema sets `condition: { not: {} }` on a step inside a stage and the walk reads `properties` without `not`; the vocabulary models the step body once, so a stage step can still carry a condition"
   }
 ]

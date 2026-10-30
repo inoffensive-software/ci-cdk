@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
+import type { StageItem } from "./index.js";
 import { finalStep, parallel, pipelineConfig, pipe, render, stage, step } from "./index.js";
 
 const oneStep = (script: string) => step({ script: [script] });
+
+/**
+ * A stage step has no condition of its own: the stage carries it. The directive keeps compiling this
+ * document, which only exists to prove the type rejects it.
+ */
+const stageStepWithCondition = (): StageItem =>
+  // @ts-expect-error a stage carries the condition; a step inside it cannot have one
+  stage({ steps: [{ step: { script: ["deploy"], condition: { state: "successful" } } }] });
 
 describe("parallel sequence", () => {
   it("emits the sequence form as a bare list of step items", () => {
@@ -96,6 +105,12 @@ describe("stage shape", () => {
         },
       },
     });
+  });
+});
+
+describe("stage step condition", () => {
+  it("does not let a step inside a stage carry a condition", () => {
+    expect(stageStepWithCondition().stage.steps).toHaveLength(1);
   });
 });
 

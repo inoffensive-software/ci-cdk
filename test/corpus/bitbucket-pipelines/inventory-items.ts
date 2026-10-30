@@ -87,13 +87,47 @@ const everyFinal = (): PipelineItem => {
   return finalStep(body);
 };
 
-/** A stage body exercises its own fields, and both condition branches through its children. */
+/**
+ * A stage's child step. Bitbucket carries the condition on the stage, so this body keeps every
+ * other field and leaves `condition` out; the stage itself exercises both condition branches.
+ */
+const everyStageStep = (): StepItem =>
+  step({
+    "after-script": [
+      "echo teardown",
+      pipe({ pipe: "atlassian/teardown:1", variables: { KEEP: "true", FLAGS: ["--quiet"] } }),
+    ],
+    artifacts: ["dist/**"],
+    caches: ["node-modules", "build-output"],
+    clone: { depth: 10, enabled: true, lfs: true, "skip-ssl-verify": true },
+    "concurrency-group": "build-$BITBUCKET_BRANCH",
+    deployment: "staging",
+    environment: "staging",
+    "fail-fast": true,
+    image: IMAGE,
+    "max-time": 30,
+    name: "Build",
+    oidc: true,
+    "runs-on": ["self.hosted", "linux"],
+    script: [
+      "npm ci",
+      pipe({
+        pipe: "atlassian/npm:1",
+        variables: { NPM_TOKEN: "${NPM_TOKEN}", FLAGS: ["--quiet", "--no-audit"] },
+      }),
+    ],
+    services: ["database"],
+    size: "8x",
+    trigger: "automatic",
+  });
+
+/** A stage body carries its own condition, one document per branch, plus its child step. */
 const everyStage = (changesets: Changesets = INCLUDED): Stage => ({
   condition: { changesets, state: "successful" },
   deployment: "production",
   environment: "production",
   name: "Release",
-  steps: [everyField(INCLUDED), everyField(EXCLUDED)],
+  steps: [everyStageStep()],
   trigger: "manual",
 });
 

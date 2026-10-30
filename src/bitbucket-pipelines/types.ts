@@ -57,6 +57,14 @@ export interface StepItem {
   readonly step: Step;
 }
 
+/**
+ * A step inside a stage. Bitbucket carries the condition on the stage, so a stage step has no
+ * `condition` of its own; every other position keeps the full `Step`.
+ */
+export interface StageStepItem {
+  readonly step: Omit<Step, "condition">;
+}
+
 /** A parallel group: a bare sequence, or a map that also sets `fail-fast`. */
 export interface ParallelItem {
   readonly parallel:
@@ -70,7 +78,7 @@ export interface Stage {
   readonly deployment?: Text;
   readonly environment?: Text;
   readonly name?: Text;
-  readonly steps: readonly StepItem[];
+  readonly steps: readonly StageStepItem[];
   readonly trigger?: Trigger;
   readonly raw?: Readonly<Record<string, Value>>;
 }
