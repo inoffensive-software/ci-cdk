@@ -1,24 +1,8 @@
-/**
- * The only categories a gap may carry. `unmodelled` is debt the provider should pay; `out-of-scope`
- * is a shape the provider document already names as a non-goal; `schema-noise` is grammar the schema
- * permits that GitHub does not document.
- */
-export const GAP_CATEGORIES = ["unmodelled", "out-of-scope", "schema-noise"] as const;
+import type { Gap, Overclaim } from "../../schemas/gap-debt.js";
 
-export type GapCategory = (typeof GAP_CATEGORIES)[number];
+export { GAP_CATEGORIES } from "../../schemas/gap-debt.js";
 
-/** A schema path the vocabulary cannot emit, with the debt it represents. */
-export interface Gap {
-  readonly path: string;
-  readonly reason: string;
-  readonly category: GapCategory;
-}
-
-/** A modelled path the schema does not enumerate, with the disagreement named. */
-export interface Overclaim {
-  readonly path: string;
-  readonly reason: string;
-}
+export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
 
 /**
  * The roadmap of documented grammar this provider cannot emit. Adding a row declares a path on

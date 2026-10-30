@@ -13,6 +13,7 @@
     ".hermes/**",
     "pnpm-lock.yaml",
     "test/schemas/*.json",
+    "test/corpus/**/schema-gap-debt.json",
     "test/corpus/**/*.yml"
   ]
 }
