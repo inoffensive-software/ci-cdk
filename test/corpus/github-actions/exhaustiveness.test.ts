@@ -15,8 +15,10 @@ import {
   unique,
   unusedLedgerPaths,
 } from "./exhaustiveness.js";
-import { anyhow, got } from "./fixtures.js";
+import { anyhow } from "./anyhow.fixture.js";
+import { got } from "./got.fixture.js";
 import { INVENTORY } from "./inventory.js";
+import { trpcMain } from "./trpc-main.fixture.js";
 import { vendored } from "./vendored.js";
 
 interface Entry {
@@ -28,6 +30,7 @@ interface Entry {
 const ENTRIES: readonly Entry[] = [
   { name: "got", file: "got.yml", workflow: got },
   { name: "anyhow", file: "anyhow.yml", workflow: anyhow },
+  { name: "trpc-main", file: "trpc-main.yml", workflow: trpcMain },
 ];
 
 const modelled = inventoryPaths();

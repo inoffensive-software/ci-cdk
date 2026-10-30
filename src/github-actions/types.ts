@@ -1,5 +1,12 @@
-import type { Text, Value } from "../core/index.js";
+import type { LeafNode, Text, Value } from "../core/index.js";
 import type { On } from "./trigger.js";
+
+/**
+ * An arbitrary YAML scalar, for maps whose keys the author chooses. Wider than `Text` because GitHub
+ * keeps `fetch-depth: 0` and `persist-credentials: false` typed: a quoted `"0"` is a different value
+ * to the action that reads it.
+ */
+export type Scalar = string | number | boolean | LeafNode;
 
 /** A shell or action step, in GitHub's documented key order. */
 export interface Step {
@@ -10,8 +17,8 @@ export interface Step {
   readonly run?: Text;
   readonly "working-directory"?: Text;
   readonly shell?: string;
-  readonly with?: Readonly<Record<string, Text>>;
-  readonly env?: Readonly<Record<string, Text>>;
+  readonly with?: Readonly<Record<string, Scalar>>;
+  readonly env?: Readonly<Record<string, Scalar>>;
   readonly "continue-on-error"?: boolean | Text;
   readonly "timeout-minutes"?: number;
   /** Keys the vocabulary does not model, emitted in this step's body after the modelled keys. */
@@ -82,7 +89,7 @@ export interface Credentials {
 export interface Container {
   readonly image: Text;
   readonly credentials?: Credentials;
-  readonly env?: Readonly<Record<string, Text>>;
+  readonly env?: Readonly<Record<string, Scalar>>;
   readonly ports?: readonly (string | number)[];
   readonly volumes?: readonly string[];
   readonly options?: string;
@@ -114,7 +121,7 @@ export interface Job {
   readonly environment?: Environment;
   readonly concurrency?: Concurrency;
   readonly outputs?: Readonly<Record<string, Text>>;
-  readonly env?: Readonly<Record<string, Text>>;
+  readonly env?: Readonly<Record<string, Scalar>>;
   readonly defaults?: Defaults;
   readonly steps?: readonly Step[];
   readonly "timeout-minutes"?: number;
@@ -122,7 +129,7 @@ export interface Job {
   readonly container?: Container;
   readonly services?: Readonly<Record<string, Container>>;
   readonly uses?: string;
-  readonly with?: Readonly<Record<string, Text>>;
+  readonly with?: Readonly<Record<string, Scalar>>;
   readonly secrets?: Secrets;
   /** Keys the vocabulary does not model, emitted in this job's body after the modelled keys. */
   readonly raw?: Readonly<Record<string, Value>>;
@@ -132,7 +139,7 @@ export interface Workflow {
   readonly name: string;
   readonly on: On;
   readonly permissions?: Permissions;
-  readonly env?: Readonly<Record<string, Text>>;
+  readonly env?: Readonly<Record<string, Scalar>>;
   readonly defaults?: Defaults;
   readonly concurrency?: Concurrency;
   readonly jobs: readonly Job[];

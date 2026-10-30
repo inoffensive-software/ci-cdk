@@ -33,3 +33,16 @@ as the file (see the corpus README and ADR 0005).
   step `env`, `timeout-minutes`, `continue-on-error` and an artifact upload. Its formatting cannot be
   reached byte for byte: flow-style matrices, a double-quoted cron, and `timeout-minutes` before
   `steps`.
+
+## trpc-main
+
+- Repo: <https://github.com/trpc/trpc>
+- Commit: `708753ff1383c47c5f765694978db1000a86ee36`
+- Path: `.github/workflows/main.yml`
+- Licence: MIT, Copyright (c) 2023 Alex Johansson
+- Vendored as: `trpc-main.yml`, SHA-256
+  `cd08d368fb4f1265728f6099af96818aae8a0cd90d5c35b8130757bbd96f21c9`
+- Comparison: data
+- Why this entry: services with an env and a published port, scalar matrix axes, workflow
+  concurrency, `continue-on-error`, `on.pull_request.types`, bare `merge_group`, `on.push.branches`,
+  numeric `with` values, and `needs` as an array.

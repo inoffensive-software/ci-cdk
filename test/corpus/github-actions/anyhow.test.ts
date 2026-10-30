@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { render } from "../../../src/github-actions/index.js";
-import { anyhow } from "./fixtures.js";
+import { anyhow } from "./anyhow.fixture.js";
 import { vendored } from "./vendored.js";
 
 describe("corpus: dtolnay/anyhow", () => {
