@@ -59,3 +59,12 @@ key the corpus uses.
 `coverage.test.ts` walks the fixtures and asserts set equality in both directions - a fixture that
 starts using `raw` without a row fails, and a row no fixture uses fails. Adding a row is a deliberate
 widening of the escape hatch; deleting one is how a gap closes. The rows are the roadmap.
+
+## Exhaustiveness gate
+
+`exhaustiveness.test.ts` measures the same gap without trusting the fixtures: it renders the inventory
+definitions in `inventory.ts`, parses the output and collects key paths, then compares every vendored
+file's key paths against that set. A corpus key that is neither modelled nor declared in the ledger
+fails, and so does `raw` on a key the inventory already models. Sequence positions normalise to `[]`
+and author-chosen names (job ids, env names, matrix axes, service ids, event names) to `*`, so the
+comparison is about grammar rather than which job or step used a key.
