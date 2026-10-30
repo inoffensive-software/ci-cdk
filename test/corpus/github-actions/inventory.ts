@@ -7,13 +7,9 @@ export interface InventoryDocument {
 }
 
 /**
- * The set of definitions that between them exercise every key the vocabulary can emit. One document
- * carries everything that can coexist; a shape that cannot share a document with another (`on`,
- * `permissions`, `environment`, `concurrency`, `needs`, `runs-on`, `secrets`) gets its own.
- *
- * The gate renders each document, parses the result and unions the key paths, so this file is the
- * single definition of "modelled". It must not use `raw`; a key it cannot reach through a field is a
- * gap in the vocabulary, not a reason to widen the inventory.
+ * The definitions that between them exercise every key the vocabulary can emit, including a step
+ * inside a `parallel` group; shapes that cannot share a document (`on`, `permissions`, `needs`,
+ * `environment`, `runs-on`, `secrets`) get their own. No `raw`: the gate unions these key paths.
  */
 export const INVENTORY: readonly InventoryDocument[] = [
   {
@@ -109,7 +105,27 @@ export const INVENTORY: readonly InventoryDocument[] = [
             step({ wait: "serve" }),
             step({ wait: ["serve", "build"] }),
             step({ cancel: "serve" }),
-            step({ parallel: [step({ run: "npm run lint" }), step({ run: "npm run test" })] }),
+            step({
+              parallel: [
+                step({
+                  id: "lint",
+                  name: "Lint",
+                  if: "always()",
+                  run: "npm run lint",
+                  shell: "bash",
+                  "working-directory": ".",
+                  env: { FOO: "bar" },
+                  "continue-on-error": true,
+                  "timeout-minutes": 5,
+                  background: true,
+                }),
+                step({ uses: "actions/checkout@v7", with: { "fetch-depth": 0 } }),
+                step({ wait: "lint" }),
+                step({ wait: ["lint"] }),
+                step({ cancel: "lint" }),
+                step({ "wait-all": null }),
+              ],
+            }),
             step({ "wait-all": null }),
           ],
           "timeout-minutes": 10,

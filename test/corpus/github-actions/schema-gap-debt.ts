@@ -40,9 +40,33 @@ export const GAPS: readonly Gap[] = [
     category: "unmodelled",
   },
   {
+    path: "$.jobs.*.steps[].parallel[].parallel",
+    reason:
+      "a `parallel` group inside a parallel group; a group's items reuse `#/definitions/step`, so the schema nests, and the inventory models one level of group alone",
+    category: "unmodelled",
+  },
+  {
+    path: "$.jobs.*.steps[].parallel[].parallel[]",
+    reason:
+      "one step of a nested parallel group, with the same shape as any other step; the nested-group row covers it",
+    category: "unmodelled",
+  },
+  {
     path: "$.jobs.*.strategy.matrix.*[].*.*",
     reason:
       "an object under a key of a matrix cell object; `definitions.configuration` recurses through `additionalProperties`, while GitHub documents cell object keys that hold scalars, one level deep",
+    category: "schema-noise",
+  },
+  {
+    path: "$.jobs.*.strategy.matrix.*[].*.*.*",
+    reason:
+      "an object under a key of an object under a key of a matrix cell object, one more turn of the recursive `definitions.configuration` than GitHub documents",
+    category: "schema-noise",
+  },
+  {
+    path: "$.jobs.*.strategy.matrix.*[].*.*[]",
+    reason:
+      "an array under a key of an object under a key of a matrix cell object, the array branch of the recursive `definitions.configuration` one turn deeper than GitHub documents",
     category: "schema-noise",
   },
   {
@@ -52,9 +76,33 @@ export const GAPS: readonly Gap[] = [
     category: "schema-noise",
   },
   {
+    path: "$.jobs.*.strategy.matrix.*[].*[].*",
+    reason:
+      "an object under a key of an array of matrix cell objects, another turn of the recursive `definitions.configuration`",
+    category: "schema-noise",
+  },
+  {
+    path: "$.jobs.*.strategy.matrix.*[].*[][]",
+    reason:
+      "an array of arrays under a key of a matrix cell object, another turn of the recursive `definitions.configuration`",
+    category: "schema-noise",
+  },
+  {
     path: "$.jobs.*.strategy.matrix.*[][]",
     reason:
       "an array whose elements are arrays, one more turn of the recursive `definitions.configuration`; GitHub documents a matrix variable as an array of scalars or of objects",
+    category: "schema-noise",
+  },
+  {
+    path: "$.jobs.*.strategy.matrix.*[][].*",
+    reason:
+      "an object under an element of an array-valued matrix cell, another turn of the recursive `definitions.configuration`",
+    category: "schema-noise",
+  },
+  {
+    path: "$.jobs.*.strategy.matrix.*[][][]",
+    reason:
+      "an array whose elements are arrays of matrix cells, one more turn of the recursive `definitions.configuration` than the existing row declares",
     category: "schema-noise",
   },
   {
@@ -150,10 +198,4 @@ export const GAPS: readonly Gap[] = [
 ];
 
 /** A modelled path the schema does not enumerate; ADR 0011 says when a row is due. */
-export const OVERCLAIMS: readonly Overclaim[] = [
-  {
-    path: "$.jobs.*.steps[].parallel[].run",
-    reason:
-      "a step's keys inside a `parallel` group; the schema's group items reuse `#/definitions/step`, which the walk has already expanded on this path, so it stops at the group and never enumerates the keys below it",
-  },
-];
+export const OVERCLAIMS: readonly Overclaim[] = [];
