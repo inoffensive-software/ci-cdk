@@ -2,7 +2,15 @@
   "name": "@inoffensive/ci-cdk",
   "version": "0.0.0",
   "description": "Typed TypeScript DSL that compiles to CI provider configuration.",
+  "homepage": "https://github.com/eddie-atkinson/ci-cdk#readme",
+  "bugs": {
+    "url": "https://github.com/eddie-atkinson/ci-cdk/issues"
+  },
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eddie-atkinson/ci-cdk.git"
+  },
   "files": [
     "dist"
   ],
@@ -42,7 +50,8 @@
     "fmt:check": "oxfmt --check .",
     "check": "pnpm fmt:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test && pnpm fallow",
     "ci": "bash tools/ci/ci.sh",
-    "ci:workflow": "pnpm compile && node tools/ci/workflow.mts > .github/workflows/ci.yml"
+    "ci:workflow": "pnpm compile && node tools/ci/workflow.mts > .github/workflows/ci.yml && node tools/ci/release.mts > .github/workflows/release.yml",
+    "notes": "node tools/release/notes.mts"
   },
   "dependencies": {
     "yaml": "2.9.1"
