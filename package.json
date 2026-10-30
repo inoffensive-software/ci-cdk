@@ -1,0 +1,50 @@
+{
+  "name": "@inoffensive/ci",
+  "version": "0.0.0",
+  "description": "Typed TypeScript DSL that compiles to CI provider configuration.",
+  "license": "ISC",
+  "bin": {
+    "ci": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./github-actions": {
+      "types": "./dist/vendors/github-actions/index.d.ts",
+      "default": "./dist/vendors/github-actions/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "compile": "tsc -b",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "check": "pnpm format:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "typescript": "^7.0.0",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "packageManager": "pnpm@10.34.5"
+}
