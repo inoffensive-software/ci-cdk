@@ -62,7 +62,7 @@ node ci/github.ts && git diff --exit-code -- .github/workflows
 
 - `docs/architecture.md` — layers, invariants, and the decisions behind them.
 - `docs/decisions/` — individual decision records.
-- `docs/providers/<provider>.md` — per-provider coverage and quirks.
+- `docs/references/upstream-schemas.md` — where each provider's grammar is defined, and the YAML library rule.
 
 ## Development
 

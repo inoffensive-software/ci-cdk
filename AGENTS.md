@@ -9,7 +9,8 @@ Working notes for agents and contributors. For why the code is shaped this way, 
 src/index.ts         public entry point; re-exports core
 src/core/            provider-neutral only: Doc, fromValue, render, write
 src/<provider>/      one directory per provider, name == subpath export (github-actions, ...)
-docs/                architecture.md, decisions/ (ADRs), providers/ (coverage)
+docs/                architecture.md, decisions/ (ADRs), references/ (upstream schemas)
+test/corpus/         pinned real-world configs; layout and rules in test/corpus/README.md
 ```
 
 `@inoffensive/ci-cdk/<provider>` ↔ `src/<provider>/` ↔ `dist/<provider>/`. Keep that 1:1.
@@ -68,7 +69,7 @@ pnpm fmt            # oxfmt, writes
 
 - `isolatedDeclarations`: every public export needs an explicit type. Inferred default exports fail
   with `TS9037`, inferred generic returns with `TS9013`.
-  
+
 - Value-level, not struct-level: `fromValue` on a whole struct bypasses the typed layer and lets
   unmodelled keys through silently.
 

@@ -90,7 +90,7 @@ src/core/from-value.ts  fromValue: arbitrary plain values -> Doc
 src/core/render-doc.ts  renderDoc(doc, options) -> string  (provider-author API)
 src/core/serialize.ts   Serializer interface; the YAML implementation
 src/core/io.ts          write(path, text)
-src/core/diagnostic.ts  Diagnostic, fail()
+src/core/errors.ts      Diagnostic, DiagnosticError, fail(), formatDiagnostics()
 src/core/omit-undefined.ts  omitUndefined()
 ```
 
@@ -124,8 +124,9 @@ These are testable and should be enforced by tests, not by review.
 2. `renderDoc` is provider-blind. No provider identifier appears under `src/core/`. Enforced by the
    zone rules in `.fallowrc.json`, which also make providers mutually unimportable.
 
-3. `toDoc` is the only place that validates a whole document. Duplicate job ids, dangling `needs`
-   and dependency cycles cannot be caught earlier, because build time has no whole document.
+3. `toDoc` is the only place that validates a whole document, and the only place that throws
+   `DiagnosticError`. Duplicate job ids, dangling `needs` and dependency cycles cannot be caught
+   earlier, because build time has no whole document.
 
 4. Builders never validate and never merge. They return their input, typed.
 
@@ -145,18 +146,21 @@ These are testable and should be enforced by tests, not by review.
 
 ## Decisions
 
-| Decision                             | Rationale                                                                                                             | Cost                                                                                                                                  |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Whole-file ownership                 | Drift becomes byte equality: no CST, no differ, no comment preservation, no merge policy for foreign keys             | Anything hand-edited is silently destroyed; git is the only recovery                                                                  |
-| Functions, no CLI                    | Removes config discovery and TS loading from the design; orchestration is 5 lines of user code                        | Users need their own TS runner and their own CI wiring                                                                                |
-| Spread as the composition unit       | Zero new vocabulary; works on any struct at any depth                                                                 | Duplicate ids across composed arrays are undetected, so validation must live in `toDoc`; conditional-absent keys need `omitUndefined` |
-| One shared emitter                   | Quoting and escaping is not provider-specific; three emitters would mean three bug surfaces with no test that notices | `Doc` stays YAML-flavoured even for JSON targets                                                                                      |
-| No comments in output                | Comment placement is the fiddliest part of emission and gains nothing; the TS is what gets reviewed                   | Generated files rely on key ordering alone for readability                                                                            |
-| `fromValue` value-level only         | Decides JS-to-tree semantics exactly once, and is the only safe path for `unknown` data                               | Used on a whole struct it bypasses the typed layer, so unmodelled keys pass silently                                                  |
-| Types hand-written, schema as oracle | Schemas here are loose draft-07 unions with no discriminators; generated types are unusable for a DSL                 | Types can drift from the spec and only corpus tests will notice                                                                       |
-| GHA, then GitLab, then Bitbucket     | GHA has the largest grammar and is best placed to stress the core                                                     | Bitbucket's grammar gets the least scrutiny, correctly, last                                                                          |
-| `write` never creates directories    | Thin write; the caller owns the path                                                                                  | First run in a clean tree fails unless the directory exists                                                                           |
-| No blank lines in emitted output     | The YAML is a build artifact; the TS is what gets reviewed                                                            | Large files are dense — accepted, the same reason comments were dropped                                                               |
+| Decision                                                 | Rationale                                                                                                                                           | Cost                                                                                                                                  |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Whole-file ownership                                     | Drift becomes byte equality: no CST, no differ, no comment preservation, no merge policy for foreign keys                                           | Anything hand-edited is silently destroyed; git is the only recovery                                                                  |
+| Functions, no CLI                                        | Removes config discovery and TS loading from the design; orchestration is 5 lines of user code                                                      | Users need their own TS runner and their own CI wiring                                                                                |
+| Spread as the composition unit                           | Zero new vocabulary; works on any struct at any depth                                                                                               | Duplicate ids across composed arrays are undetected, so validation must live in `toDoc`; conditional-absent keys need `omitUndefined` |
+| One shared emitter                                       | Quoting and escaping is not provider-specific; three emitters would mean three bug surfaces with no test that notices                               | `Doc` stays YAML-flavoured even for JSON targets                                                                                      |
+| No comments in output                                    | Comment placement is the fiddliest part of emission and gains nothing; the TS is what gets reviewed                                                 | Generated files rely on key ordering alone for readability                                                                            |
+| `fromValue` value-level only                             | Decides JS-to-tree semantics exactly once, and is the only safe path for `unknown` data                                                             | Used on a whole struct it bypasses the typed layer, so unmodelled keys pass silently                                                  |
+| Types hand-written, schema as oracle                     | Schemas here are loose draft-07 unions with no discriminators; generated types are unusable for a DSL                                               | Types can drift from the spec and only corpus tests will notice                                                                       |
+| `yaml` (eemeli), pinned exact                            | Ordered maps, scalar styles, custom tags and a CST out of the box; hand-rolling quoting is weeks of subtle bugs                                     | Its output is part of the format contract, so upgrades are deliberate and may change emitted bytes                                    |
+| Errors are exceptions, defined in core                   | `DiagnosticError` carries `{ path, message, hint }[]`; a definition that cannot lower is a program error, and the caller's script owns presentation | Callers must catch to report nicely; nothing forces them to                                                                           |
+| `renderDoc` takes `{ header?: string }` and nothing else | One knob that users actually asked for; no configuration for taste that has not been needed                                                         | A second target needing more options forces a widening later                                                                          |
+| GHA, then GitLab, then Bitbucket                         | GHA has the largest grammar and is best placed to stress the core                                                                                   | Bitbucket's grammar gets the least scrutiny, correctly, last                                                                          |
+| `write` never creates directories                        | Thin write; the caller owns the path                                                                                                                | First run in a clean tree fails unless the directory exists                                                                           |
+| No blank lines in emitted output                         | The YAML is a build artifact; the TS is what gets reviewed                                                                                          | Large files are dense — accepted, the same reason comments were dropped                                                               |
 
 ## Testing
 
