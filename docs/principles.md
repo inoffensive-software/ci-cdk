@@ -40,26 +40,6 @@ End to end typesafety is non-negotiable. Do not use casts to satisfy (but lie) t
 
 Settles: How to leverage the Typescript compiler, how to think about typesafety, and where untyped input is allowed to enter
 
-## Not an ORM
-
-Providers keep their own vocabulary, warts and types. No shared `Job`, `Step` or `Pipeline`, not even
-as an interface.
-
-    This:     github-actions/job.ts and gitlab-ci/job.ts, different shapes
-    Not this: core/job.ts with optional fields and a `provider` discriminator
-
-Settles: whether a new field goes in a provider type or a shared one. It goes in the provider.
-
-## Composition is code
-
-Shared pipeline logic is a function returning a struct, imported and spread. Never a config-level
-link.
-
-    This:     const withCache = (j: Job): Job => ({ ...j, steps: [cacheStep, ...j.steps] })
-    Not this: an anchor, an include, a !reference chain, or a template registry
-
-Settles: every "how do I share this between two pipelines" question.
-
 ## Duplication over premature abstraction
 
 Two similar providers are not evidence of a shared concept; three are.
@@ -67,7 +47,7 @@ Two similar providers are not evidence of a shared concept; three are.
     This:     three near-identical blocks, extracted when the third arrives
     Not this: a `CacheConfig` in core after two providers happen to want one
 
-The only exception to this is painfully obvious shared functionality. For example a `safeParseJson` function should not be repeated in every module - it is general in nature and ripe for re-use
+The exception is functionality that is plainly general: a `safeParseJson` helper should not be written once per module.
 
 Settles: the recurring "these look the same, should we factor them out". Not yet.
 

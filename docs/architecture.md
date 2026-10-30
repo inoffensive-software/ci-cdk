@@ -5,18 +5,15 @@ run it, and commit the emitted YAML. This document is the contributor-facing acc
 package is put together and why.
 
 User-facing usage lives in the README. Decisions that were debated and settled live in
-`docs/decisions/`. Per-provider coverage and quirks are not written yet; when they are, they live in
-`docs/providers/<provider>.md`.
+`docs/decisions/`. Per-provider scope and coverage live in `docs/providers/<provider>.md`, with the
+template in `docs/providers/README.md`.
 
 ## What this is, and what it is not
 
 It is a typed constructor for provider configuration, plus a composition mechanism: shared
-functionality is a function returning a provider struct, imported and spread where needed. The
-unit of composition is code, not YAML links, so two pipelines built from the same function emit
-identical bytes.
-
-It is not an ORM. Providers keep their own vocabulary, their own warts, and their own types. There
-is no provider-neutral pipeline model and there will not be one.
+functionality is a function returning a provider struct, imported and spread where needed. The unit
+of composition is code, not YAML links, so two pipelines built from the same function emit identical
+bytes. Providers keep their own vocabulary and types; see `docs/decisions/0002-founding-decisions.md`.
 
 Non-goals, stated so they are not designed for by accident:
 
@@ -80,6 +77,22 @@ LeafNode`, not `string`. The alias lives in core because it is provider-neutral.
 structs read `readonly if?: Text` and `env?: Readonly<Record<string, Text>>`, and a leaf can be
 passed anywhere a string is accepted.
 
+## Emitted format
+
+The contract, pinned by golden tests. Every line here is deliberate, and changing one is a breaking
+change for every consumer.
+
+- Two-space indent, block style only, never flow collections.
+- `lineWidth: 0`. The `yaml` default of 80 wraps long plain scalars, which would make a `run`
+  command's emitted form depend on where column 80 falls.
+- Key order is insertion order from `toDoc`. Never sorted, never re-ordered by the serializer.
+- The header is the only comment, rendered `# <text>` with a space after the hash, and is not
+  followed by a blank line.
+- No other comments and no blank lines anywhere.
+- Shell text (`run`, `script`) is a literal block scalar. Anything carrying a `DOC` leaf decides its
+  own style; nothing else is inferred.
+- Tags survive: GitLab's `!reference` emits as a tagged scalar.
+
 ## Core surface
 
 Core is a data layer, not a domain layer. The admission test for anything entering it: can you
@@ -117,6 +130,10 @@ is deliberate: `Cache` in GHA and `cache:` in GitLab differ in ways that only re
 after both are written, and an abstraction extracted with three examples is a refactor while one
 extracted from two is a commitment.
 
+`jobs` is a map keyed by job id in GitHub Actions and GitLab, not a sequence. The struct holds an
+array so that composition is spread and concat; `toDoc` lowers it to an ordered map, preserving array
+order. Duplicate ids are a diagnostic, never a last-wins overwrite.
+
 ## Invariants
 
 These are testable and should be enforced by tests, not by review.
@@ -150,23 +167,21 @@ These are testable and should be enforced by tests, not by review.
 
 ## Decisions
 
-| Decision                                                 | Rationale                                                                                                                                                                                                                               | Cost                                                                                                                                  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Whole-file ownership                                     | Drift becomes byte equality: no CST, no differ, no comment preservation, no merge policy for foreign keys                                                                                                                               | Anything hand-edited is silently destroyed; git is the only recovery                                                                  |
-| Functions, no CLI                                        | Removes config discovery and TS loading from the design; orchestration is 5 lines of user code                                                                                                                                          | Users need Node 24+ (type stripping) or their own TS runner, plus their own CI wiring                                                 |
-| Spread as the composition unit                           | Zero new vocabulary; works on any struct at any depth                                                                                                                                                                                   | Duplicate ids across composed arrays are undetected, so validation must live in `toDoc`; conditional-absent keys need `omitUndefined` |
-| One shared emitter                                       | Quoting and escaping is not provider-specific; three emitters would mean three bug surfaces with no test that notices                                                                                                                   | `Doc` stays YAML-flavoured even for JSON targets                                                                                      |
-| No comments in output                                    | Comment placement is the fiddliest part of emission and gains nothing; the TS is what gets reviewed                                                                                                                                     | Generated files rely on key ordering alone for readability                                                                            |
-| `fromValue` value-level only                             | Decides JS-to-tree semantics exactly once, and is the only safe path for `unknown` data                                                                                                                                                 | Used on a whole struct it bypasses the typed layer, so unmodelled keys pass silently                                                  |
-| Types hand-written, schema as oracle                     | Schemas here are loose draft-07 unions with no discriminators; generated types are unusable for a DSL                                                                                                                                   | Types can drift from the spec and only corpus tests will notice                                                                       |
-| `yaml` (eemeli), pinned exact                            | Ordered maps, scalar styles, custom tags and a CST out of the box; hand-rolling quoting is weeks of subtle bugs                                                                                                                         | Its output is part of the format contract, so upgrades are deliberate and may change emitted bytes                                    |
-| Errors are exceptions, defined in core                   | `DiagnosticError` carries `{ path, message, hint }[]`; a definition that cannot lower is a program error, and the caller's script owns presentation                                                                                     | Callers must catch to report nicely; nothing forces them to                                                                           |
-| `renderDoc` takes `{ header?: string }` and nothing else | One knob that users actually asked for; no configuration for taste that has not been needed                                                                                                                                             | A second target needing more options forces a widening later                                                                          |
-| GHA, then GitLab, then Bitbucket                         | GHA has the largest grammar and is best placed to stress the core                                                                                                                                                                       | Bitbucket's grammar gets the least scrutiny, correctly, last                                                                          |
-| `write` never creates directories                        | Thin write; the caller owns the path                                                                                                                                                                                                    | First run in a clean tree fails unless the directory exists                                                                           |
-| No blank lines in emitted output                         | The YAML is a build artifact; the TS is what gets reviewed                                                                                                                                                                              | Large files are dense; accepted, for the same reason comments were dropped                                                            |
-| `any` never; `unknown` only at a boundary                | `any` is unchecked by definition. `unknown` is permitted in the parser that turns untyped input into a valid type, and nowhere downstream. `fromValue` takes `unknown` because interfaces are not assignable to an index-signature type | Anti-slop's `no-unknown-parameters` is off for that one file; `typescript/no-explicit-any` is at error everywhere                     |
-| `Value` for data crossing a boundary                     | A precise recursive type instead of `unknown`, and YAML cannot encode a function anyway                                                                                                                                                 | Interfaces are not assignable to it, so it types callers' data (`raw`), never our own structs                                         |
+Contested calls live in `docs/decisions/` with their reasoning and rejected alternatives;
+this table is policy, plus pointers.
+
+| Decision                                                           | Rationale                                                                                                                                                                                                                               | Cost                                                                                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `fromValue` value-level only                                       | Decides JS-to-tree semantics exactly once, and is the only safe path for `unknown` data                                                                                                                                                 | Used on a whole struct it bypasses the typed layer, so unmodelled keys pass silently                              |
+| Types hand-written, schema as oracle                               | Schemas here are loose draft-07 unions with no discriminators; generated types are unusable for a DSL                                                                                                                                   | Types can drift from the spec and only corpus tests will notice                                                   |
+| `yaml` (eemeli), pinned exact                                      | Ordered maps, scalar styles, custom tags and a CST out of the box; hand-rolling quoting is weeks of subtle bugs                                                                                                                         | Its output is part of the format contract, so upgrades are deliberate and may change emitted bytes                |
+| Errors are exceptions, defined in core                             | `DiagnosticError` carries `{ path, message, hint }[]`; a definition that cannot lower is a program error, and the caller's script owns presentation                                                                                     | Callers must catch to report nicely; nothing forces them to                                                       |
+| `renderDoc` takes `{ header?: string }` and nothing else           | One knob that users actually asked for; no configuration for taste that has not been needed                                                                                                                                             | A second target needing more options forces a widening later                                                      |
+| GHA, then GitLab, then Bitbucket                                   | GHA has the largest grammar and is best placed to stress the core                                                                                                                                                                       | Bitbucket's grammar gets the least scrutiny, correctly, last                                                      |
+| `write` never creates directories                                  | Thin write; the caller owns the path                                                                                                                                                                                                    | First run in a clean tree fails unless the directory exists                                                       |
+| `any` never; `unknown` only at a boundary                          | `any` is unchecked by definition. `unknown` is permitted in the parser that turns untyped input into a valid type, and nowhere downstream. `fromValue` takes `unknown` because interfaces are not assignable to an index-signature type | Anti-slop's `no-unknown-parameters` is off for that one file; `typescript/no-explicit-any` is at error everywhere |
+| `Value` for data crossing a boundary                               | A precise recursive type instead of `unknown`, and YAML cannot encode a function anyway                                                                                                                                                 | Interfaces are not assignable to it, so it types callers' data (`raw`), never our own structs                     |
+| Header default: `# Generated by @inoffensive/ci-cdk. Do not edit.` | One fixed line, no timestamp and no version, so regenerating never churns the file                                                                                                                                                      | `{ header: "" }` removes it, which makes a hand-edit invisible in review                                          |
 
 ## Build order
 

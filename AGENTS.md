@@ -1,98 +1,57 @@
 # AGENTS.md
 
-Working notes for agents and contributors. For why the code is shaped this way, read
-`docs/architecture.md`; this file does not restate it.
+Operational notes. Shape and rationale live in `docs/architecture.md`; one home per fact, so this file
+does not restate them.
 
 ## Repo map
 
 ```
-src/index.ts         public entry point; re-exports core
-src/core/            provider-neutral only: Doc, fromValue, renderDoc, write, errors, omitUndefined
-src/<provider>/      one directory per provider, name == subpath export (github-actions, ...)
-docs/                architecture.md, decisions/ (ADRs), references/ (upstream schemas)
-test/corpus/         pinned real-world configs; layout and rules in test/corpus/README.md
-.agents/skills/      project-local agent skills (tdd, install-anti-slop, ...)
+src/index.ts     entry point; re-exports core
+src/core/        provider-neutral: Doc, Value, fromValue, renderDoc, write, errors, omitUndefined
+src/<provider>/  one provider per directory; name == subpath export
+docs/            architecture.md, principles.md, decisions/, references/, providers/
+test/corpus/     pinned real configs (rules in test/corpus/README.md)
+.agents/skills/  project-local agent skills
 ```
 
-`@inoffensive/ci-cdk/<provider>` ↔ `src/<provider>/` ↔ `dist/<provider>/`. Keep that 1:1.
+`@inoffensive/ci-cdk/<provider>` ↔ `src/<provider>/` ↔ `dist/<provider>/`.
 
-## Commands
+## When about to...
 
-```
-pnpm check          # fmt:check -> compile -> typecheck -> lint -> test -> fallow. Run before finishing.
-pnpm compile        # tsc -b
-pnpm typecheck      # tsc -p tsconfig.test.json (src, test and config)
-pnpm test           # vitest run
-pnpm lint           # oxlint
-pnpm fmt            # oxfmt, writes
-```
+| do this                    | do this first                                                          |
+| -------------------------- | ---------------------------------------------------------------------- |
+| finish any change          | `pnpm check`                                                           |
+| change formatting only     | `pnpm fmt`, then `pnpm check`                                          |
+| add a directory under src/ | add a zone and its `allow` list in `.fallowrc.json`, then `pnpm check` |
+| add a dependency           | pin it exact, no range, then `pnpm check`                              |
+| change emitted output      | regenerate goldens; treat the format change as breaking                |
+| add a boundary parser      | per-file override in `.oxlintrc.json`; never weaken a rule globally    |
+| change a settled decision  | add an ADR naming the anchor it supersedes                             |
+| touch `src/core/`          | read `docs/architecture.md` first                                      |
+| add a corpus entry         | follow `test/corpus/README.md`; one fixture per shape                  |
 
-`pnpm fallow` also gates architecture: zone rules fail the build on boundary violations.
-`pnpm fallow guard <files>` shows the rules that apply to a file before you edit it.
+## Non-negotiables
 
-## Hard rules
+- No provider nouns in `src/core/`, not even as interfaces.
+- Providers import core, never each other. Fallow zones enforce it; no exceptions.
+- Builders return structs; only `toDoc` validates; `render(wf)` is the happy path.
+- Emitted output: header line only, no blank lines, format frozen by goldens.
+- `unknown` only in a boundary parser; `any` never.
 
-- **No provider nouns in `src/core/`.** Not `Job`, not `Step`, not `Pipeline`, not even as
-  interfaces. If it needs a provider name to describe, it belongs in `src/<provider>/`.
+## Enforced by tooling, do not re-implement
 
-- **Providers import core, never each other.** Enforced by fallow zones; do not add an exception.
-
-- **New directories must be zoned.** `coverage.requireAllFiles` fails the build otherwise, so add the
-  zone and its `allow` list in `.fallowrc.json` in the same change.
-
-- **Errors are exceptions defined in core.** `Diagnostic`, `DiagnosticError`, `fail()` and
-  `formatDiagnostics()` belong in `src/core/errors.ts`; providers add diagnostics, they do not define
-  their own error classes. Throw only from `toDoc`, because it is the only place with the whole
-  document; anywhere else is a bug.
-
-- **Barrels only at package roots.** `src/index.ts` and `src/<provider>/index.ts` re-export and
-  contain nothing else. Everything inside a package uses relative deep imports.
-
-- **Builders return structs; `toDoc` lowers and validates.** The user-facing call is the provider's
-  one-line `render(wf)`, which is `renderDoc(toDoc(wf))`. `toDoc` stays exported for tests and
-  explicit validation, but it is not part of the happy path. Validation of the whole document
-  (duplicate ids, dangling references, cycles) lives only in `toDoc`, because it is the only place
-  the whole document exists. Builders never validate and never merge.
-
-- **Composition is spread.** Object spread and array literals over readonly structs. Do not add
-  merge combinators.
-
-- **Emitted output has no comments and no blank lines.** Both are deliberate; the header line is the
-  only permitted comment. Do not add formatting "improvements": emitted formatting is a public
-  contract, frozen by golden tests. Changing it is a breaking change.
-
-- **`write` does not create directories.** Callers own their paths.
+fallow zones, oxlint anti-slop, `isolatedDeclarations`, golden tests. `pnpm fallow guard <files>` shows
+the rules that apply before an edit.
 
 ## TypeScript gotchas
 
-- `exactOptionalPropertyTypes`: `{...base, env: cond ? x : undefined}` fails with `TS2375`. Use
-  `omitUndefined` or declare `| undefined` on fields users compute conditionally.
-
-- `noUncheckedIndexedAccess`: prefer ordered arrays over `Record<Id, T>`; records also lose the
-  order the emitter needs.
-
-- `erasableSyntaxOnly`: no enums, no parameter properties. Vocabularies are const-object plus union.
-
-- `isolatedDeclarations`: every public export needs an explicit type. Inferred default exports fail
-  with `TS9037`, inferred generic returns with `TS9013`.
-
-- Value-level, not struct-level: `fromValue` on a whole struct bypasses the typed layer and lets
-  unmodelled keys through silently.
-
-- The vendored anti-slop rules reject `unknown` in parameters and in dictionary values. The public
-  API uses the precise `Value` type instead; see "Open decisions" in `docs/architecture.md`.
+- `exactOptionalPropertyTypes`: `{...base, env: cond ? x : undefined}` fails TS2375; use `omitUndefined`.
+- `noUncheckedIndexedAccess`: prefer ordered arrays over `Record<Id, T>`; records lose order too.
+- `erasableSyntaxOnly`: no enums, no parameter properties; const-object plus union.
+- `isolatedDeclarations`: explicit type on every export. TS9037 for an inferred default export,
+  TS9013 for an inferred generic return.
 
 ## Tests
 
-Colocated: `src/foo.test.ts`, golden files in `src/__snapshots__/`. Every provider ships golden
-output for its fixtures. Assertions use `toMatchFileSnapshot`, so emitted YAML is reviewable in the
-diff.
-
-Corpus tests live in `test/corpus/<provider>/`: one `<name>.test.ts` per vendored `<name>.yml`,
-asserting the DSL reproduces the file byte for byte. Rules for adding entries are in
-`test/corpus/README.md`.
-
-## Changing a decision
-
-Architecture decisions live in `docs/decisions/` as numbered ADRs. They are immutable: supersede
-rather than edit. If a change contradicts an ADR, say so explicitly and add a new one.
+Colocated `src/foo.test.ts`, goldens in `src/__snapshots__/`, corpus tests in `test/corpus/<provider>/`.
+Assertions use `toMatchFileSnapshot`.
