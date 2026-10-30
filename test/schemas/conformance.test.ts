@@ -10,6 +10,7 @@ import {
   pipeline as gitlabPipeline,
   render as gitlabRender,
 } from "../../src/gitlab-ci/index.js";
+import { INVENTORY } from "../corpus/gitlab-ci/inventory.js";
 import { problemsFor, type SchemaProblem } from "./validate.js";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
@@ -172,6 +173,18 @@ describe("schema conformance", () => {
     const problems = described(problemsFor("gitlab-ci", unmodelledGitlabRaw()));
 
     expect(problems).toContain('/build must NOT have additional properties: "not-a-gitlab-key"');
+  });
+
+  it("validates every GitLab inventory document", () => {
+    expect(INVENTORY.length).toBeGreaterThan(0);
+
+    const problems = INVENTORY.flatMap((document) =>
+      problemsFor("gitlab-ci", gitlabRender(document.pipeline, { header: "" })).map(
+        (problem) => `${document.name}: ${problem.path} ${problem.message}`,
+      ),
+    );
+
+    expect(problems).toStrictEqual([]);
   });
 
   it("vendors a self-contained schema with no remote references", () => {
