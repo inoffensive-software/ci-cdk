@@ -15,8 +15,10 @@ import {
   unique,
   unusedLedgerPaths,
 } from "./exhaustiveness.js";
-import { anyhow, got, trpcMain } from "./fixtures.js";
+import { anyhow } from "./anyhow.fixture.js";
+import { got } from "./got.fixture.js";
 import { INVENTORY } from "./inventory.js";
+import { trpcMain } from "./trpc-main.fixture.js";
 import { vendored } from "./vendored.js";
 
 interface Entry {

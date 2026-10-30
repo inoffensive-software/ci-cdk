@@ -8,14 +8,14 @@ Pinned real-world configs. Each provider's scope is defined by this corpus rathe
 ```
 test/corpus/<provider>/<name>.yml          the upstream config, vendored verbatim
 test/corpus/<provider>/<name>.test.ts      reproduces it and asserts equal data
-test/corpus/<provider>/<name>.fixture.ts   one fixture per file; fixtures.ts re-exports every entry
+test/corpus/<provider>/<name>.fixture.ts   one fixture per file
 test/corpus/<provider>/coverage-debt.ts    the ledger of raw paths the fixtures need, with reasons
 test/corpus/<provider>/coverage.test.ts    asserts the ledger against the fixtures, both ways
 test/corpus/<provider>/PROVENANCE.md       repo, commit SHA, path, licence for every entry
 ```
 
-`fixtures.ts` re-exports every fixture so the ledger and gate walk them in one place; a `<name>.test.ts`
-loads its vendored file and compares the data.
+The corpus tests import the entries they walk; a `<name>.test.ts` loads its vendored file and compares
+the data.
 
 ## Comparison rule
 

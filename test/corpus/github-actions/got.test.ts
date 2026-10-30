@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { render } from "../../../src/github-actions/index.js";
-import { got } from "./fixtures.js";
+import { got } from "./got.fixture.js";
 import { vendored } from "./vendored.js";
 
 describe("corpus: sindresorhus/got", () => {
