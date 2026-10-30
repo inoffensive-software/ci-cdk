@@ -9,7 +9,7 @@ type CoreModule = typeof import("./index.js");
 
 const coreDir = import.meta.dirname;
 
-const loadFresh = async (): Promise<CoreModule> => {
+const loadFresh = (): Promise<CoreModule> => {
   // Clearing the registry re-instantiates every core module. A query suffix would only re-run the
   // barrel, leaving doc/render-doc/serialize shared between the two graphs.
   vi.resetModules();

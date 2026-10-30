@@ -70,7 +70,10 @@
     "curly": "error",
     "unicorn/prefer-global-this": "error",
     "unicorn/prefer-node-protocol": "error",
-    "unicorn/no-abusive-eslint-disable": "error"
+    "unicorn/no-abusive-eslint-disable": "error",
+    "max-lines-per-function": "error",
+    "max-lines": "error",
+    "require-await": "error"
   },
   "overrides": [
     {

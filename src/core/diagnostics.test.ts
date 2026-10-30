@@ -50,7 +50,7 @@ const emitWithUndefined = (): void => {
   fromValue({ a: undefined });
 };
 
-describe("diagnostics", () => {
+describe("paths", () => {
   it("reports undefined at the key's own path", () => {
     const [diagnostic] = diagnosticsOf(() => emitted({ "runs-on": undefined }));
 
@@ -64,6 +64,27 @@ describe("diagnostics", () => {
     expect(diagnostic?.path).toBe("$.steps[0].run");
   });
 
+  it("rejects undefined inside an array by index", () => {
+    const [diagnostic] = diagnosticsOf(() => emitted([undefined]));
+
+    expect(diagnostic?.path).toBe("$[0]");
+  });
+
+  it("rejects undefined at the root", () => {
+    const [diagnostic] = diagnosticsOf(() => fromValue(absent));
+
+    expect(diagnostic?.path).toBe("$");
+  });
+
+  it("uses one path notation for every shape", () => {
+    expect(diagnosticsOf(() => fromValue(absent))[0]?.path).toBe("$");
+    expect(diagnosticsOf(() => emitted({ a: undefined }))[0]?.path).toBe("$.a");
+    expect(diagnosticsOf(() => emitted({ "runs-on": undefined }))[0]?.path).toBe('$["runs-on"]');
+    expect(diagnosticsOf(() => emitted([undefined]))[0]?.path).toBe("$[0]");
+  });
+});
+
+describe("unsupported objects", () => {
   it("rejects a Date", () => {
     const [diagnostic] = diagnosticsOf(() => emitted({ since: new Date(0) }));
 
@@ -92,7 +113,9 @@ describe("diagnostics", () => {
 
     expect(diagnostic?.message).toContain("Job");
   });
+});
 
+describe("unsupported primitives", () => {
   it("rejects NaN and Infinity", () => {
     const diagnostics = diagnosticsOf(() =>
       emitted({ a: Number.NaN, b: Number.POSITIVE_INFINITY }),
@@ -128,26 +151,9 @@ describe("diagnostics", () => {
     expect(diagnostic?.path).toBe("$.a");
     expect(diagnostic?.message).toContain("Set");
   });
+});
 
-  it("rejects undefined inside an array by index", () => {
-    const [diagnostic] = diagnosticsOf(() => emitted([undefined]));
-
-    expect(diagnostic?.path).toBe("$[0]");
-  });
-
-  it("rejects undefined at the root", () => {
-    const [diagnostic] = diagnosticsOf(() => fromValue(absent));
-
-    expect(diagnostic?.path).toBe("$");
-  });
-
-  it("uses one path notation for every shape", () => {
-    expect(diagnosticsOf(() => fromValue(absent))[0]?.path).toBe("$");
-    expect(diagnosticsOf(() => emitted({ a: undefined }))[0]?.path).toBe("$.a");
-    expect(diagnosticsOf(() => emitted({ "runs-on": undefined }))[0]?.path).toBe('$["runs-on"]');
-    expect(diagnosticsOf(() => emitted([undefined]))[0]?.path).toBe("$[0]");
-  });
-
+describe("cycles and collection", () => {
   it("rejects a cycle and names the repeated path", () => {
     const loop: Loop = { name: "loop" };
 
@@ -170,7 +176,9 @@ describe("diagnostics", () => {
 
     expect(diagnostics.map((diagnostic) => diagnostic.path)).toStrictEqual(["$.a", "$.b", "$.c"]);
   });
+});
 
+describe("formatting", () => {
   it("gives a diagnostic a hint where one helps", () => {
     const [diagnostic] = diagnosticsOf(() => emitted({ a: undefined }));
 
@@ -198,7 +206,9 @@ describe("diagnostics", () => {
     expect(error.message).toBe(formatDiagnostics(error.diagnostics));
     expect(error.name).toBe("DiagnosticError");
   });
+});
 
+describe("leaves", () => {
   it("rejects a leaf whose DOC method does not return a node", () => {
     const [diagnostic] = diagnosticsOf(() => emitted({ a: { [DOC]: () => 5 } }));
 
@@ -213,7 +223,9 @@ describe("diagnostics", () => {
 
     expect(() => emitted(inherited)).toThrow(DiagnosticError);
   });
+});
 
+describe("header", () => {
   it("rejects a header containing a newline", () => {
     const [diagnostic] = diagnosticsOf(() => renderDoc(fromValue({ a: 1 }), { header: "a\nb" }));
 
