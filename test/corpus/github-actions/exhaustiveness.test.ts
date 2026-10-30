@@ -1,28 +1,30 @@
 import { describe, expect, it } from "vitest";
 
 import { job, render, step, workflow } from "../../../src/github-actions/index.js";
-import { problemsFor } from "../../schemas/validate.js";
-import { COVERAGE_DEBT } from "./coverage-debt.js";
-import { ENTRIES, type Entry } from "./entries.js";
 import {
-  AUTHOR_NAMED,
   filledRawPaths,
   gapPaths,
   inventoryPaths,
-  keyPaths,
-  rawPathsOf,
   remediesFor,
-  translateLedgerPath,
   unique,
   unusedLedgerPaths,
-} from "./exhaustiveness.js";
-import { INVENTORY } from "./inventory.js";
+} from "../gate.js";
+import { problemsFor } from "../../schemas/validate.js";
 import { readVendored } from "../vendored.js";
+import { COVERAGE_DEBT } from "./coverage-debt.js";
+import { ENTRIES, type Entry } from "./entries.js";
+import { AUTHOR_NAMED, LEDGER_RULES, keyPaths, rawPathsOf } from "./exhaustiveness.js";
+import { INVENTORY } from "./inventory.js";
 
-const MODELLED = inventoryPaths();
+const MODELLED = inventoryPaths({
+  fixtures: INVENTORY,
+  renderOf: (document) => render(document.workflow, { header: "" }),
+  keyPaths,
+});
+
 const MODELLED_SET = new Set(MODELLED);
 const LEDGER = COVERAGE_DEBT.map((debt) => debt.path);
-const DECLARED = unique(LEDGER.map((path) => translateLedgerPath(path)));
+const DECLARED = unique(LEDGER.map((path) => LEDGER_RULES.translate(path)));
 
 /** The corpus differs from the modelled set by exactly the ledger's raw paths. */
 const differenceOf = async (entry: Entry): Promise<readonly string[]> =>
@@ -62,20 +64,20 @@ describe("exhaustiveness gate", () => {
   });
 
   it.each(ENTRIES)("$name uses no raw for a modelled key", (entry: Entry) => {
-    expect(filledRawPaths(entry.workflow, MODELLED)).toStrictEqual([]);
+    expect(filledRawPaths(rawPathsOf(entry.workflow), MODELLED, LEDGER_RULES)).toStrictEqual([]);
   });
 
   it.each(ENTRIES)("$name declares no ledger row it does not use", async (entry: Entry) => {
     const corpus = await keyPaths(await readVendored(import.meta.dirname, entry.file));
 
-    expect(unusedLedgerPaths(corpus, LEDGER)).toStrictEqual([]);
+    expect(unusedLedgerPaths(corpus, LEDGER, LEDGER_RULES)).toStrictEqual([]);
   });
 });
 
 describe("gate failure cases", () => {
   it("reports a corpus path outside the inventory and the ledger, naming both remedies", () => {
     const invented = "$.jobs.*.steps[].uses-with";
-    const report = gapPaths([...MODELLED, invented], MODELLED, LEDGER);
+    const report = gapPaths([...MODELLED, invented], MODELLED, LEDGER, LEDGER_RULES);
 
     expect(report).toStrictEqual([invented]);
     expect(remediesFor(invented)).toContain("model it in the vocabulary");
@@ -95,7 +97,9 @@ describe("gate failure cases", () => {
       ],
     });
 
-    expect(filledRawPaths(sneaky, MODELLED)).toStrictEqual(["$.jobs.*.steps"]);
+    expect(filledRawPaths(rawPathsOf(sneaky), MODELLED, LEDGER_RULES)).toStrictEqual([
+      "$.jobs.*.steps",
+    ]);
   });
 });
 
@@ -103,7 +107,7 @@ describe("gate report", () => {
   it("reports raw at workflow level on a modelled key", () => {
     const sneaky = workflow({ name: "Sneaky", on: "push", jobs: [], raw: { name: "Other" } });
 
-    expect(filledRawPaths(sneaky, MODELLED)).toStrictEqual(["$.name"]);
+    expect(filledRawPaths(rawPathsOf(sneaky), MODELLED, LEDGER_RULES)).toStrictEqual(["$.name"]);
   });
 
   it("reports raw at step level on a modelled key", () => {
@@ -113,21 +117,23 @@ describe("gate report", () => {
       jobs: [job({ id: "build", steps: [step({ raw: { name: "Other" } })] })],
     });
 
-    expect(filledRawPaths(sneaky, MODELLED)).toStrictEqual(["$.jobs.*.steps[].name"]);
+    expect(filledRawPaths(rawPathsOf(sneaky), MODELLED, LEDGER_RULES)).toStrictEqual([
+      "$.jobs.*.steps[].name",
+    ]);
   });
 
   it("reports a ledger row no fixture needs", () => {
-    expect(unusedLedgerPaths([], ["$.raw.not-used"])).toStrictEqual(["$.not-used"]);
+    expect(unusedLedgerPaths([], ["$.raw.not-used"], LEDGER_RULES)).toStrictEqual(["$.not-used"]);
   });
 
   it("sorts and de-duplicates the report", () => {
-    expect(gapPaths(["$.z", "$.a", "$.z"], [], [])).toStrictEqual(["$.a", "$.z"]);
+    expect(gapPaths(["$.z", "$.a", "$.z"], [], [], LEDGER_RULES)).toStrictEqual(["$.a", "$.z"]);
   });
 
   it("translates a ledger path to the modelled position it stands in for", () => {
-    expect(translateLedgerPath("$.raw.on")).toBe("$.on");
-    expect(translateLedgerPath("$.jobs[0].raw.container")).toBe("$.jobs.*.container");
-    expect(translateLedgerPath("$.jobs[2].steps[1].raw.shell")).toBe("$.jobs.*.steps[].shell");
+    expect(LEDGER_RULES.translate("$.raw.on")).toBe("$.on");
+    expect(LEDGER_RULES.translate("$.jobs[0].raw.container")).toBe("$.jobs.*.container");
+    expect(LEDGER_RULES.translate("$.jobs[2].steps[1].raw.shell")).toBe("$.jobs.*.steps[].shell");
   });
 
   it("keeps a real step's model intact, so the negative cases are not the only coverage", () => {
@@ -137,6 +143,6 @@ describe("gate report", () => {
       jobs: [job({ id: "build", steps: [step({ run: "true" })] })],
     });
 
-    expect(filledRawPaths(real, MODELLED)).toStrictEqual([]);
+    expect(filledRawPaths(rawPathsOf(real), MODELLED, LEDGER_RULES)).toStrictEqual([]);
   });
 });

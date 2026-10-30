@@ -1,8 +1,8 @@
 import { parse } from "yaml";
 
-import { type Workflow, render } from "../../../src/github-actions/index.js";
+import { type Workflow } from "../../../src/github-actions/index.js";
+import type { LedgerRules } from "../gate.js";
 import { keyPath, walkPaths, type YamlNode } from "../paths.js";
-import { INVENTORY } from "./inventory.js";
 
 /**
  * Map keys that belong to the author, not to the provider. A child directly under one of these paths
@@ -46,19 +46,6 @@ export const keyPaths = (text: string): readonly string[] => {
   return walkPaths(document, AUTHOR_NAMED);
 };
 
-/** The modelled set: the union of the inventory documents' paths, rendered exactly as a consumer's. */
-export const inventoryPaths = (): readonly string[] => {
-  const paths = new Set<string>();
-
-  for (const document of INVENTORY) {
-    for (const path of keyPaths(render(document.workflow, { header: "" }))) {
-      paths.add(path);
-    }
-  }
-
-  return [...paths].toSorted();
-};
-
 const STEP_PATH = "$.jobs.*.steps[]";
 
 /**
@@ -84,7 +71,7 @@ const LEDGER_JOB = /^\$\.jobs\[\d+\]\.raw\./u;
 const LEDGER_WORKFLOW = /^\$\.raw\./u;
 
 /** A ledger path is written where the author put `raw`; the gate compares modelled positions. */
-export const translateLedgerPath = (path: string): string => {
+const translateLedgerPath = (path: string): string => {
   if (LEDGER_ROW.test(path)) {
     return path.replace(LEDGER_ROW, "$.jobs.*.steps[].");
   }
@@ -96,47 +83,5 @@ export const translateLedgerPath = (path: string): string => {
   return path.replace(LEDGER_WORKFLOW, "$.");
 };
 
-/** Sorted and de-duplicated, because two jobs reaching for the same missing key are one gap. */
-export const unique = (paths: readonly string[]): readonly string[] =>
-  [...new Set(paths)].toSorted();
-
-/** Corpus paths the vocabulary cannot emit and the fixture does not declare through `raw`. */
-export const gapPaths = (
-  corpus: readonly string[],
-  modelled: readonly string[],
-  declared: readonly string[],
-): readonly string[] => {
-  const known = new Set([...modelled, ...declared.map((path) => translateLedgerPath(path))]);
-
-  return unique(corpus.filter((path) => !known.has(path)));
-};
-
-/** Declared gaps the corpus does not need, which would let a row rot without failing. */
-export const unusedLedgerPaths = (
-  corpus: readonly string[],
-  declared: readonly string[],
-): readonly string[] => {
-  const used = new Set(corpus);
-
-  return unique(
-    declared.flatMap((path) => {
-      const modelled = translateLedgerPath(path);
-
-      return used.has(modelled) ? [] : [modelled];
-    }),
-  );
-};
-
-/** `raw` that stands in for a key the inventory already models; the gate treats this as a failure. */
-export const filledRawPaths = (
-  workflow: Workflow,
-  modelled: readonly string[],
-): readonly string[] => {
-  const known = new Set(modelled);
-
-  return unique(rawPathsOf(workflow).filter((path) => known.has(path)));
-};
-
-/** The failure text a reader needs: the path, and both ways to make it legal. */
-export const remediesFor = (path: string): string =>
-  `${path} is not modelled; model it in the vocabulary, or express it through raw and declare it in the ledger`;
+/** The ledger notation on its own: a job and a step are named, never indexed, so `raw` is the only layer. */
+export const LEDGER_RULES: LedgerRules = { translate: translateLedgerPath };

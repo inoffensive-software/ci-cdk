@@ -1,9 +1,9 @@
 import { parse } from "yaml";
 
-import { type Pipeline, render } from "@inoffensive/ci-cdk/gitlab-ci";
+import { type Pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
 import { GLOBAL_KEYWORDS } from "../../../src/gitlab-ci/validate.js";
+import { coversSubtree, type LedgerRules } from "../gate.js";
 import { keyPath, walkPaths, type YamlNode } from "../paths.js";
-import { INVENTORY } from "./inventory.js";
 
 /** The document root's first key segment, dotted for an identifier and quoted for anything else. */
 const ROOT_SEGMENT = /^\$(?:\.([A-Za-z_$][\w$]*)|\[("(?:[^"\\]|\\.)*")\])/u;
@@ -89,19 +89,6 @@ export const keyPaths = (text: string): readonly string[] => {
   ].toSorted();
 };
 
-/** The modelled set: the union of the inventory documents' paths, rendered exactly as a consumer's. */
-export const inventoryPaths = (): readonly string[] => {
-  const paths = new Set<string>();
-
-  for (const document of INVENTORY) {
-    for (const path of keyPaths(render(document.pipeline, { header: "" }))) {
-      paths.add(path);
-    }
-  }
-
-  return [...paths].toSorted();
-};
-
 /**
  * Every key a fixture wrote through `raw`, named where the author wrote it, so the ledger and this
  * walk agree on notation.
@@ -120,75 +107,15 @@ const LEDGER_JOB = /^\$\.jobs\[\d+\]\.raw/u;
 const LEDGER_PIPELINE = /^\$\.raw/u;
 
 /** A ledger path is written where the author put `raw`; the gate compares modelled positions. */
-export const translateLedgerPath = (path: string): string =>
+const translateLedgerPath = (path: string): string =>
   path.replace(LEDGER_JOB, "$.*").replace(LEDGER_PIPELINE, "$");
 
-/** Sorted and de-duplicated, because two jobs reaching for the same missing key are one gap. */
-const unique = (paths: readonly string[]): readonly string[] => [...new Set(paths)].toSorted();
-
 /**
- * A raw entry owns everything under it, so a declared row explains its whole subtree. The segment
- * boundary matters: `$.variables` must not explain `$.variables_extra`.
+ * A `raw` entry owns everything under it, and a hidden key is author data on both sides, so one row
+ * explains a whole map and the corpus never reports an author's own keys.
  */
-const explains = (declared: string, path: string): boolean =>
-  path === declared || path.startsWith(`${declared}.`) || path.startsWith(`${declared}[`);
-
-const declaredPaths = (declared: readonly string[]): readonly string[] =>
-  declared.flatMap((row) => {
-    const path = translateLedgerPath(row);
-
-    return isHidden(path) ? [] : [path];
-  });
-
-/** Corpus paths the vocabulary cannot emit and the fixture does not declare through `raw`. */
-export const gapPaths = (
-  corpus: readonly string[],
-  modelled: readonly string[],
-  declared: readonly string[],
-): readonly string[] => {
-  const rows = declaredPaths(declared);
-  const known = new Set([...modelled, ...rows]);
-
-  return unique(
-    corpus.filter(
-      (path) => !isHidden(path) && !known.has(path) && !rows.some((row) => explains(row, path)),
-    ),
-  );
+export const LEDGER_RULES: LedgerRules = {
+  translate: translateLedgerPath,
+  covers: coversSubtree,
+  isAuthorData: isHidden,
 };
-
-/** Declared gaps the corpus does not need, which would let a row rot without failing. */
-export const unusedLedgerPaths = (
-  corpus: readonly string[],
-  declared: readonly string[],
-): readonly string[] =>
-  unique(
-    declared.flatMap((row) => {
-      const modelled = translateLedgerPath(row);
-
-      if (isHidden(modelled) || corpus.some((path) => explains(modelled, path))) {
-        return [];
-      }
-
-      return [modelled];
-    }),
-  );
-
-/** `raw` that stands in for a key the inventory already models; the gate treats this as a failure. */
-export const filledRawPaths = (
-  pipeline: Pipeline,
-  modelled: readonly string[],
-): readonly string[] => {
-  const known = new Set(modelled);
-
-  return unique(
-    rawPathsOf(pipeline).flatMap((row) => {
-      const path = translateLedgerPath(row);
-
-      return !isHidden(path) && known.has(path) ? [path] : [];
-    }),
-  );
-};
-
-/** The failure text a reader needs: the path, and both ways to make it legal. */
-export const remediesFor = (path: string): string =>
-  `${path} is not modelled; model it in the vocabulary, or express it through raw and declare it in the ledger`;

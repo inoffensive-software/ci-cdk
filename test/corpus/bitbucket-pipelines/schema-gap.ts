@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 
+import { render } from "../../../src/bitbucket-pipelines/index.js";
 import { schemaFromText, walkSchema } from "../../schemas/walk.js";
-import { AUTHOR_NAMED, inventoryPaths } from "./exhaustiveness.js";
+import { inventoryPaths } from "../gate.js";
+import { AUTHOR_NAMED, keyPaths } from "./exhaustiveness.js";
+import { INVENTORY } from "./inventory.js";
 
 export { GAPS, GAP_CATEGORIES, OVERCLAIMS } from "./schema-gap-debt.js";
 
@@ -33,4 +36,8 @@ export const SCHEMA_PATHS: readonly string[] = walkSchema(
 );
 
 /** The modelled set, derived exactly as the exhaustiveness gate derives it. */
-export const MODELLED_PATHS: readonly string[] = inventoryPaths();
+export const MODELLED_PATHS: readonly string[] = inventoryPaths({
+  fixtures: INVENTORY,
+  renderOf: (document) => render(document.config, { header: "" }),
+  keyPaths,
+});
