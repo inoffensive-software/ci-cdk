@@ -46,3 +46,16 @@ as the file (see the corpus README and ADR 0005).
 - Why this entry: services with an env and a published port, scalar matrix axes, workflow
   concurrency, `continue-on-error`, `on.pull_request.types`, bare `merge_group`, `on.push.branches`,
   numeric `with` values, and `needs` as an array.
+
+## trpc-release
+
+- Repo: <https://github.com/trpc/trpc>
+- Commit: `708753ff1383c47c5f765694978db1000a86ee36`
+- Path: `.github/workflows/release.yml`
+- Licence: MIT, Copyright (c) 2023 Alex Johansson
+- Vendored as: `trpc-release.yml`, SHA-256
+  `d878a97c3046f1e534695cba714f9382194e8c6a4fc8372f7c57d6b6b502dcba`
+- Comparison: data
+- Why this entry: `workflow_dispatch` inputs of type choice with options and defaults, a
+  workflow-level `environment`, a multi-scope `permissions` map, `on.push` with branch and path
+  filters including negated `!` patterns, and a boolean workflow `env` value.
