@@ -12,8 +12,9 @@ export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
  * paths collapse to the 53 keywords that account for them: modelling a keyword reveals the next layer
  * on the next run, and a row is only ever added when no row above it already covers the path. The rows
  * are JSON so the ledger stays data rather than source that outgrows the line limit. Adding a row
- * declares a path on purpose; deleting one is how a gap closes. A schema refresh fails the gate until
- * its new paths land here, per ADR 0011.
+ * declares a path on purpose; deleting one is how a gap closes. A row whose path the vocabulary now
+ * models is stale, so the gate fails until it is deleted or narrowed to the still-missing children.
+ * A schema refresh fails the gate until its new paths land here, per ADR 0011.
  */
 export const GAPS: readonly Gap[] = debt.map((row) => ({
   path: row.path,
