@@ -16,8 +16,9 @@ sees what the provider cannot emit and why, in the same file as the claim it qua
       compares the marked block with that function's output byte for byte.
 - [ ] Every declared gap and overclaim appears in the document, asserted by a test, so a list row cannot
       be invisible.
-- [ ] The prose note about `image_version` in the non-goals is removed, because the overclaim table is
-      now its home.
+- [ ] The prose note about `image_version` in the non-goals stays, because the diff cannot see a
+      vocabulary arm the inventory is forbidden to contain (spec decision 14), and the section says so
+      in one line rather than implying the overclaim table covers it.
 - [ ] The section names the schema's pinned origin by linking `docs/references/upstream-schemas.md`
       rather than restating the URL or date.
 - [ ] The document still does not restate invariants, the emitted format or decisions that belong in
