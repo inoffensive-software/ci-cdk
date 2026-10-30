@@ -11,6 +11,7 @@
     "tools/oxlint/anti-slop/**",
     ".agents/**",
     ".hermes/**",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "test/schemas/*.json"
   ]
 }

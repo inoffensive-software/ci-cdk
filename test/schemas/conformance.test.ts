@@ -95,7 +95,8 @@ const all = fixtures();
 const valid = all.filter((fixture) => !negativeFixtures.includes(fixture.path));
 
 describe("schema conformance", () => {
-  it("checks more than an empty set of emitted fixtures", () => {
+  it("checks the provider goldens as well as any corpus config", () => {
+    expect(snapshotFixtures().length).toBeGreaterThan(0);
     expect(valid.length).toBeGreaterThan(0);
   });
 
@@ -106,7 +107,7 @@ describe("schema conformance", () => {
   it("declares exactly the fixtures that must fail", () => {
     const invalid = all.filter((fixture) => problemsOf(fixture).length > 0).map(({ path }) => path);
 
-    expect(invalid).toStrictEqual(negativeFixtures);
+    expect(invalid).toStrictEqual([...negativeFixtures].toSorted());
   });
 
   it("rejects the fixture carrying an unmodelled key through raw", () => {
