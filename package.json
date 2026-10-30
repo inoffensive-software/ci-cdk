@@ -17,8 +17,8 @@
       "default": "./dist/index.js"
     },
     "./github-actions": {
-      "types": "./dist/vendors/github-actions/index.d.ts",
-      "default": "./dist/vendors/github-actions/index.js"
+      "types": "./dist/github-actions/index.d.ts",
+      "default": "./dist/github-actions/index.js"
     },
     "./package.json": "./package.json"
   },

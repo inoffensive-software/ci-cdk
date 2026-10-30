@@ -10,8 +10,9 @@ surface and provider emitters are not written yet.
 ## Layout
 
 ```
-src/index.ts         core primitives and the public entry point
-src/vendors/         one directory per provider, e.g. src/vendors/github-actions/
+src/index.ts         public entry point; re-exports core
+src/core/            provider-neutral: Doc, fromValue, render, write
+src/github-actions/  one directory per provider; directory name = subpath export
 tsconfig.json        all compiler options; build: src/ -> dist/, tests excluded
 tsconfig.test.json   extends the above, typechecks src/ + vitest.config.ts, noEmit
 .fallowrc.json       fallow config (JSONC); entry points detected from package.json
@@ -31,10 +32,11 @@ export default defineConfig(githubActions(/* ... */));
 
 Conventions that keep that workable:
 
-- Core stays provider-neutral. No GitHub/GitLab-specific nouns outside `src/vendors/`.
+- Core stays provider-neutral. No GitHub/GitLab-specific nouns outside a provider directory
+  (`src/<provider>/`).
 - Providers may import from core, never from a sibling provider directory.
-- One declaration site per shared type, in core. Providers do not re-declare or wrap them, or type
-  identity breaks across subpaths.
+- One declaration site per shared type, in core (`Doc`, `Text`, `Diagnostic`). Providers do not
+  re-declare or wrap them, or type identity breaks across subpaths.
 - Every provider ships a golden-file test of its emitted YAML; those files double as documentation.
 
 Tests sit next to the code they cover (`src/foo.test.ts`, golden files in `src/__snapshots__/`).
@@ -67,8 +69,11 @@ from the test file next to the emitter, so the golden files are reviewable in th
 - fallow for dead code, duplication, complexity, and architecture (`.fallowrc.json`, JSONC, so it
   carries comments; fallow owns validation of that file, not tsc). It runs clean on zero config --
   entry points are read from `package.json` `exports`/`bin`, so nothing is listed by hand. The config
-  only sets `duplicates.minOccurrences: 3` (ignore pair-only clones) and keeps
-  `unused-dependencies` at `warn` rather than failing the build.
+  sets `duplicates.minOccurrences: 3` (ignore pair-only clones), `unused-dependencies` at `error`,
+  and the architecture zones: `core` may import nothing from the project, each provider may import
+  `core` only, and `coverage.requireAllFiles` forces any new directory to be classified into a zone.
+  A provider therefore cannot import a sibling without failing `pnpm check`. `pnpm fallow guard <files>`
+  shows which zone rules apply to a file before you edit it.
 - `pnpm fallow <subcommand>` reaches the rest: `health --hotspots`, `dupes`, `architecture`,
   `dead-code --trace <file>:<export>`, `inspect --file <path>`, and `audit --base <ref>` as the
   PR-scoped gate. `fallow doctor` diagnoses project detection without changing anything.

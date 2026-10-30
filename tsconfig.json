@@ -40,6 +40,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
+    "isolatedDeclarations": true,
     "declarationMap": true,
     "sourceMap": true
   },

@@ -5,6 +5,23 @@
     "minOccurrences": 3
   },
   "rules": {
-    "unused-dependencies": "error"
+    "unused-dependencies": "error",
+    "boundary-violation": "error"
+  },
+  "boundaries": {
+    // One zone per source directory. Core may import nothing from the project; a provider may
+    // import core and nothing else. Providers are mutually isolated without pairwise rules.
+    "zones": [
+      { "name": "core", "patterns": ["src/core/**"] },
+      { "name": "github-actions", "patterns": ["src/github-actions/**"] }
+    ],
+    "rules": [
+      { "from": "core", "allow": [] },
+      { "from": "github-actions", "allow": ["core"] }
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": ["src/index.ts", "vitest.config.ts", "**/*.test.ts"]
+    }
   }
 }
