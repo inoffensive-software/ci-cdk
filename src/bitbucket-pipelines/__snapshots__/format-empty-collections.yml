@@ -1,0 +1,9 @@
+definitions:
+  caches: {}
+pipelines:
+  default:
+    - step:
+        script:
+          - echo start
+          - pipe: atlassian/example:1
+            variables: {}

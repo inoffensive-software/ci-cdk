@@ -1,0 +1,128 @@
+clone:
+  depth: full
+  enabled: true
+  lfs: true
+  skip-ssl-verify: true
+definitions:
+  caches:
+    modules: node_modules
+    build:
+      path: dist
+      key:
+        files:
+          - package.json
+          - pnpm-lock.yaml
+  services:
+    postgres:
+      image: postgres:16
+      memory: 1024
+      type: docker
+      variables:
+        POSTGRES_DB: app
+        POSTGRES_PASSWORD: secret
+  steps:
+    - step:
+        name: shared
+        script:
+          - echo shared
+image:
+  name: node:22
+  password: token
+  username: builder
+options:
+  docker: true
+  max-time: 60
+  runs-on:
+    - self.hosted
+    - linux
+  size: 2x
+pipelines:
+  default:
+    - step:
+        after-script:
+          - echo teardown
+          - pipe: atlassian/default-notify:1
+            variables:
+              MESSAGE:
+                - build
+                - finished
+        artifacts:
+          - dist/**
+        caches:
+          - modules
+        clone:
+          depth: 1
+        condition:
+          state: SUCCESSFUL
+        concurrency-group: deploy
+        deployment: staging
+        environment: staging
+        fail-fast: false
+        image: python:3.12
+        max-time: 15
+        name: build
+        oidc: true
+        runs-on:
+          - self.hosted
+        script:
+          - npm ci
+          - pipe: atlassian/aws-s3-deploy:1
+            variables:
+              LOCAL_PATH: dist
+              REMOTE_PATH:
+                - s3://one
+                - s3://two
+        services:
+          - postgres
+        size: 4x
+        trigger: automatic
+    - parallel:
+        fail-fast: true
+        steps:
+          - step:
+              name: unit
+              script:
+                - npm run test:unit
+          - step:
+              name: lint
+              script:
+                - npm run lint
+    - stage:
+        condition:
+          changesets:
+            includePaths:
+              - src/**
+              - package.json
+        deployment: production
+        environment: production
+        name: release
+        steps:
+          - step:
+              name: publish
+              script:
+                - npm publish
+        trigger: manual
+    - final:
+        name: cleanup
+        script:
+          - echo clean
+  branches:
+    "*":
+      - step:
+          script:
+            - echo branch
+  tags:
+    "**":
+      - step:
+          script:
+            - echo tag
+  pull-requests:
+    "**":
+      - step:
+          script:
+            - echo pr
+  custom:
+    deploy:
+      - step:
+          script:
+            - echo deploy
