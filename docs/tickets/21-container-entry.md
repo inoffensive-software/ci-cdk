@@ -9,14 +9,14 @@ grammar: `prisma/prisma`'s PR code-security workflow.
 
 **Blocked by:** 18 (Scalar values in author maps, and the services entry)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The workflow is vendored verbatim at the pinned commit, with repo, commit, path, Apache-2.0
+- [x] The workflow is vendored verbatim at the pinned commit, with repo, commit, path, Apache-2.0
       licence and a one-line reason recorded in provenance.
-- [ ] The fixture reproduces the entry as parsed data.
-- [ ] The entry proves a job `container` with an image, job-level `permissions` with two scopes,
+- [x] The fixture reproduces the entry as parsed data.
+- [x] The entry proves a job `container` with an image, job-level `permissions` with two scopes,
       `secrets: inherit` on a `uses` job, and a numeric `with` value.
-- [ ] The exhaustiveness gate is green for the entry.
-- [ ] Any gap the entry exposes is either closed in this ticket or declared in the ledger with a
+- [x] The exhaustiveness gate is green for the entry.
+- [x] Any gap the entry exposes is either closed in this ticket or declared in the ledger with a
       reason; the fixture is never edited to avoid one.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.

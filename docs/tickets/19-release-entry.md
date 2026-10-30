@@ -9,14 +9,14 @@ This is `trpc/trpc`'s release workflow, and no new production code is expected.
 
 **Blocked by:** 18 (Scalar values in author maps, and the services entry)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The workflow is vendored verbatim at the pinned commit, with repo, commit, path, MIT licence and
+- [x] The workflow is vendored verbatim at the pinned commit, with repo, commit, path, MIT licence and
       a one-line reason recorded in provenance.
-- [ ] The fixture reproduces the entry as parsed data.
-- [ ] The entry proves `workflow_dispatch` inputs of type choice with `options` and `default`, a
+- [x] The fixture reproduces the entry as parsed data.
+- [x] The entry proves `workflow_dispatch` inputs of type choice with `options` and `default`, a
       string `environment`, a multi-scope `permissions` map, and `paths` entries beginning with `!`.
-- [ ] The exhaustiveness gate is green for the entry.
-- [ ] Any gap the entry exposes is either closed in this ticket or declared in the ledger with a
+- [x] The exhaustiveness gate is green for the entry.
+- [x] Any gap the entry exposes is either closed in this ticket or declared in the ledger with a
       reason; the fixture is never edited to avoid one.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.

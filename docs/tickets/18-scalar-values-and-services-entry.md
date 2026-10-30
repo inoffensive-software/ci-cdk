@@ -10,14 +10,14 @@ services, scalar matrix axes, `concurrency`, `continue-on-error`, `on.pull_reque
 
 **Blocked by:** 17 (Exhaustiveness gate and inventory fixture)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `with`, `env` and container `env` accept a string, a number, a boolean or a leaf, at workflow,
+- [x] `with`, `env` and container `env` accept a string, a number, a boolean or a leaf, at workflow,
       job, step and container level, and a number survives render and parse as a number.
-- [ ] The boundary parser still refuses a value that is not a scalar, with a diagnostic carrying the
+- [x] The boundary parser still refuses a value that is not a scalar, with a diagnostic carrying the
       entry's path.
-- [ ] The `trpc/trpc` workflow is vendored verbatim at the pinned commit, with repo, commit, path,
+- [x] The `trpc/trpc` workflow is vendored verbatim at the pinned commit, with repo, commit, path,
       MIT licence and a one-line reason recorded in provenance.
-- [ ] The fixture reproduces the entry as parsed data, with no `raw` used for a modelled key.
-- [ ] The exhaustiveness gate is green for the entry, and the ledger gains no rows.
-- [ ] `pnpm check` passes.
+- [x] The fixture reproduces the entry as parsed data, with no `raw` used for a modelled key.
+- [x] The exhaustiveness gate is green for the entry, and the ledger gains no rows.
+- [x] `pnpm check` passes.
