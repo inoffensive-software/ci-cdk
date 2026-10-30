@@ -14,14 +14,25 @@ deliberately.
 Also available from https://www.schemastore.org/api/json/catalog.json (`schemas[].url`), which is how
 these were found, and which lists the `fileMatch` globs each schema claims.
 
+## Vendored copies
+
+| File                               | Source                                             | Copied     | SHA-256                                                            |
+| ---------------------------------- | -------------------------------------------------- | ---------- | ------------------------------------------------------------------ |
+| `test/schemas/github-actions.json` | `https://www.schemastore.org/github-workflow.json` | 2026-10-29 | `d10c9f4656e1bd5bc6727e9b35080e017dc167154726fca93da33c7a6bd1c4f3` |
+
+Each copy is byte-identical to its source on the date shown, keeps the upstream `$id`, and refers
+only to its own `#/definitions/...`, so the check needs no network. Refresh by downloading the
+source again and updating the row; never edit the vendored file in place.
+
 ## How to use them
 
 - Types are hand-written from prose docs, not generated. These schemas are loose draft-07 unions
   with no discriminators; generated types are unusable for a DSL and you would re-abstract them.
 
-- Conformance test: parse the emitted YAML and validate it against the vendored schema. Refresh the
-  vendored copy on demand (a requested feature, or periodically), not on a schedule that gates CI
-  on upstream churn.
+- Conformance test: parse the emitted YAML and validate it against the vendored schema. It lives in
+  `test/schemas/conformance.test.ts` and runs in the normal suite; `ajv` is pinned, configured for
+  draft-07 with strict mode off because the upstream schema is loose. Refresh the vendored copy on
+  demand (a requested feature, or periodically), not on a schedule that gates CI on upstream churn.
 
 - Schema validation cannot catch dangling `needs`, duplicate job ids, or dependency cycles. Those
   live in `toDoc`.
