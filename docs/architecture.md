@@ -39,8 +39,10 @@ typed structs (provider vocabulary)   --toDoc()-->   Doc   --renderDoc()-->   te
 
 - **`Doc`** is an ordered, style-annotated tree: arrays of `{ key, value }` entries rather than
   records, scalars carrying `plain | single | double | literal | folded` and an optional tag. It is
-  a YAML superset on purpose. Tags exist for GitLab's `!reference`; literal style exists for shell
-  scripts; both must be expressible or they leak into the emitter as provider special-cases.
+  a YAML superset on purpose. Tags exist for GitLab's `!reference`, and core also tags the two leaves
+  whose text is a legal string (`!!null`, `!!bool`) so a literal and its spelling stay distinct;
+  literal style exists for shell scripts. Every one of these must be expressible or they leak into the
+  emitter as provider special-cases.
 
 - **`renderDoc`** walks a `Doc` and produces text. It knows nothing about CI. Alternate targets (JSON
   today, TOML later) are additional `Serializer` implementations, never provider-owned forks.

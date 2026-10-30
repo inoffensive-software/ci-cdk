@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDocument } from "yaml";
+import { parse, parseDocument } from "yaml";
 
 import {
   DEFAULT_HEADER,
@@ -58,11 +58,57 @@ describe("emission", () => {
     });
 
     it("pins the number traps", async () => {
-      const value: Value = { "1.10": "1.10", number: 1.1, exponent: 1e21, integer: 42 };
+      const value: Value = { "1.10": "1.10", number: 1.1, exponent: 1e21, integer: 10 };
 
       await expect(renderDoc(fromValue(value))).toMatchFileSnapshot(
         "__snapshots__/number-trap.txt",
       );
+    });
+
+    describe("quoting traps", () => {
+      it("pins the on key", async () => {
+        await expect(renderDoc(fromValue({ on: "push" }))).toMatchFileSnapshot(
+          "__snapshots__/on-key-trap.txt",
+        );
+      });
+
+      it("pins the YAML 1.1 booleans", async () => {
+        const value: Value = { a: "yes", b: "no", c: "on", d: "off", e: true, f: false };
+
+        await expect(renderDoc(fromValue(value))).toMatchFileSnapshot(
+          "__snapshots__/boolean-trap.txt",
+        );
+      });
+
+      it("pins the null text next to a null", async () => {
+        await expect(renderDoc(fromValue({ a: "null", b: null }))).toMatchFileSnapshot(
+          "__snapshots__/null-trap.txt",
+        );
+      });
+
+      it("pins a value containing a mapping indicator", async () => {
+        await expect(renderDoc(fromValue({ a: "key: value" }))).toMatchFileSnapshot(
+          "__snapshots__/colon-trap.txt",
+        );
+      });
+
+      it("pins a value containing a comment indicator", async () => {
+        await expect(renderDoc(fromValue({ a: "value # comment" }))).toMatchFileSnapshot(
+          "__snapshots__/comment-trap.txt",
+        );
+      });
+
+      it("pins a long plain string", async () => {
+        await expect(renderDoc(fromValue({ a: "x".repeat(140) }))).toMatchFileSnapshot(
+          "__snapshots__/long-line-trap.txt",
+        );
+      });
+
+      it("pins text that already carries quotes", async () => {
+        await expect(renderDoc(fromValue({ a: '"quoted"', b: "'single'" }))).toMatchFileSnapshot(
+          "__snapshots__/pre-quoted-trap.txt",
+        );
+      });
     });
 
     it("pins shell text as a literal block", async () => {
@@ -124,16 +170,44 @@ describe("emission", () => {
     });
 
     it("cannot tell a canonically numeric string from a number", () => {
-      // `DocScalar.value` is text and `fromValue` must emit plain, so the distinction is already
-      // gone by the time the serializer sees it.
+      // Numbers are the one type still carried as text: `fromValue` serialises them with `String(n)`,
+      // so a canonical spelling is already a number by the time the serializer sees it.
       expect(emit({ a: "42" })).toBe("a: 42\n");
       expect(emit({ a: "1.5" })).toBe("a: 1.5\n");
+    });
+
+    it("quotes the string null but keeps a null a null", () => {
+      expect(emit({ a: "null", b: null })).toBe('a: "null"\nb: null\n');
+    });
+
+    it("quotes a string that looks like a boolean but keeps booleans", () => {
+      expect(emit({ a: "true", b: "false", c: true, d: false })).toBe(
+        'a: "true"\nb: "false"\nc: true\nd: false\n',
+      );
     });
 
     it("quotes strings containing a mapping or comment indicator", () => {
       expect(emit({ a: "key: value", b: "value # comment" })).toBe(
         'a: "key: value"\nb: "value # comment"\n',
       );
+    });
+
+    it("reads the punctuation traps back as the text that was written", () => {
+      const value: Value = { a: "key: value", b: "value # comment" };
+
+      expect(parse(emit(value))).toStrictEqual(value);
+    });
+
+    it("reads the null and boolean traps back as the values that were written", () => {
+      const value: Value = { a: "null", b: null, c: "true", d: true };
+
+      expect(parse(emit(value))).toStrictEqual(value);
+    });
+
+    it("leaves text that already carries quotes alone", () => {
+      const value: Value = { a: '"quoted"', b: "'single'" };
+
+      expect(parse(emit(value))).toStrictEqual(value);
     });
 
     it("does not wrap a long plain string", () => {
@@ -207,6 +281,12 @@ describe("emission", () => {
       const doc = map([{ key: "a", value: tagged("!!str", scalar("1")) }]);
 
       expect(renderDoc(doc, { header: "" })).toBe("a: !!str 1\n");
+    });
+
+    it("does not repeat a type marker the emitted value already implies", () => {
+      const doc = map([{ key: "a", value: tagged("!!null", scalar("null")) }]);
+
+      expect(renderDoc(doc, { header: "" })).toBe("a: null\n");
     });
 
     it("only emits tags its own parser accepts", () => {

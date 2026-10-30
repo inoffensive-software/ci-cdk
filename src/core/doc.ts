@@ -31,6 +31,16 @@ export type Doc = DocMap | DocSeq | DocScalar;
 /** Brand carried by a leaf object that knows how to become its own node. */
 export const DOC: unique symbol = Symbol("ci-cdk/doc");
 
+/**
+ * Type markers. A scalar's text cannot say whether it came from a `null` or from the string
+ * `"null"`, so the boundary parser tags the literal and the emitter resolves the tag back to a typed
+ * value. The tag never reaches the output: an unquoted `null` already says what it is.
+ */
+export const NULL_TAG: string = "!!null";
+
+/** Boolean counterpart of `NULL_TAG`. */
+export const BOOL_TAG: string = "!!bool";
+
 export interface LeafNode {
   readonly [DOC]: () => Doc;
 }
@@ -45,9 +55,10 @@ export const map = (entries: readonly DocEntry[]): DocMap => ({ kind: "map", ent
 export const seq = (items: readonly Doc[]): DocSeq => ({ kind: "seq", items });
 
 /**
- * A scalar is text plus the style that presents it. Two styles cannot always survive directly: a
- * `single`-quoted value holding a newline is emitted double-quoted, because single quotes would only
- * fold it and the format permits no blank lines.
+ * A scalar is text plus the style that presents it; it is never a typed value. `scalar("true")` is
+ * the string, not the boolean, so typed leaves enter the tree through `fromValue`. Two styles cannot
+ * always survive directly: a `single`-quoted value holding a newline is emitted double-quoted,
+ * because single quotes would only fold it and the format permits no blank lines.
  */
 export const scalar = (value: string, options?: ScalarOptions): DocScalar => {
   const style = options?.style ?? "plain";

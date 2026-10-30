@@ -10,18 +10,18 @@ falls.
 
 **Blocked by:** 01 (Emit plain data).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The key `on` is emitted unquoted.
-- [ ] The strings `"yes"`, `"no"`, `"null"` and `"1.10"` are emitted quoted, and the numbers `1.1` and
+- [x] The key `on` is emitted unquoted.
+- [x] The strings `"yes"`, `"no"`, `"null"` and `"1.10"` are emitted quoted, and the numbers `1.1` and
       `10` are not.
-- [ ] A string containing `: `, and a string containing ` #`, are emitted quoted and parse back to the
+- [x] A string containing `: `, and a string containing ` #`, are emitted quoted and parse back to the
       original text.
-- [ ] A plain string longer than 100 characters is emitted on one line.
-- [ ] A string that is already wrapped in single or double quotes in the source data is not
+- [x] A plain string longer than 100 characters is emitted on one line.
+- [x] A string that is already wrapped in single or double quotes in the source data is not
       double-quoted by the emitter.
-- [ ] Each trap above has its own golden, named for the trap, and the goldens are the assertion, not a
+- [x] Each trap above has its own golden, named for the trap, and the goldens are the assertion, not a
       substring check.
-- [ ] Quoting behaviour comes from the pinned serializer options plus explicit `Doc` styles only. No
+- [x] Quoting behaviour comes from the pinned serializer options plus explicit `Doc` styles only. No
       provider name and no per-key special case appears in core.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.

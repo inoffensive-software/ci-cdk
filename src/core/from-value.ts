@@ -1,4 +1,14 @@
-import { DOC, map, scalar, seq, type Doc, type DocEntry, type LeafNode } from "./doc.js";
+import {
+  BOOL_TAG,
+  DOC,
+  NULL_TAG,
+  map,
+  scalar,
+  seq,
+  type Doc,
+  type DocEntry,
+  type LeafNode,
+} from "./doc.js";
 import { fail, type Diagnostic } from "./errors.js";
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
@@ -184,8 +194,10 @@ const lower = (
     return lowerLeaf(input, path, diagnostics);
   }
 
+  // null and booleans are tagged because their text is also a legal string: without the marker the
+  // string "null" and the null literal would be the same node by the time the emitter sees it.
   if (input === null) {
-    return scalar("null");
+    return scalar("null", { tag: NULL_TAG });
   }
 
   if (typeof input === "string") {
@@ -193,7 +205,7 @@ const lower = (
   }
 
   if (typeof input === "boolean") {
-    return scalar(input ? "true" : "false");
+    return scalar(input ? "true" : "false", { tag: BOOL_TAG });
   }
 
   if (typeof input === "number") {

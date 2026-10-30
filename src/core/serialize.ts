@@ -1,6 +1,14 @@
 import { Document, Pair, Scalar, YAMLMap, YAMLSeq, type Node } from "yaml";
 
-import type { Doc, DocMap, DocScalar, DocSeq, ScalarStyle } from "./doc.js";
+import {
+  BOOL_TAG,
+  NULL_TAG,
+  type Doc,
+  type DocMap,
+  type DocScalar,
+  type DocSeq,
+  type ScalarStyle,
+} from "./doc.js";
 import { fail } from "./errors.js";
 
 export interface RenderOptions {
@@ -39,6 +47,27 @@ const canonicalNumber = (value: string): number | undefined => {
   return parsed;
 };
 
+/**
+ * Resolves a type marker back to a typed value. `fromValue` reduces `null` and booleans to text, so
+ * the tag is the only thing that separates the literal from the string that spells it. Returns
+ * undefined when the tag is not a marker, so a tag the caller wrote still emits.
+ */
+const typedScalar = (doc: DocScalar): Scalar | undefined => {
+  if (doc.style !== "plain") {
+    return undefined;
+  }
+
+  if (doc.tag === NULL_TAG && doc.value === "null") {
+    return new Scalar(null);
+  }
+
+  if (doc.tag === BOOL_TAG && (doc.value === "true" || doc.value === "false")) {
+    return new Scalar(doc.value === "true");
+  }
+
+  return undefined;
+};
+
 const plainScalar = (value: string): Scalar => {
   const numeric = canonicalNumber(value);
 
@@ -46,20 +75,12 @@ const plainScalar = (value: string): Scalar => {
     return new Scalar(numeric);
   }
 
-  // `DocScalar.value` is text, so the boolean `true` from `fromValue` and the string "true" are the
-  // same node. The literal wins: the leaf must emit as a boolean. Strings that only YAML 1.1 reads
-  // as booleans (`yes`, `no`) are still quotable, which is the trap the goldens pin.
-  if (value === "true" || value === "false") {
-    return new Scalar(value === "true");
-  }
-
-  if (value === "null") {
-    return new Scalar(null);
-  }
-
   const node = new Scalar(value);
 
   // A plain scalar holding a newline folds into a blank line, which the format does not allow.
+  // `yes`/`no`/`on`/`off` are strings under YAML 1.2 and booleans under 1.1, so they are quoted
+  // rather than left to the schema; everything else is quoted by the serializer when its text would
+  // not read back as itself.
   node.type =
     YAML_11_BOOLEAN.test(value) || MULTILINE.test(value) ? Scalar.QUOTE_DOUBLE : Scalar.PLAIN;
 
@@ -83,15 +104,17 @@ const scalarType = (style: Exclude<ScalarStyle, "plain">): Scalar.Type => {
 };
 
 const toScalar = (doc: DocScalar): Scalar => {
+  const typed = typedScalar(doc);
   // Single quotes cannot escape a newline: they fold it, which emits a blank line. Double can.
   const style = doc.style === "single" && MULTILINE.test(doc.value) ? "double" : doc.style;
-  const node = style === "plain" ? plainScalar(doc.value) : new Scalar(doc.value);
+  const node = typed ?? (style === "plain" ? plainScalar(doc.value) : new Scalar(doc.value));
 
-  if (style !== "plain") {
+  if (typed === undefined && style !== "plain") {
     node.type = scalarType(style);
   }
 
-  if (doc.tag !== undefined) {
+  // A type marker is implied by the value it emits, so it is never repeated as a tag in the output.
+  if (typed === undefined && doc.tag !== undefined) {
     node.tag = doc.tag;
   }
 
