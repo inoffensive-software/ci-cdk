@@ -34,6 +34,9 @@
     "fmt:check": "oxfmt --check .",
     "check": "pnpm fmt:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test && pnpm fallow"
   },
+  "dependencies": {
+    "yaml": "2.9.1"
+  },
   "devDependencies": {
     "@oxlint/plugins": "1.90.0",
     "@types/node": "^26.6.5",
