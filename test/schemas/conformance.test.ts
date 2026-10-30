@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import type { Dirent } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -91,7 +92,36 @@ const described = (problems: readonly SchemaProblem[]): readonly string[] =>
  */
 const RAW_FIXTURE = "src/github-actions/__snapshots__/raw-shape.yml";
 
-const NEGATIVE_FIXTURES: readonly string[] = [RAW_FIXTURE];
+/**
+ * A file-based negative is a checked-in fixture whose only flaw is a property the provider's schema
+ * does not model. Bitbucket has no such fixture: its schema accepts unknown keys at the root, on a
+ * step and on a stage, which are the only levels `raw` can write. Its negative is therefore a
+ * synthetic document, asserted below rather than discovered from disk.
+ */
+const FILE_NEGATIVE_FIXTURES: readonly Fixture[] = [
+  { path: RAW_FIXTURE, provider: "github-actions" },
+];
+
+const FILE_NEGATIVE_PATHS: readonly string[] = FILE_NEGATIVE_FIXTURES.map(({ path }) => path);
+
+/** Not a repository path: the document exists only in this test. */
+const BITBUCKET_NEGATIVE_NAME = "synthetic:bitbucket-pipelines/item-with-sibling-key.yml";
+
+/**
+ * A pipeline item carrying a `step` plus a sibling key. Each part is valid Bitbucket; the item map
+ * does not allow any key beside `step`, `parallel`, `stage` or `final`, so this is the narrowest
+ * document the pinned schema rejects.
+ */
+const bitbucketNegative = (): string =>
+  [
+    "pipelines:",
+    "  default:",
+    "    - step:",
+    "        script:",
+    "          - npm test",
+    "      not-a-bitbucket-item-key: true",
+    "",
+  ].join("\n");
 
 /** A workflow whose only flaw is a `raw` key no schema knows, built through the public API. */
 const unmodelledRaw = (): string =>
@@ -142,8 +172,15 @@ const gitlabInventoryProblems = (): readonly string[] =>
     ),
   );
 
+/** Every vendored schema, so the reference check cannot silently narrow to one provider. */
+const schemaFiles = (): readonly string[] =>
+  readdirSync(join(ROOT, "test", "schemas"), { withFileTypes: true })
+    .filter((entry: Dirent) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry: Dirent) => entry.name)
+    .toSorted();
+
 const ALL = fixtures();
-const VALID = ALL.filter((fixture) => !NEGATIVE_FIXTURES.includes(fixture.path));
+const VALID = ALL.filter((fixture) => !FILE_NEGATIVE_PATHS.includes(fixture.path));
 
 describe("schema conformance", () => {
   it("checks the provider goldens as well as any corpus config", () => {
@@ -158,15 +195,32 @@ describe("schema conformance", () => {
   it("declares exactly the fixtures that must fail", () => {
     const invalid = ALL.filter((fixture) => problemsOf(fixture).length > 0).map(({ path }) => path);
 
-    expect(invalid).toStrictEqual([...NEGATIVE_FIXTURES].toSorted());
+    expect(invalid).toStrictEqual([...FILE_NEGATIVE_PATHS].toSorted());
   });
+});
 
+describe("declared negative fixtures", () => {
   it("rejects the fixture carrying an unmodelled key through raw", () => {
     const problems = described(problemsOf({ path: RAW_FIXTURE, provider: "github-actions" }));
 
     expect(problems).toContain(
       '/jobs/build/steps/0 must NOT have additional properties: "custom-key"',
     );
+  });
+
+  it("rejects a synthetic Bitbucket item carrying a key beside step", () => {
+    const problems = described(problemsFor("bitbucket-pipelines", bitbucketNegative()));
+
+    expect(problems).toContain(
+      '/pipelines/default/0 must NOT have additional properties: "not-a-bitbucket-item-key"',
+    );
+  });
+
+  it("does not treat the synthetic Bitbucket negative as a fixture", () => {
+    const onDisk = ALL.map(({ path }) => readFileSync(join(ROOT, path), "utf8"));
+
+    expect(onDisk).not.toContain(bitbucketNegative());
+    expect(ALL.map(({ path }) => path)).not.toContain(BITBUCKET_NEGATIVE_NAME);
   });
 
   it("rejects a document carrying an unmodelled key through raw", () => {
@@ -182,15 +236,27 @@ describe("schema conformance", () => {
 
     expect(problems).toContain('/build must NOT have additional properties: "not-a-gitlab-key"');
   });
+});
 
-  it("validates every GitLab inventory document", () => {
+describe("gitlab inventory", () => {
+  it("validates every document", () => {
     expect(INVENTORY.length).toBeGreaterThan(0);
     expect(gitlabInventoryProblems()).toStrictEqual([]);
   });
+});
 
-  it("vendors a self-contained schema with no remote references", () => {
-    const schema = readFileSync(join(ROOT, "test", "schemas", "github-actions.json"), "utf8");
+describe("vendored schemas", () => {
+  it("are self-contained with no remote references", () => {
+    const files = schemaFiles();
 
-    expect(remoteReferences(schema)).toStrictEqual([]);
+    expect(files.length).toBeGreaterThanOrEqual(2);
+
+    const references = files.flatMap((file) => {
+      const schema = readFileSync(join(ROOT, "test", "schemas", file), "utf8");
+
+      return remoteReferences(schema).map((reference) => `${file}: ${reference}`);
+    });
+
+    expect(references).toStrictEqual([]);
   });
 });

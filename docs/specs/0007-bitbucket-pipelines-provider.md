@@ -421,8 +421,10 @@ as parsed data with the header suppressed (ADR 0005); none is compared byte for 
 - The conformance suite already discovers a provider by the presence of its vendored schema, so
   naming the file `bitbucket-pipelines.json` wires up goldens and corpus entries with no new test.
 - Two test-support changes are part of the slice: the remote-reference check runs over every vendored
-  schema rather than GitHub Actions alone, and the negative-fixture list becomes per provider, with
-  Bitbucket's raw golden as its own entry.
+  schema rather than GitHub Actions alone, and the negative-fixture list becomes per provider.
+  GitHub Actions keeps its raw golden as its negative. Bitbucket declares a synthetic malformed
+  document instead: the pinned schema accepts unknown keys at the root, on a step and on a stage,
+  which are the only levels `raw` can write, and rejects an extra sibling key beside `step`.
 - The schema is a typo net, not a type source. Where the pinned schema rejects a shape Bitbucket
   documents and accepts, the ticket stops and reports; there is no exception list in this slice.
 
@@ -479,8 +481,10 @@ Bitbucket reuses them rather than restating the mechanism.
   declared row is unused, and when a modelled key is written through `raw`. Author-named maps
   (`definitions.caches`, `definitions.services`, `branches`, `tags`, `pull-requests`, `custom`,
   `variables`) are normalised to `*`; sequence positions are `[]`.
-- **Schema.** Every golden and every corpus entry validates against the pinned schema, and the raw
-  golden is the declared negative fixture. The suite proves it rejects an unmodelled key.
+- **Schema.** Every golden and every corpus entry validates against the pinned schema. GitHub
+  Actions' raw golden is its declared negative fixture; Bitbucket's negative is a synthetic document
+  with an extra sibling key beside `step`, because the pinned schema accepts unknown keys wherever
+  `raw` can write. The suite proves both rejections.
 - **Documented grammar.** The shared walker's output is diffed against the modelled set, both lists
   are asserted both ways with negative cases, and the report is asserted as sets of paths.
 - **Goldens.** `toMatchFileSnapshot` next to the provider, one golden per fixture plus format-lock
