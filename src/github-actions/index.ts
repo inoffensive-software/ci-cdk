@@ -14,6 +14,7 @@ export type {
   PermissionScope,
   Permissions,
   RunDefaults,
+  Scalar,
   Secrets,
   Step,
   Strategy,

@@ -19,6 +19,7 @@ import type {
   Environment,
   Job,
   RunDefaults,
+  Scalar,
   Step,
   Strategy,
   Workflow,
@@ -115,9 +116,11 @@ const rawEntries = (
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
 
-const present = <T extends Text | Value | Readonly<Record<string, Text>>>(
-  value: T | undefined,
-): Doc | undefined => (value === undefined ? undefined : fromValue(value));
+/** Everything a modelled field can hold without building a `Doc` by hand. */
+type Presentable = Scalar | Value | Readonly<Record<string, Scalar>>;
+
+const present = (value: Presentable | undefined): Doc | undefined =>
+  value === undefined ? undefined : fromValue(value);
 
 /** A plain string is shell text; a leaf carries its own style. */
 const run = (value: Text | undefined): Doc | undefined => {

@@ -50,14 +50,14 @@ export const INVENTORY: readonly InventoryDocument[] = [
         workflow_call: {},
       },
       permissions: { contents: "read", actions: "write" },
-      env: { CI: "true", NODE_OPTIONS: "--max-old-space-size=4096" },
+      env: { CI: true, NODE_OPTIONS: "--max-old-space-size=4096" },
       defaults: { run: { shell: "bash", "working-directory": "." } },
       concurrency: { group: "inventory-${{ github.ref }}", "cancel-in-progress": true },
       jobs: [
         job({
           id: "call",
           uses: "owner/repo/.github/workflows/reusable.yml@main",
-          with: { ref: "main", "fetch-depth": "0" },
+          with: { ref: "main", "fetch-depth": 0 },
           secrets: { token: "${{ secrets.TOKEN }}" },
         }),
         job({
@@ -96,7 +96,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
             step({
               name: "Checkout",
               uses: "actions/checkout@v7",
-              with: { "fetch-depth": "0", "persist-credentials": "false" },
+              with: { "fetch-depth": 0, "persist-credentials": false },
               "continue-on-error": false,
             }),
           ],

@@ -12,6 +12,7 @@
     ".agents/**",
     ".hermes/**",
     "pnpm-lock.yaml",
-    "test/schemas/*.json"
+    "test/schemas/*.json",
+    "test/corpus/**/*.yml"
   ]
 }

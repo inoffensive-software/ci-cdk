@@ -187,3 +187,6 @@ export const anyhow: Workflow = workflow({
     }),
   ],
 });
+
+// The trpc entry is large enough to need its own module; `fixtures.ts` still names every entry.
+export { trpcMain } from "./trpc-main.fixture.js";
