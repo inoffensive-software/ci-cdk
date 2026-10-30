@@ -17,6 +17,10 @@
       "types": "./dist/github-actions/index.d.ts",
       "default": "./dist/github-actions/index.js"
     },
+    "./gitlab-ci": {
+      "types": "./dist/gitlab-ci/index.d.ts",
+      "default": "./dist/gitlab-ci/index.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

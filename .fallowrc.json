@@ -14,11 +14,13 @@
     // import core and nothing else. Providers are mutually isolated without pairwise rules.
     "zones": [
       { "name": "core", "patterns": ["src/core/**"] },
-      { "name": "github-actions", "patterns": ["src/github-actions/**"] }
+      { "name": "github-actions", "patterns": ["src/github-actions/**"] },
+      { "name": "gitlab-ci", "patterns": ["src/gitlab-ci/**"] }
     ],
     "rules": [
       { "from": "core", "allow": [] },
-      { "from": "github-actions", "allow": ["core"] }
+      { "from": "github-actions", "allow": ["core"] },
+      { "from": "gitlab-ci", "allow": ["core"] }
     ],
     "coverage": {
       "requireAllFiles": true,
