@@ -1,12 +1,21 @@
-import { block, fromValue, map, seq, type Doc, type DocEntry, type Text } from "../core/index.js";
-import type { Job, Step, Workflow } from "./types.js";
+import {
+  block,
+  fromValue,
+  map,
+  seq,
+  type Doc,
+  type DocEntry,
+  type Text,
+  type Value,
+} from "../core/index.js";
+import type { Job, Step, Strategy, Workflow } from "./types.js";
 
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
 
-const present = (
-  value: Text | number | boolean | Readonly<Record<string, Text>> | undefined,
+const present = <T extends Text | Value | Readonly<Record<string, Text>>>(
+  value: T | undefined,
 ): Doc | undefined => (value === undefined ? undefined : fromValue(value));
 
 /** A plain string is shell text; a leaf carries its own style. */
@@ -33,10 +42,22 @@ const stepDoc = (step: Step): Doc =>
     ...entry("timeout-minutes", present(step["timeout-minutes"])),
   ]);
 
+const strategyDoc = (strategy: Strategy): Doc =>
+  map([
+    ...entry("matrix", present(strategy.matrix)),
+    ...entry("fail-fast", present(strategy["fail-fast"])),
+    ...entry("max-parallel", present(strategy["max-parallel"])),
+  ]);
+
 const jobDoc = (job: Job): Doc =>
   map([
+    ...entry("name", present(job.name)),
+    ...entry("needs", present(job.needs)),
+    ...entry("if", present(job.if)),
     { key: "runs-on", value: fromValue(job["runs-on"]) },
+    ...entry("outputs", present(job.outputs)),
     { key: "steps", value: seq(job.steps.map(stepDoc)) },
+    ...entry("strategy", job.strategy === undefined ? undefined : strategyDoc(job.strategy)),
   ]);
 
 /**

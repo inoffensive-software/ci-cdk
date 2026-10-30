@@ -16,10 +16,28 @@ export interface Step {
   readonly "timeout-minutes"?: number;
 }
 
+/**
+ * A matrix element. A string that spells a canonical number still emits as a number; that is core's
+ * documented lowering rule, not a matrix special case.
+ */
+export type MatrixValue = string | number | boolean;
+
+export interface Strategy {
+  readonly matrix?: Readonly<Record<string, readonly MatrixValue[]>>;
+  readonly "fail-fast"?: boolean;
+  readonly "max-parallel"?: number;
+}
+
+/** A job, in GitHub's documented key order. `id` is the map key, never a field in the output. */
 export interface Job {
   readonly id: string;
+  readonly name?: Text;
+  readonly needs?: string | readonly string[];
+  readonly if?: Text;
   readonly "runs-on": string;
+  readonly outputs?: Readonly<Record<string, Text>>;
   readonly steps: readonly Step[];
+  readonly strategy?: Strategy;
 }
 
 export interface Workflow {

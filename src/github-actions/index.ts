@@ -1,6 +1,6 @@
 export { job, step, workflow } from "./types.js";
 
-export type { Job, Step, Workflow } from "./types.js";
+export type { Job, MatrixValue, Step, Strategy, Workflow } from "./types.js";
 
 export type {
   CronEntry,
