@@ -19,6 +19,8 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.jobs.*.env",
   "$.jobs.*.steps[].env",
   "$.jobs.*.steps[].with",
+  "$.jobs.*.steps[].parallel[].env",
+  "$.jobs.*.steps[].parallel[].with",
   "$.jobs.*.with",
   "$.jobs.*.secrets",
   "$.jobs.*.outputs",

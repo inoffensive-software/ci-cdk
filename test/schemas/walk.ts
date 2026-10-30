@@ -1,4 +1,5 @@
 import { keyPath } from "../corpus/paths.js";
+import { drainRefs, recordRef, refMemo, replayRef, type RefMemo } from "./ref-memo.js";
 
 /**
  * A JSON schema document as data. Schemas are JSON, so a node is a scalar, a sequence or a map of
@@ -99,6 +100,8 @@ interface Walk {
   /** Paths whose children the author names, so a name there normalises to `*`. */
   readonly authorNamed: readonly string[];
   readonly paths: Set<string>;
+  /** What each `$ref` contributed at its first occurrence, and the repeats waiting on it. */
+  readonly memo: RefMemo;
 }
 
 /** The child of a named key, in the notation the exhaustiveness gate reads. */
@@ -233,12 +236,22 @@ const walkNode = (walk: Walk, node: SchemaNode, path: string, refs: readonly str
       throw new TypeError(`a $ref at ${path} is not a string`);
     }
 
-    // A target already expanded on this path is the cycle: the keys below it repeat, so stop.
+    // A target already expanded on this path is the cycle: its keys repeat, one level down.
     if (refs.includes(ref)) {
+      if (walk.memo.suffixes.has(ref)) {
+        replayRef(walk.memo, walk.paths, ref, path);
+      } else {
+        walk.memo.deferred.push({ ref, path });
+      }
+
       return;
     }
 
+    const before = new Set(walk.paths);
+
     walkNode(walk, resolve(walk.root, ref), path, [...refs, ref]);
+    recordRef(walk.memo, ref, path, walk.paths, before);
+    drainRefs(walk.memo, walk.paths);
   }
 
   // Draft-07 ignores a `$ref`'s siblings; the vendored schema uses them to add keys. See ADR 0011.
@@ -260,7 +273,7 @@ export const walkSchema = (
 ): readonly string[] => {
   const paths = new Set<string>();
 
-  walkNode({ root: schema, authorNamed, paths }, schema, "$", []);
+  walkNode({ root: schema, authorNamed, paths, memo: refMemo() }, schema, "$", []);
 
   return [...paths].toSorted();
 };

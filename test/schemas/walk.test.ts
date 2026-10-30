@@ -63,6 +63,7 @@ const EXPECTED: readonly string[] = [
   "$.stream.label",
   "$.tree",
   "$.tree.child",
+  "$.tree.child.child",
   "$.trigger",
   "$.trigger.events",
   "$.trigger.inputs",
@@ -87,6 +88,22 @@ const MISSING_REFERENCE: SchemaNode = {
   properties: { broken: { $ref: "#/definitions/missing" } },
 };
 
+/**
+ * A node that contains itself, the shape the vendored schema uses for steps and matrix cells. Its
+ * keys sit at the top level and one level down; a walker that stops at the repeat loses the second.
+ */
+const RECURSIVE: SchemaNode = {
+  properties: { tree: { $ref: "#/definitions/node" } },
+  definitions: {
+    node: {
+      properties: {
+        name: { type: "string" },
+        children: { items: { $ref: "#/definitions/node" } },
+      },
+    },
+  },
+};
+
 describe("walkSchema", () => {
   it("walks every shape from the root into one sorted set", () => {
     const paths = walkSchema(SCHEMA, []);
@@ -104,10 +121,25 @@ describe("walkSchema", () => {
     expect(walkSchema(SCHEMA, [])).not.toContain("$.ghost");
   });
 
-  it("terminates on a reference cycle with the paths it already found", () => {
+  it("terminates on a reference cycle after repeating the target's paths one level down", () => {
     expect(walkSchema(SCHEMA, []).filter((path) => path.startsWith("$.tree"))).toEqual([
       "$.tree",
       "$.tree.child",
+      "$.tree.child.child",
+    ]);
+  });
+
+  it("repeats a recursive definition's keys at the top level and one level down", () => {
+    const paths = walkSchema(RECURSIVE, []).filter((path) => path.startsWith("$.tree"));
+
+    expect(paths).toEqual([
+      "$.tree",
+      "$.tree.children",
+      "$.tree.children[]",
+      "$.tree.children[].children",
+      "$.tree.children[].children[]",
+      "$.tree.children[].name",
+      "$.tree.name",
     ]);
   });
 });
