@@ -5,8 +5,7 @@ import { type Workflow, job, step, workflow } from "../../../src/github-actions/
  * rather than in the test so the coverage-debt ledger can walk every fixture in one place.
  *
  * Entries are compared semantically, so a fixture may write a scalar or a collection however the DSL
- * prefers. `got` additionally round-trips byte for byte; its two `raw.run` steps are what buys that,
- * because the modelled `run` field always emits a literal block. See `coverage-debt.ts`.
+ * prefers. Where the vocabulary models a key, a fixture uses that field rather than `raw`.
  */
 export const got: Workflow = workflow({
   name: "CI",
@@ -30,8 +29,8 @@ export const got: Workflow = workflow({
           uses: "actions/setup-node@v7",
           with: { "node-version": "${{ matrix.node-version }}" },
         }),
-        step({ raw: { run: "npm install" } }),
-        step({ raw: { run: "npm run test" } }),
+        step({ run: "npm install" }),
+        step({ run: "npm run test" }),
       ],
     }),
   ],

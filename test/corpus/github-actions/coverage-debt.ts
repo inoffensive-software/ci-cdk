@@ -4,19 +4,12 @@ export interface CoverageDebt {
   readonly reason: string;
 }
 
-const RUN_STYLE_REASON =
-  "byte-fidelity only: upstream writes a one-line run as a plain scalar and the modelled run field emits a literal block";
-
 /**
  * The roadmap. Every raw path a fixture is allowed to use, exactly: adding a row is a deliberate
  * change, and removing one is the definition of closing a gap. Paths use the diagnostic notation and
  * name the raw entry the author wrote, not the modelled key it stands in for.
  *
- * A row is either a vocabulary gap (the key is unmodelled) or a byte-fidelity device (the key is
- * modelled but its emitted style differs, and the entry is compared byte for byte). Only the first
- * kind counts as coverage debt.
+ * A row is always a vocabulary gap: the key has no modelled field. An empty ledger means the
+ * vocabulary can express every key the corpus uses.
  */
-export const COVERAGE_DEBT: readonly CoverageDebt[] = [
-  { path: "$.jobs[0].steps[2].raw.run", reason: RUN_STYLE_REASON },
-  { path: "$.jobs[0].steps[3].raw.run", reason: RUN_STYLE_REASON },
-];
+export const COVERAGE_DEBT: readonly CoverageDebt[] = [];
