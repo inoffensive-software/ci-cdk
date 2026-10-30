@@ -239,10 +239,9 @@ const walkNode = (walk: Walk, node: SchemaNode, path: string, refs: readonly str
     }
 
     walkNode(walk, resolve(walk.root, ref), path, [...refs, ref]);
-
-    return;
   }
 
+  // Draft-07 ignores a `$ref`'s siblings; the vendored schema uses them to add keys. See ADR 0011.
   walkUnion(walk, node, path, refs);
   walkProperties(walk, node, path, refs);
   walkItems(walk, node, path, refs);

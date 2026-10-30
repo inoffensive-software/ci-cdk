@@ -25,6 +25,11 @@ const SCHEMA: SchemaNode = {
     closed: { properties: { fixed: { type: "string" } }, additionalProperties: false },
     labels: { additionalProperties: { properties: { owner: { type: "string" } } } },
     tree: { $ref: "#/definitions/node" },
+    augmented: {
+      $ref: "#/definitions/labelled",
+      oneOf: [{ properties: { extra: { type: "string" } } }],
+    },
+    stream: { $ref: "#/definitions/labelled", type: "array", items: { type: "string" } },
   },
   definitions: {
     labelled: { properties: { label: { type: "string" } } },
@@ -34,6 +39,9 @@ const SCHEMA: SchemaNode = {
 };
 
 const EXPECTED: readonly string[] = [
+  "$.augmented",
+  "$.augmented.extra",
+  "$.augmented.label",
   "$.closed",
   "$.closed.fixed",
   "$.env",
@@ -50,6 +58,9 @@ const EXPECTED: readonly string[] = [
   "$.steps",
   "$.steps[]",
   "$.steps[].run",
+  "$.stream",
+  "$.stream[]",
+  "$.stream.label",
   "$.tree",
   "$.tree.child",
   "$.trigger",
@@ -98,6 +109,18 @@ describe("walkSchema", () => {
       "$.tree",
       "$.tree.child",
     ]);
+  });
+});
+
+describe("walkSchema references", () => {
+  it("unions a reference with the keywords beside it", () => {
+    const paths = walkSchema(SCHEMA, []);
+
+    expect(paths).toEqual(expect.arrayContaining(["$.augmented.label", "$.augmented.extra"]));
+  });
+
+  it("reads an items beside a reference as the element position", () => {
+    expect(walkSchema(SCHEMA, [])).toContain("$.stream[]");
   });
 });
 
