@@ -56,6 +56,61 @@ const SMALLEST = toDoc(
 );
 
 describe("toDoc", () => {
+  it("emits run-name directly after name and leaves the rest in declared order", () => {
+    const doc = toDoc(
+      workflow({
+        name: "CI",
+        "run-name": "CI ${{ inputs.ref }}",
+        on: "push",
+        permissions: "read-all",
+        jobs: [job({ id: "build", "runs-on": "ubuntu-latest", steps: [step({ run: "true" })] })],
+      }),
+    );
+
+    expect(keys(doc)).toStrictEqual(["name", "run-name", "on", "permissions", "jobs"]);
+    expect(entry(doc, "run-name")).toStrictEqual({
+      kind: "scalar",
+      value: "CI ${{ inputs.ref }}",
+      style: "plain",
+    });
+  });
+});
+
+describe("toDoc matrix rows", () => {
+  it("lowers an object matrix row through the boundary parser in author key order", () => {
+    const doc = toDoc(
+      workflow({
+        name: "CI",
+        on: "push",
+        jobs: [
+          job({
+            id: "build",
+            "runs-on": "ubuntu-latest",
+            strategy: {
+              matrix: {
+                settings: [
+                  { host: "macos-latest", target: "aarch64-apple-darwin" },
+                  { prepare: "make deps", host: "ubuntu-latest", target: "x86_64-unknown-linux" },
+                ],
+              },
+            },
+            steps: [step({ run: "true" })],
+          }),
+        ],
+      }),
+    );
+
+    const settings = entry(entry(entry(entry(doc, "jobs"), "build"), "strategy"), "matrix");
+    const rows = entry(settings, "settings");
+
+    expect(items(rows).map((row) => keys(row))).toStrictEqual([
+      ["host", "target"],
+      ["prepare", "host", "target"],
+    ]);
+  });
+});
+
+describe("toDoc ordering", () => {
   it("emits the workflow entries in declared order", () => {
     expect(keys(SMALLEST)).toStrictEqual(["name", "on", "jobs"]);
   });

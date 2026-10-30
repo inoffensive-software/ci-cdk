@@ -59,3 +59,16 @@ as the file (see the corpus README and ADR 0005).
 - Why this entry: `workflow_dispatch` inputs of type choice with options and defaults, a
   workflow-level `environment`, a multi-scope `permissions` map, `on.push` with branch and path
   filters including negated `!` patterns, and a boolean workflow `env` value.
+
+## turbo-lsp
+
+- Repo: <https://github.com/vercel/turborepo>
+- Commit: `e158e859f804019fa48dd1af15bc247e4759d81e`
+- Path: `.github/workflows/lsp.yml`
+- Licence: MIT, Copyright (c) 2026 Vercel, Inc
+- Vendored as: `turbo-lsp.yml`, SHA-256
+  `c666dd4f96ed16852b06d7e3803243485376e8702ecdb2c771de2ca8d1cf3020`
+- Comparison: data
+- Why this entry: `run-name`, `workflow_call` inputs, matrix rows that are objects, boolean `with`
+  values, job `outputs`, `environment`, `shell` and `working-directory`, and `if` conditions reading
+  `inputs`.

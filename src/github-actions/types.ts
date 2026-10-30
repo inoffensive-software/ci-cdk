@@ -26,10 +26,10 @@ export interface Step {
 }
 
 /**
- * A matrix element. A string that spells a canonical number still emits as a number; that is core's
- * documented lowering rule, not a matrix special case.
+ * A matrix element: a scalar, or a flat record whose keys the author chooses. A record lowers through
+ * the boundary parser, so its key order survives and a row that omits a key omits it.
  */
-export type MatrixValue = string | number | boolean;
+export type MatrixValue = Scalar | Readonly<Record<string, Scalar>>;
 
 export interface Strategy {
   readonly matrix?: Readonly<Record<string, readonly MatrixValue[]>>;
@@ -137,6 +137,7 @@ export interface Job {
 
 export interface Workflow {
   readonly name: string;
+  readonly "run-name"?: Text;
   readonly on: On;
   readonly permissions?: Permissions;
   readonly env?: Readonly<Record<string, Scalar>>;
