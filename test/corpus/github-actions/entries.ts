@@ -2,6 +2,7 @@ import type { Workflow } from "../../../src/github-actions/index.js";
 import { ANYHOW } from "./anyhow.fixture.js";
 import { GOT } from "./got.fixture.js";
 import { MINDEE_CRON } from "./mindee-cron.fixture.js";
+import { MISE_PUBLISH_VERSION } from "./mise-publish-version.fixture.js";
 import { MLFLOW_JS } from "./mlflow-js.fixture.js";
 import { PRISMA_CODE_SECURITY } from "./prisma-code-security.fixture.js";
 import { TRPC_MAIN } from "./trpc-main.fixture.js";
@@ -29,4 +30,9 @@ export const ENTRIES: readonly Entry[] = [
   { name: "mlflow-js", file: "mlflow-js.yml", workflow: MLFLOW_JS },
   { name: "mindee-cron", file: "mindee-cron.yml", workflow: MINDEE_CRON },
   { name: "uv-ai-policy", file: "uv-ai-policy.yml", workflow: UV_AI_POLICY },
+  {
+    name: "mise-publish-version",
+    file: "mise-publish-version.yml",
+    workflow: MISE_PUBLISH_VERSION,
+  },
 ];

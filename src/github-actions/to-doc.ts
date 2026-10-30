@@ -80,6 +80,7 @@ const concurrencyDoc = (concurrency: Concurrency): Doc => {
   return map([
     { key: "group", value: fromValue(concurrency.group) },
     ...entry("cancel-in-progress", present(concurrency["cancel-in-progress"])),
+    ...entry("queue", present(concurrency.queue)),
   ]);
 };
 

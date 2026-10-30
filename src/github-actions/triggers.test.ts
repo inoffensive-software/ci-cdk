@@ -98,6 +98,25 @@ describe("trigger options", () => {
   });
 });
 
+describe("activity types", () => {
+  it("emits the types sequence an event documents", () => {
+    const text = renderOn({ release: { types: ["published", "released"] } });
+
+    expect(text).toContain("on:\n  release:\n    types:\n      - published\n      - released\n");
+  });
+
+  it("still lowers a types-bearing event with no options to null", () => {
+    expect(renderOn({ release: {} })).toContain("on:\n  release: null\n");
+  });
+
+  it("rejects a filter an event does not document", () => {
+    // @ts-expect-error "release" takes only activity types, never branch filters
+    const filtered: Triggers = { release: { branches: ["main"] } };
+
+    expect(filtered).toStrictEqual({ release: { branches: ["main"] } });
+  });
+});
+
 describe("event filters", () => {
   it("accepts every filter GitHub documents", () => {
     const included = renderOn({

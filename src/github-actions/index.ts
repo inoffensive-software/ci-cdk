@@ -31,6 +31,7 @@ export type {
   InputType,
   On,
   Triggers,
+  TypesFilter,
   WorkflowCall,
   WorkflowCallInput,
   WorkflowDispatch,

@@ -45,6 +45,11 @@ export interface EventFilter {
   readonly types?: readonly string[];
 }
 
+/** The only option an event with activity types takes: the types that fire the run. */
+export interface TypesFilter {
+  readonly types?: readonly string[];
+}
+
 /** The filters `image_version` accepts; both support glob patterns. */
 export interface ImageVersionFilter {
   readonly names?: readonly string[];
@@ -114,6 +119,27 @@ type ConfiguredEvent =
   | "workflow_call"
   | "workflow_dispatch";
 
+/** The events whose only documented option is the activity types that fire them. */
+type TypedEvent =
+  | "branch_protection_rule"
+  | "check_run"
+  | "check_suite"
+  | "discussion"
+  | "discussion_comment"
+  | "issue_comment"
+  | "issues"
+  | "label"
+  | "merge_group"
+  | "milestone"
+  | "pull_request_review"
+  | "pull_request_review_comment"
+  | "pull_request_target"
+  | "registry_package"
+  | "release"
+  | "repository_dispatch"
+  | "watch"
+  | "workflow_run";
+
 /**
  * The event map, closed over the documented event names. Every option key is the author's order,
  * because that is the order the emitted file preserves.
@@ -126,7 +152,9 @@ export type Triggers = {
   readonly workflow_call?: WorkflowCall;
   readonly workflow_dispatch?: WorkflowDispatch;
 } & {
-  readonly [Event in Exclude<EventName, ConfiguredEvent>]?: EmptyTrigger;
+  readonly [Event in TypedEvent]?: TypesFilter;
+} & {
+  readonly [Event in Exclude<EventName, ConfiguredEvent | TypedEvent>]?: EmptyTrigger;
 };
 
 export type On = EventName | readonly EventName[] | Triggers;
