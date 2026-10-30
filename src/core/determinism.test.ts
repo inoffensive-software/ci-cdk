@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { Value } from "./index.js";
 
@@ -9,8 +9,13 @@ type CoreModule = typeof import("./index.js");
 
 const coreDir = import.meta.dirname;
 
-const loadFresh = (suffix: string): Promise<CoreModule> =>
-  import(/* @vite-ignore */ `./index.js?fresh=${suffix}`) as Promise<CoreModule>;
+const loadFresh = async (): Promise<CoreModule> => {
+  // Clearing the registry re-instantiates every core module. A query suffix would only re-run the
+  // barrel, leaving doc/render-doc/serialize shared between the two graphs.
+  vi.resetModules();
+
+  return import("./index.js");
+};
 
 const fixture: Value = {
   name: "ci",
@@ -37,17 +42,22 @@ const sourceFiles = async (directory: string): Promise<readonly string[]> => {
 
 describe("determinism", () => {
   it("renders the same bytes from two fresh module graphs", async () => {
-    const [first, second] = await Promise.all([loadFresh("a"), loadFresh("b")]);
+    const first = await loadFresh();
+    const second = await loadFresh();
 
+    // Without this, a shared emitter would make the byte comparison pass by construction.
+    expect(second.renderDoc).not.toBe(first.renderDoc);
+    expect(second.fromValue).not.toBe(first.fromValue);
     expect(emitWith(first)).toBe(emitWith(second));
   });
 
   it("ends with exactly one newline and no carriage returns", async () => {
-    const module = await loadFresh("lines");
+    const module = await loadFresh();
     const text = emitWith(module);
 
     expect(text.endsWith("\n")).toBe(true);
     expect(text.endsWith("\n\n")).toBe(false);
+    expect(text.length - text.trimEnd().length).toBe(1);
     expect(text.includes("\r")).toBe(false);
   });
 });

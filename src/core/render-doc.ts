@@ -130,7 +130,8 @@ const failIfBlankLine = (lines: readonly string[], inBlock: readonly boolean[]):
   }
 };
 
-const normalise = (text: string): string => {
+/** Exported for its guard test only; the barrel does not re-export it. */
+export const normalise = (text: string): string => {
   const { lines, inBlock, openBlock } = scan(text);
 
   if (!openBlock) {

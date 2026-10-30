@@ -84,13 +84,20 @@ passed anywhere a string is accepted.
 The contract, pinned by golden tests. Every line here is deliberate, and changing one is a breaking
 change for every consumer.
 
-- Two-space indent, block style only, never flow collections.
+- Two-space indent and block style for every non-empty collection; the only flow style is the empty
+  form below.
+- Sequences are indented under their key (`indentSeq`), matching GitHub's own examples. A sequence
+  at the document root starts at column 0.
+- An empty map is `{}` and an empty sequence is `[]`. Flow style appears only for the empty case,
+  because block style has no way to express zero entries.
 - `lineWidth: 0`. The `yaml` default of 80 wraps long plain scalars, which would make a `run`
   command's emitted form depend on where column 80 falls.
 - Key order is insertion order from `toDoc`. Never sorted, never re-ordered by the serializer.
 - The header is the only comment, rendered `# <text>` with a space after the hash, and is not
   followed by a blank line.
-- No other comments and no blank lines anywhere.
+- No other comments, and no blank lines outside a block scalar.
+- Output is LF only and ends with exactly one newline. An open block scalar whose text ends in blank
+  lines keeps them: they are content, not trailing layout.
 - Shell text (`run`, `script`) is a literal block scalar. Anything carrying a `DOC` leaf decides its
   own style; nothing else is inferred.
 - Tags survive: GitLab's `!reference` emits as a tagged scalar.
@@ -140,8 +147,8 @@ order. Duplicate ids are a diagnostic, never a last-wins overwrite.
 
 These are testable and should be enforced by tests, not by review.
 
-1. `renderDoc` is pure and deterministic. Same `Doc` in separate processes yields identical bytes,
-   LF only, exactly one trailing newline.
+1. `renderDoc` is pure and deterministic. Same `Doc` through two fresh module graphs yields identical
+   bytes, LF only, and exactly one trailing newline outside an open block scalar.
 
 2. `renderDoc` is provider-blind. `src/core/` never imports a provider, which the zone rules in
    `.fallowrc.json` enforce, and no provider identifier appears in its source, which a test enforces.
@@ -210,7 +217,7 @@ None outstanding.
 - **Golden emission** per fixture, next to the emitter, reviewable in diffs.
 - **Schema conformance**: emitted YAML validated against the upstream schema vendored at
   `test/schemas/<provider>.json`, refreshed on demand rather than gating CI on upstream churn.
-- **Determinism**: two renders in separate processes, byte-identical.
+- **Determinism**: two renders through fresh module graphs, byte-identical.
 - **YAML traps**: `on:` as a key, `yes`/`no`, `1.10`, and an expression containing `: `.
 - **Corpus round-trip**: a pinned set of real public configs, each reproduced by a test under
   `test/corpus/<provider>/` and asserted byte-identical. Pinned by commit so upstream changes cannot

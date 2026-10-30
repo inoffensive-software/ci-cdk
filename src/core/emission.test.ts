@@ -152,6 +152,23 @@ describe("emission", () => {
     it("pins a document with no header", async () => {
       await expect(emit(nestedMap, "")).toMatchFileSnapshot("__snapshots__/header-off.txt");
     });
+
+    it("pins a deeply nested document", async () => {
+      const value: Value = {
+        level1: {
+          level2: {
+            level3: [
+              { name: "leaf", args: ["one", "two"] },
+              { name: "other", args: [] },
+            ],
+          },
+        },
+      };
+
+      await expect(renderDoc(fromValue(value))).toMatchFileSnapshot(
+        "__snapshots__/deeply-nested.txt",
+      );
+    });
   });
 
   describe("order", () => {
