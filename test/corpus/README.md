@@ -16,6 +16,7 @@ test/corpus/<provider>/PROVENANCE.md       repo, commit SHA, path, licence for e
 test/corpus/paths.ts                       every key path in a parsed document, normalised
 test/corpus/vendored.ts                    reads an entry's vendored bytes
 test/corpus/coverage.ts                    the ledger assertions; each provider supplies its walker
+test/corpus/report.ts                      the generated blocks a provider page carries, from its data
 test/corpus/provenance.test.ts             checks every provider's PROVENANCE.md against its files
 ```
 
