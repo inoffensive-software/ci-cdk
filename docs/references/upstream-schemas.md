@@ -1,8 +1,9 @@
 # Upstream syntax oracles
 
 Where each provider's authoritative config grammar lives. These are the sources of truth for the
-hand-written types and the oracles for the conformance tests. They are vendored into the repo so a
-schema change upstream cannot break the build; refresh deliberately.
+hand-written types and the oracles for the conformance tests. They are vendored at
+`test/schemas/<provider>.json` so a schema change upstream cannot break the build; refresh
+deliberately.
 
 | Provider            | Schema                                                                                                | Notes                                                                                                                                                         |
 | ------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |

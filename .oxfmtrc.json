@@ -6,5 +6,11 @@
   "endOfLine": "lf",
   "insertFinalNewline": true,
   "sortPackageJson": true,
-  "ignorePatterns": ["**/dist/**", "pnpm-lock.yaml"]
+  "ignorePatterns": [
+    "**/dist/**",
+    "tools/oxlint/anti-slop/**",
+    ".agents/**",
+    ".hermes/**",
+    "pnpm-lock.yaml"
+  ]
 }

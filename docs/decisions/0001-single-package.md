@@ -1,4 +1,4 @@
-# 0001 — One package, provider subpaths
+# 0001: One package, provider subpaths
 
 **Status:** Accepted
 

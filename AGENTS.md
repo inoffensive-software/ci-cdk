@@ -7,10 +7,11 @@ Working notes for agents and contributors. For why the code is shaped this way, 
 
 ```
 src/index.ts         public entry point; re-exports core
-src/core/            provider-neutral only: Doc, fromValue, render, write
+src/core/            provider-neutral only: Doc, fromValue, renderDoc, write, errors, omitUndefined
 src/<provider>/      one directory per provider, name == subpath export (github-actions, ...)
 docs/                architecture.md, decisions/ (ADRs), references/ (upstream schemas)
 test/corpus/         pinned real-world configs; layout and rules in test/corpus/README.md
+.agents/skills/      project-local agent skills (tdd, install-anti-slop, ...)
 ```
 
 `@inoffensive/ci-cdk/<provider>` ↔ `src/<provider>/` ↔ `dist/<provider>/`. Keep that 1:1.
@@ -20,7 +21,7 @@ test/corpus/         pinned real-world configs; layout and rules in test/corpus/
 ```
 pnpm check          # fmt:check -> compile -> typecheck -> lint -> test -> fallow. Run before finishing.
 pnpm compile        # tsc -b
-pnpm typecheck      # tsc -p tsconfig.test.json (includes colocated tests)
+pnpm typecheck      # tsc -p tsconfig.test.json (src, test and config)
 pnpm test           # vitest run
 pnpm lint           # oxlint
 pnpm fmt            # oxfmt, writes
@@ -36,7 +37,7 @@ pnpm fmt            # oxfmt, writes
 
 - **Providers import core, never each other.** Enforced by fallow zones; do not add an exception.
 
-- **New directories must be zoned.** `coverage.requireAllFiles` fails the build otherwise — add the
+- **New directories must be zoned.** `coverage.requireAllFiles` fails the build otherwise, so add the
   zone and its `allow` list in `.fallowrc.json` in the same change.
 
 - **Errors are exceptions defined in core.** `Diagnostic`, `DiagnosticError`, `fail()` and
@@ -56,9 +57,9 @@ pnpm fmt            # oxfmt, writes
 - **Composition is spread.** Object spread and array literals over readonly structs. Do not add
   merge combinators.
 
-- **Emitted output has no comments and no blank lines.** Both are deliberate; see the decisions
-  table. Do not add formatting "improvements" — emitted formatting is a public contract, frozen by
-  golden tests. Changing it is a breaking change.
+- **Emitted output has no comments and no blank lines.** Both are deliberate; the header line is the
+  only permitted comment. Do not add formatting "improvements": emitted formatting is a public
+  contract, frozen by golden tests. Changing it is a breaking change.
 
 - **`write` does not create directories.** Callers own their paths.
 
@@ -83,6 +84,10 @@ pnpm fmt            # oxfmt, writes
 Colocated: `src/foo.test.ts`, golden files in `src/__snapshots__/`. Every provider ships golden
 output for its fixtures. Assertions use `toMatchFileSnapshot`, so emitted YAML is reviewable in the
 diff.
+
+Corpus tests live in `test/corpus/<provider>/`: one `<name>.test.ts` per vendored `<name>.yml`,
+asserting the DSL reproduces the file byte for byte. Rules for adding entries are in
+`test/corpus/README.md`.
 
 ## Changing a decision
 

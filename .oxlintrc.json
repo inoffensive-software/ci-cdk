@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "plugins": ["typescript", "unicorn", "oxc", "import", "vitest"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -10,11 +10,34 @@
     "builtin": true,
     "node": true
   },
-  "ignorePatterns": ["**/dist/**"],
+  "ignorePatterns": [
+    "**/dist/**",
+    ".agent/**",
+    ".agents/**",
+    ".claude/**",
+    ".codex/**",
+    ".continue/**",
+    ".cursor/**",
+    ".gemini/**",
+    ".hermes/**",
+    ".opencode/**",
+    ".pi/**",
+    ".roo/**",
+    ".windsurf/**",
+    "tools/oxlint/anti-slop/**"
+  ],
+  "jsPlugins": [
+    {
+      "name": "anti-slop",
+      "specifier": "./tools/oxlint/anti-slop/index.ts"
+    }
+  ],
   "rules": {
     "import/no-cycle": "error",
     "no-console": "warn",
     "eqeqeq": "error",
+    "vitest/padding-around-after-all-blocks": "error",
+    "vitest/consistent-test-filename": "error",
     "typescript/ban-ts-comment": [
       "error",
       {
@@ -24,6 +47,28 @@
         "ts-expect-error": "allow-with-description",
         "minimumDescriptionLength": 10
       }
-    ]
+    ],
+    "oxc/no-accumulating-spread": "error",
+    "anti-slop/no-array-filter-map": "error",
+    "anti-slop/no-reduce-accumulator-copy": "error",
+    "anti-slop/no-chained-type-assertions": "error",
+    "anti-slop/no-conditional-empty-object-spread": "error",
+    "anti-slop/no-known-value-widening": "error",
+    "anti-slop/no-module-mocking": "error",
+    "anti-slop/no-object-parameters": "error",
+    "anti-slop/no-reflect-apply": "error",
+    "anti-slop/no-reflect-get": "error",
+    "anti-slop/no-shape-in-symbol-names": "error",
+    "anti-slop/no-unknown-parameters": "error",
+    "anti-slop/no-unknown-returns": "error",
+    "anti-slop/no-unknown-type-aliases": "error",
+    "anti-slop/no-unsafe-dictionary-type": "error",
+    "anti-slop/no-widen-then-assert": "error",
+    "anti-slop/require-readable-spacing": "error",
+    "unicorn/no-nested-ternary": "error",
+    "curly": "error",
+    "unicorn/prefer-global-this": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/no-abusive-eslint-disable": "error"
   }
 }

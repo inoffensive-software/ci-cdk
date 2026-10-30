@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "Typed TypeScript DSL that compiles to CI provider configuration.",
   "license": "ISC",
-  "bin": {
-    "ci": "./dist/cli.js"
-  },
   "files": [
     "dist"
   ],
@@ -31,13 +28,14 @@
     "typecheck": "tsc -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "oxlint",
+    "lint": "oxlint --no-ignore",
     "fallow": "fallow",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "check": "pnpm fmt:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test && pnpm fallow"
   },
   "devDependencies": {
+    "@oxlint/plugins": "1.90.0",
     "@types/node": "^26.6.5",
     "fallow": "^3.37.0",
     "oxfmt": "^0.75.0",
@@ -46,7 +44,7 @@
     "vitest": "^5.0.5"
   },
   "engines": {
-    "node": ">=22.18.0"
+    "node": ">=24.0.0"
   },
   "packageManager": "pnpm@10.34.5"
 }

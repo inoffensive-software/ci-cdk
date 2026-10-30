@@ -6,9 +6,9 @@ Pinned real-world configs. Each provider's scope is defined by this corpus rathe
 ## Layout
 
 ```
-test/corpus/<provider>/<name>.yml     the upstream config, vendored verbatim
-test/corpus/<provider>/<name>.ts      DSL code that must reproduce it
-test/corpus/<provider>/PROVENANCE.md  repo, commit SHA, path, licence for every entry
+test/corpus/<provider>/<name>.yml       the upstream config, vendored verbatim
+test/corpus/<provider>/<name>.test.ts   reproduces it and asserts byte equality
+test/corpus/<provider>/PROVENANCE.md    repo, commit SHA, path, licence for every entry
 ```
 
 ## Rules

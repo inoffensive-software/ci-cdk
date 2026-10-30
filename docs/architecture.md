@@ -4,8 +4,9 @@
 run it, and commit the emitted YAML. This document is the contributor-facing account of how the
 package is put together and why.
 
-User-facing usage lives in the README. Per-provider coverage and quirks live in
-`docs/providers/<provider>.md`. Decisions that were debated and settled live in `docs/decisions/`.
+User-facing usage lives in the README. Decisions that were debated and settled live in
+`docs/decisions/`. Per-provider coverage and quirks are not written yet; when they are, they live in
+`docs/providers/<provider>.md`.
 
 ## What this is, and what it is not
 
@@ -44,7 +45,7 @@ typed structs (provider vocabulary)   --toDoc()-->   Doc   --renderDoc()-->   te
   a YAML superset on purpose. Tags exist for GitLab's `!reference`; literal style exists for shell
   scripts; both must be expressible or they leak into the emitter as provider special-cases.
 
-- **`render`** walks a `Doc` and produces text. It knows nothing about CI. Alternate targets (JSON
+- **`renderDoc`** walks a `Doc` and produces text. It knows nothing about CI. Alternate targets (JSON
   today, TOML later) are additional `Serializer` implementations, never provider-owned forks.
 
 `Doc` is the translation layer. Its entire reason to exist is making the third stage provider-agnostic.
@@ -101,7 +102,8 @@ Roughly eight exports and no CI nouns. A test asserts that no provider name appe
 
 ```
 src/github-actions/
-  index.ts      barrel; re-exports, plus render(wf) = renderDoc(toDoc(wf))
+  index.ts      barrel; re-exports only
+  render.ts     render(wf) = renderDoc(toDoc(wf)), the call users make
   types.ts      the provider's structs and unions
   leaves.ts     expr, script, matrix, needs
   to-doc.ts     the single lowering function
@@ -121,8 +123,9 @@ These are testable and should be enforced by tests, not by review.
 1. `renderDoc` is pure and deterministic. Same `Doc` in separate processes yields identical bytes,
    LF only, exactly one trailing newline.
 
-2. `renderDoc` is provider-blind. No provider identifier appears under `src/core/`. Enforced by the
-   zone rules in `.fallowrc.json`, which also make providers mutually unimportable.
+2. `renderDoc` is provider-blind. `src/core/` never imports a provider, which the zone rules in
+   `.fallowrc.json` enforce, and no provider identifier appears in its source, which a test enforces.
+   The same zones make providers mutually unimportable.
 
 3. `toDoc` is the only place that validates a whole document, and the only place that throws
    `DiagnosticError`. Duplicate job ids, dangling `needs` and dependency cycles cannot be caught
@@ -132,8 +135,8 @@ These are testable and should be enforced by tests, not by review.
 
 5. Structs are spreadable: no getters, no methods, no hidden state, no class instances.
 
-6. Every emitted file begins with the configured one-line header, and that header contains no
-   timestamp and no package version.
+6. Every emitted file begins with the header line, which is the one permitted comment, and that line
+   contains no timestamp and no package version.
 
 7. Emitted formatting is a public contract. Quoting, key order, indentation and newline policy are
    frozen behind golden tests; changing them is a breaking change.
@@ -149,7 +152,7 @@ These are testable and should be enforced by tests, not by review.
 | Decision                                                 | Rationale                                                                                                                                           | Cost                                                                                                                                  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | Whole-file ownership                                     | Drift becomes byte equality: no CST, no differ, no comment preservation, no merge policy for foreign keys                                           | Anything hand-edited is silently destroyed; git is the only recovery                                                                  |
-| Functions, no CLI                                        | Removes config discovery and TS loading from the design; orchestration is 5 lines of user code                                                      | Users need their own TS runner and their own CI wiring                                                                                |
+| Functions, no CLI                                        | Removes config discovery and TS loading from the design; orchestration is 5 lines of user code                                                      | Users need Node 24+ (type stripping) or their own TS runner, plus their own CI wiring                                                 |
 | Spread as the composition unit                           | Zero new vocabulary; works on any struct at any depth                                                                                               | Duplicate ids across composed arrays are undetected, so validation must live in `toDoc`; conditional-absent keys need `omitUndefined` |
 | One shared emitter                                       | Quoting and escaping is not provider-specific; three emitters would mean three bug surfaces with no test that notices                               | `Doc` stays YAML-flavoured even for JSON targets                                                                                      |
 | No comments in output                                    | Comment placement is the fiddliest part of emission and gains nothing; the TS is what gets reviewed                                                 | Generated files rely on key ordering alone for readability                                                                            |
@@ -160,17 +163,18 @@ These are testable and should be enforced by tests, not by review.
 | `renderDoc` takes `{ header?: string }` and nothing else | One knob that users actually asked for; no configuration for taste that has not been needed                                                         | A second target needing more options forces a widening later                                                                          |
 | GHA, then GitLab, then Bitbucket                         | GHA has the largest grammar and is best placed to stress the core                                                                                   | Bitbucket's grammar gets the least scrutiny, correctly, last                                                                          |
 | `write` never creates directories                        | Thin write; the caller owns the path                                                                                                                | First run in a clean tree fails unless the directory exists                                                                           |
-| No blank lines in emitted output                         | The YAML is a build artifact; the TS is what gets reviewed                                                                                          | Large files are dense — accepted, the same reason comments were dropped                                                               |
+| No blank lines in emitted output                         | The YAML is a build artifact; the TS is what gets reviewed                                                                                          | Large files are dense; accepted, for the same reason comments were dropped                                                            |
 
 ## Testing
 
 - **Golden emission** per fixture, next to the emitter, reviewable in diffs.
-- **Schema conformance**: emitted YAML validated against a vendored copy of the upstream schema,
-  refreshed on demand rather than gating CI on upstream churn.
+- **Schema conformance**: emitted YAML validated against the upstream schema vendored at
+  `test/schemas/<provider>.json`, refreshed on demand rather than gating CI on upstream churn.
 - **Determinism**: two renders in separate processes, byte-identical.
 - **YAML traps**: `on:` as a key, `yes`/`no`, `1.10`, and an expression containing `: `.
-- **Corpus round-trip**: a pinned set of real public configs, each reproduced from the DSL and
-  asserted byte-identical. Pinned by commit so upstream changes cannot break the build.
+- **Corpus round-trip**: a pinned set of real public configs, each reproduced by a test under
+  `test/corpus/<provider>/` and asserted byte-identical. Pinned by commit so upstream changes cannot
+  break the build.
 - **Exhaustiveness**: any key in the corpus the DSL cannot express fails the test, unless covered
   by `raw`, in which case it is reported as coverage debt. The fraction of the corpus needing
   `raw` is the roadmap.

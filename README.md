@@ -11,7 +11,7 @@ This project aims to end the tyranny of YAML by allowing for the specification o
 - **Composition is code**: Shared workflow logic is a function returning a struct, imported and
   spread where needed. No YAML anchors, no `include:`, no `!reference` chaining across files.
 
-- **Generated, not hand-maintained**: Each definition owns one file end to end. Use `git diff` to see detect and (optionally) automatically commit changes.
+- **Generated, not hand-maintained**: Each definition owns one file end to end. Use `git diff` to detect changes, and optionally commit them automatically.
 
 This project is not attempting to be an ORM: each provider keeps its own vocabulary, types and warts. There is no
 provider-neutral pipeline model.
@@ -38,11 +38,39 @@ write(
 );
 ```
 
-Composition is plain JavaScript — a shared job is a function you import and spread:
+Composition is plain JavaScript: a shared job is a function you import and spread.
 
 ```ts
-const withPnpmCache = (j: Job): Job => ({ ...j, steps: [cacheStep, ...j.steps] });
+// ci/jobs.ts
+export const withCache = (j: Job): Job => ({ ...j, steps: [cacheStep, ...j.steps] });
 ```
+
+```ts
+// ci/github.ts
+import { withCache } from "./jobs.ts";
+```
+
+Relative imports carry the `.ts` extension, because Node resolves exactly what is written.
+
+## Running it
+
+No bundler, no runner and no package-manager script: `node ci/github.ts`. Node strips the types
+itself, which needs Node 24 or later and three settings in your project's `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "erasableSyntaxOnly": true,
+    "allowImportingTsExtensions": true
+  }
+}
+```
+
+`erasableSyntaxOnly` rejects anything Node cannot strip (enums, parameter properties, namespaces).
+`allowImportingTsExtensions` permits the `.ts` specifiers above; it is only available with `noEmit`,
+which is correct here because these files are never compiled. Without a `.ts` extension Node does
+not find the file, and it does not rewrite `./jobs.js` to `./jobs.ts` either.
 
 Keeping the file honest in CI:
 
@@ -60,9 +88,10 @@ node ci/github.ts && git diff --exit-code -- .github/workflows
 
 ## Documentation
 
-- `docs/architecture.md` — layers, invariants, and the decisions behind them.
-- `docs/decisions/` — individual decision records.
-- `docs/references/upstream-schemas.md` — where each provider's grammar is defined, and the YAML library rule.
+- `docs/architecture.md`: layers, invariants, and the decisions behind them.
+- `docs/principles.md`: how code is written here, the default calls and what they reject.
+- `docs/decisions/`: individual decision records.
+- `docs/references/upstream-schemas.md`: where each provider's grammar is defined, and the YAML library rule.
 
 ## Development
 
