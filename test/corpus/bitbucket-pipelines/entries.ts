@@ -2,6 +2,8 @@ import type { PipelineConfig } from "../../../src/bitbucket-pipelines/index.js";
 import { ALIGENT_GRAPHQL_MESH } from "./aligent-graphql-mesh.fixture.js";
 import { ARTIFACTS_EXPANDED } from "./artifacts-expanded.fixture.js";
 import { CONNECT_EXPRESS } from "./connect-express.fixture.js";
+import { CUSTOM_VARS_NAKAMA } from "./custom-vars-nakama.fixture.js";
+import { CUSTOM_VARS_SALESFORCE } from "./custom-vars-salesforce.fixture.js";
 import { OBUSPA } from "./obuspa.fixture.js";
 import { RAIR_DAPP } from "./rair-dapp.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "./systemsdk-symfony.fixture.js";
@@ -13,7 +15,7 @@ export interface CorpusEntry {
   readonly config: PipelineConfig;
 }
 
-/** The six entries, in the order `PROVENANCE.md` records them. */
+/** The entries, in the order `PROVENANCE.md` records them. */
 export const ENTRIES: readonly CorpusEntry[] = [
   { name: "connect-express", file: "connect-express.yml", config: CONNECT_EXPRESS },
   { name: "systemsdk-symfony", file: "systemsdk-symfony.yml", config: SYSTEMSDK_SYMFONY },
@@ -21,4 +23,10 @@ export const ENTRIES: readonly CorpusEntry[] = [
   { name: "rair-dapp", file: "rair-dapp.yml", config: RAIR_DAPP },
   { name: "aligent-graphql-mesh", file: "aligent-graphql-mesh.yml", config: ALIGENT_GRAPHQL_MESH },
   { name: "artifacts-expanded", file: "artifacts-expanded.yml", config: ARTIFACTS_EXPANDED },
+  {
+    name: "custom-vars-salesforce",
+    file: "custom-vars-salesforce.yml",
+    config: CUSTOM_VARS_SALESFORCE,
+  },
+  { name: "custom-vars-nakama", file: "custom-vars-nakama.yml", config: CUSTOM_VARS_NAKAMA },
 ];

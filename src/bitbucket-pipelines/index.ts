@@ -7,6 +7,7 @@ export type {
   Changesets,
   Clone,
   Condition,
+  CustomVariable,
   Definitions,
   FinalItem,
   FinalStep,

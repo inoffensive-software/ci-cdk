@@ -92,6 +92,36 @@ as the file (see the corpus README and ADR 0005).
   runs two pipes - the expanded shape whose list-form sibling every earlier entry already exercises.
 - Vendored as: `artifacts-expanded.yml`, SHA-256 `043f661cc2ee991bac5316607fd05edbd48ea19bc24d1f5c6e08679c16ca2da6`
 
+## custom-vars-salesforce
+
+- Repo: <https://github.com/dawiddiwad/salesforce-e2e-test-automation>
+- Commit: `df236454fd51129cbeb118c4339a8b6908e21740`
+- Path: `bitbucket-pipelines.yml`
+- Licence: MIT
+- Bytes: 4647
+- Lines: 110
+- Comparison: data
+- Why this entry: three custom pipelines, each opening with a `variables` item, and between them
+  every variable key - `name`, `default`, `description` and `allowed-values` - plus YAML anchors that
+  the parser resolves into the repeated step bodies the fixture writes. The config writes its boolean
+  variable values as literals where the pinned schema types them as strings; the fixture and golden
+  carry the schema's quoted form, and the comparison parses both sides under the failsafe schema.
+- Vendored as: `custom-vars-salesforce.yml`, SHA-256 `d5c30a9675389a50820b9ee53c3fc3f04a13c4d245eabfc539602cbc662fd30f`
+
+## custom-vars-nakama
+
+- Repo: <https://github.com/Nakama-Partnering-Services/nakama-project-scaffolding>
+- Commit: `fd8bfc6f5b7c9e3ada89c99c8d8aec27d586a6f0`
+- Path: `bitbucket-pipelines.yml`
+- Licence: MIT
+- Bytes: 7188
+- Lines: 171
+- Comparison: data
+- Why this entry: a second shape of the same declaration - a credentialed root image, `clone.depth`,
+  a `pull-requests` selector and branches beside three custom pipelines, two of which open with
+  `variables`. Its values are quoted strings, so it compares under the default schema.
+- Vendored as: `custom-vars-nakama.yml`, SHA-256 `ca31bd3371cc55bc4ef1ce51a251f65a754e7cdd346eeb916645997da3b40af5`
+
 ## Documentation-derived fixtures
 
 Bitbucket documents the named `upload` entry and the name-list `download`, and no redistributable

@@ -2,7 +2,13 @@ import { duplicatesBy } from "../core/index.js";
 import type { Diagnostic } from "../core/index.js";
 import { keyPath } from "../core/paths.js";
 import { pipelineProblems } from "./item-problems.js";
-import type { NamedPipeline, PipelineConfig, Pipelines, SelectorPipeline } from "./types.js";
+import type {
+  CustomVariable,
+  NamedPipeline,
+  PipelineConfig,
+  Pipelines,
+  SelectorPipeline,
+} from "./types.js";
 
 const DEFAULT_PATH = "$.pipelines.default";
 
@@ -92,6 +98,38 @@ const selectorProblems = (
   return diagnostics;
 };
 
+/** A custom variable needs a name and, when declared, a non-empty allowed-values list. */
+const variableProblems = (
+  variables: readonly CustomVariable[] | undefined,
+  base: string,
+): readonly Diagnostic[] => {
+  if (variables === undefined) {
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+
+  for (const [index, variable] of variables.entries()) {
+    const variablePath = `${base}[${index}]`;
+
+    if (variable.name === "") {
+      diagnostics.push({
+        path: `${variablePath}.name`,
+        message: "a custom variable needs a non-empty name",
+      });
+    }
+
+    if (variable["allowed-values"]?.length === 0) {
+      diagnostics.push({
+        path: keyPath(variablePath, "allowed-values"),
+        message: "a custom variable needs at least one allowed value",
+      });
+    }
+  }
+
+  return diagnostics;
+};
+
 /** Custom pipelines: empty and duplicate names, then the same item checks as any other pipeline. */
 const customProblems = (entries: readonly NamedPipeline[] | undefined): readonly Diagnostic[] => {
   if (entries === undefined) {
@@ -108,6 +146,10 @@ const customProblems = (entries: readonly NamedPipeline[] | undefined): readonly
     if (entry.name === "") {
       diagnostics.push({ path: namePath, message: "custom pipeline name must not be empty" });
     }
+
+    diagnostics.push(
+      ...variableProblems(entry.variables, `$.pipelines.custom[${index}].variables`),
+    );
 
     const occurrences = repeated.get(entry.name);
 

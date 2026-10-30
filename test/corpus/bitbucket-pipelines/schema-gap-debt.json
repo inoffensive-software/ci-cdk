@@ -227,7 +227,6 @@
   {"path":"$.pipelines.custom.*[].step[\"after-script\"][].provider","reason":"the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime","category":"out-of-scope"},
   {"path":"$.pipelines.custom.*[].step[\"after-script\"][][\"use-legacy-mcp\"]","reason":"the agent task form of a script item; the spec's Out of Scope section names agent runtimes","category":"out-of-scope"},
   {"path":"$.pipelines.custom.*[].step[\"input-variables\"]","reason":"typed input variables a manual run can override; the spec's Out of Scope section names input variables","category":"out-of-scope"},
-  {"path":"$.pipelines.custom.*[].variables","reason":"custom-pipeline variable declarations; the spec's Out of Scope section names them","category":"out-of-scope"},
   {"path":"$.pipelines.default.import","reason":"an imported pipeline; the spec's Out of Scope section names imports","category":"out-of-scope"},
   {"path":"$.pipelines.default.variables","reason":"custom-pipeline variable declarations; the spec's Out of Scope section names them","category":"out-of-scope"},
   {"path":"$.pipelines.default[].final.artifacts.upload[].depth","reason":"an upload's `depth`; no config and no documentation evidences it","category":"out-of-scope"},

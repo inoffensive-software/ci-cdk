@@ -164,9 +164,18 @@ export interface SelectorPipeline {
   readonly pipeline: readonly PipelineItem[];
 }
 
-/** One manually triggered pipeline: a name and the items it runs. */
+/** One manual-run input: a name, an optional default, description and closed value list. */
+export interface CustomVariable {
+  readonly name: string;
+  readonly default?: Text;
+  readonly description?: Text;
+  readonly "allowed-values"?: readonly Text[];
+}
+
+/** One manually triggered pipeline: a name, its input variables and the items it runs. */
 export interface NamedPipeline {
   readonly name: string;
+  readonly variables?: readonly CustomVariable[];
   readonly pipeline: readonly PipelineItem[];
 }
 

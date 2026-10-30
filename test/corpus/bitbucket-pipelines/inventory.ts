@@ -16,8 +16,19 @@ export interface InventoryDocument {
 /** A selector entry is the same body under every pattern, so the section repeats one shape. */
 const selector = (pattern: string): SelectorPipeline => ({ pattern, pipeline: everyItems() });
 
-/** A custom pipeline differs only in naming its trigger. */
-const named = (name: string): NamedPipeline => ({ name, pipeline: everyItems() });
+/** A custom pipeline names its trigger and declares every variable key a manual run can set. */
+const named = (name: string): NamedPipeline => ({
+  name,
+  variables: [
+    {
+      name: "TARGET",
+      description: "Where to deploy",
+      default: "staging",
+      "allowed-values": ["staging", "production"],
+    },
+  ],
+  pipeline: everyItems(),
+});
 
 /**
  * The documents that between them exercise every key the vocabulary can emit, in every position the
