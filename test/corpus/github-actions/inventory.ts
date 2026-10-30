@@ -33,7 +33,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
           "paths-ignore": ["docs/**"],
           "tags-ignore": ["v0"],
         },
-        schedule: [{ cron: "0 0 * * *" }],
+        schedule: [{ cron: "0 0 * * *", timezone: "Europe/Paris" }],
         workflow_dispatch: {
           inputs: {
             ref: {
@@ -43,6 +43,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
               default: "main",
             },
             dry_run: { type: "boolean", description: "Skip the push", default: false },
+            issue: { type: "number", description: "An issue number", default: 7 },
             target: { type: "choice", options: ["staging", "production"], default: "staging" },
             where: { type: "environment", default: "production" },
           },
@@ -51,6 +52,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
         workflow_call: {},
       },
       permissions: { contents: "read", actions: "write" },
+      "cache-mode": "none",
       env: { CI: true, NODE_OPTIONS: "--max-old-space-size=4096" },
       defaults: { run: { shell: "bash", "working-directory": "." } },
       concurrency: { group: "inventory-${{ github.ref }}", "cancel-in-progress": true },
@@ -65,6 +67,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
           id: "build",
           name: "Build",
           permissions: { contents: "read", packages: "write" },
+          "cache-mode": "write-only",
           needs: ["call"],
           if: "always()",
           "runs-on": ["ubuntu-latest", "self-hosted"],
@@ -78,7 +81,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
               settings: [{ host: "ubuntu-latest", target: "x86_64-unknown-linux-musl" }],
             },
           },
-          environment: { name: "production", url: "https://example.com" },
+          environment: { name: "production", url: "https://example.com", deployment: false },
           concurrency: { group: "build", "cancel-in-progress": "${{ inputs.dry_run }}" },
           outputs: { digest: "${{ steps.build.outputs.digest }}" },
           env: { NODE_ENV: "test" },
