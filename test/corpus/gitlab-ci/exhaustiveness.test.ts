@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { job, pipeline, render } from "../../../src/gitlab-ci/index.js";
+import { job, pipeline, render } from "@inoffensive/ci-cdk/gitlab-ci";
 import { readVendored } from "../vendored.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { type CorpusEntry, GITLAB_ENTRIES } from "./entries.js";

@@ -1,4 +1,4 @@
-import { type Pipeline, job, pipeline } from "../../../src/gitlab-ci/index.js";
+import { type Pipeline, job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
 
 /**
  * The definition `terraform-images.yml` must reproduce. It lives beside the test so the

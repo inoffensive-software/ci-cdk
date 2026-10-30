@@ -1,4 +1,4 @@
-import type { Pipeline } from "../../../src/gitlab-ci/index.js";
+import type { Pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
 import { TERRAFORM_IMAGES } from "./terraform-images.fixture.js";
 
 /** One corpus entry: the definition, the vendored file it reproduces, and the name a failure uses. */

@@ -16,6 +16,10 @@
     "strictBuiltinIteratorReturn": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "paths": {
+      "@inoffensive/ci-cdk": ["./src/index.ts"],
+      "@inoffensive/ci-cdk/*": ["./src/*/index.ts"]
+    },
     "moduleDetection": "force",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,

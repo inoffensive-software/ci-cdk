@@ -1,6 +1,6 @@
 import { parse } from "yaml";
 
-import { type Pipeline, render } from "../../../src/gitlab-ci/index.js";
+import { type Pipeline, render } from "@inoffensive/ci-cdk/gitlab-ci";
 import { GLOBAL_KEYWORDS } from "../../../src/gitlab-ci/validate.js";
 import { keyPath, walkPaths, type YamlNode } from "../paths.js";
 import { INVENTORY } from "./inventory.js";
