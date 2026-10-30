@@ -10,11 +10,12 @@ import {
 } from "../core/index.js";
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
-import { cloneDoc, imageDoc, stepDoc } from "./step-doc.js";
+import { itemDoc } from "./item-doc.js";
+import { cloneDoc, imageDoc } from "./step-doc.js";
 import type {
   Cache,
+  NamedPipeline,
   PipelineConfig,
-  PipelineItem,
   Pipelines,
   SelectorPipeline,
   Service,
@@ -33,10 +34,6 @@ const DOCUMENT_RESERVED: readonly string[] = [
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
-
-/** An item is a one-key map; the alias has one form today and widens without changing this shape. */
-const itemDoc = (item: PipelineItem, itemPath: string, diagnostics: Diagnostic[]): Doc =>
-  map([{ key: "step", value: stepDoc(item, itemPath, diagnostics) }]);
 
 /** A cache is either its path or the `path`/`key` map; a key names the files it hashes. */
 const isCacheMap = (
@@ -156,7 +153,33 @@ const selectorDoc = (
   ];
 };
 
-/** Pipelines: `default`, `branches`, `tags`, `pull-requests`. */
+/** One custom section: `name: [ ...items ]`, entries in array order. */
+const customDoc = (
+  entries: readonly NamedPipeline[] | undefined,
+  diagnostics: Diagnostic[],
+): readonly DocEntry[] => {
+  if (entries === undefined) {
+    return [];
+  }
+
+  return [
+    {
+      key: "custom",
+      value: map(
+        entries.map((entryValue, index) => ({
+          key: entryValue.name,
+          value: seq(
+            entryValue.pipeline.map((item, itemIndex) =>
+              itemDoc(item, `$.pipelines.custom[${index}].pipeline[${itemIndex}]`, diagnostics),
+            ),
+          ),
+        })),
+      ),
+    },
+  ];
+};
+
+/** Pipelines: `default`, `branches`, `tags`, `pull-requests`, `custom`. */
 const pipelinesDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc => {
   const { pipelines } = config;
 
@@ -179,6 +202,7 @@ const pipelinesDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc =>
     ...selectorDoc("branches", pipelines.branches, diagnostics),
     ...selectorDoc("tags", pipelines.tags, diagnostics),
     ...selectorDoc("pull-requests", pipelines["pull-requests"], diagnostics),
+    ...customDoc(pipelines.custom, diagnostics),
   ]);
 };
 

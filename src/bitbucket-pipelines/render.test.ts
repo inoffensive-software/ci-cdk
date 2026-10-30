@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
+import { ALIGENT_GRAPHQL_MESH } from "../../test/corpus/bitbucket-pipelines/aligent-graphql-mesh.fixture.js";
 import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-express.fixture.js";
 import { OBUSPA } from "../../test/corpus/bitbucket-pipelines/obuspa.fixture.js";
 import { RAIR_DAPP } from "../../test/corpus/bitbucket-pipelines/rair-dapp.fixture.js";
@@ -17,6 +18,12 @@ describe("render", () => {
   it("pins the connect-express fixture with the header suppressed", async () => {
     await expect(render(CONNECT_EXPRESS, { header: "" })).toMatchFileSnapshot(
       "__snapshots__/connect-express.yml",
+    );
+  });
+
+  it("pins the aligent-graphql-mesh fixture with the header suppressed", async () => {
+    await expect(render(ALIGENT_GRAPHQL_MESH, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/aligent-graphql-mesh.yml",
     );
   });
 
@@ -183,11 +190,14 @@ describe("builders", () => {
 });
 
 describe("barrel", () => {
-  it("exposes exactly the two functions, the three builders and the struct types", () => {
+  it("exposes exactly the two functions, the five builders and the struct types", () => {
     expect(Object.keys(provider).toSorted()).toStrictEqual([
+      "finalStep",
+      "parallel",
       "pipe",
       "pipelineConfig",
       "render",
+      "stage",
       "step",
       "toDoc",
     ]);

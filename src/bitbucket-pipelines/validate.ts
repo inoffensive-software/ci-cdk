@@ -1,68 +1,9 @@
 import type { Diagnostic } from "../core/index.js";
 import { keyPath } from "../core/paths.js";
-import type {
-  PipelineConfig,
-  PipelineItem,
-  Pipelines,
-  Pipe,
-  ScriptItem,
-  SelectorPipeline,
-} from "./types.js";
+import { pipelineProblems } from "./item-problems.js";
+import type { NamedPipeline, PipelineConfig, Pipelines, SelectorPipeline } from "./types.js";
 
 const DEFAULT_PATH = "$.pipelines.default";
-
-const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
-
-const conditionProblems = (item: PipelineItem, stepPath: string): readonly Diagnostic[] => {
-  const changesets = item.step.condition?.changesets;
-
-  if (changesets === undefined) {
-    return [];
-  }
-
-  const hasIncludePaths = "includePaths" in changesets && changesets.includePaths !== undefined;
-  const hasExcludePaths = "excludePaths" in changesets && changesets.excludePaths !== undefined;
-  const path = `${stepPath}.condition.changesets`;
-
-  if (!hasIncludePaths && !hasExcludePaths) {
-    return [{ path, message: "changesets needs includePaths or excludePaths" }];
-  }
-
-  if (hasIncludePaths && hasExcludePaths) {
-    return [{ path, message: "changesets takes includePaths or excludePaths, not both" }];
-  }
-
-  return [];
-};
-
-const stepProblems = (items: readonly PipelineItem[], base: string): readonly Diagnostic[] => {
-  const diagnostics: Diagnostic[] = [];
-
-  for (const [index, item] of items.entries()) {
-    const stepPath = `${base}[${index}].step`;
-    const scriptPath = `${stepPath}.script`;
-
-    if (item.step.script.length === 0) {
-      diagnostics.push({
-        path: scriptPath,
-        message: "script must contain at least one command",
-      });
-    }
-
-    for (const [scriptIndex, scriptItem] of item.step.script.entries()) {
-      if (isPipe(scriptItem) && scriptItem.pipe === "") {
-        diagnostics.push({
-          path: `${scriptPath}[${scriptIndex}].pipe`,
-          message: "pipe must not be empty",
-        });
-      }
-    }
-
-    diagnostics.push(...conditionProblems(item, stepPath));
-  }
-
-  return diagnostics;
-};
 
 /** One reusable-definition record: every author-chosen key must be non-empty. */
 const blankNameProblems = <T>(
@@ -89,7 +30,7 @@ const definitionProblems = (config: PipelineConfig): readonly Diagnostic[] => {
   return [
     ...blankNameProblems(definitions?.caches, "$.definitions.caches"),
     ...blankNameProblems(definitions?.services, "$.definitions.services"),
-    ...stepProblems(definitions?.steps ?? [], "$.definitions.steps"),
+    ...pipelineProblems(definitions?.steps ?? [], "$.definitions.steps"),
   ];
 };
 
@@ -104,7 +45,7 @@ const defaultProblems = (config: PipelineConfig): readonly Diagnostic[] => {
     return [{ path: DEFAULT_PATH, message: "pipeline must contain at least one item" }];
   }
 
-  return stepProblems(pipeline, DEFAULT_PATH);
+  return pipelineProblems(pipeline, DEFAULT_PATH);
 };
 
 /** One selector section: empty patterns, duplicates within the section, and empty pipelines. */
@@ -143,7 +84,46 @@ const selectorProblems = (
         message: "pipeline must contain at least one item",
       });
     } else {
-      diagnostics.push(...stepProblems(selector.pipeline, pipelinePath));
+      diagnostics.push(...pipelineProblems(selector.pipeline, pipelinePath));
+    }
+  }
+
+  return diagnostics;
+};
+
+/** Custom pipelines: empty and duplicate names, then the same item checks as any other pipeline. */
+const customProblems = (entries: readonly NamedPipeline[] | undefined): readonly Diagnostic[] => {
+  if (entries === undefined) {
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+  const seen = new Set<string>();
+
+  for (const [index, entry] of entries.entries()) {
+    const namePath = `$.pipelines.custom[${index}].name`;
+    const pipelinePath = `$.pipelines.custom[${index}].pipeline`;
+
+    if (entry.name === "") {
+      diagnostics.push({ path: namePath, message: "custom pipeline name must not be empty" });
+    }
+
+    if (seen.has(entry.name)) {
+      diagnostics.push({
+        path: namePath,
+        message: `duplicate custom pipeline "${entry.name}": two pipelines share one name`,
+      });
+    } else {
+      seen.add(entry.name);
+    }
+
+    if (entry.pipeline.length === 0) {
+      diagnostics.push({
+        path: pipelinePath,
+        message: "pipeline must contain at least one item",
+      });
+    } else {
+      diagnostics.push(...pipelineProblems(entry.pipeline, pipelinePath));
     }
   }
 
@@ -154,7 +134,8 @@ const declaresPipeline = (pipelines: Pipelines): boolean =>
   pipelines.default !== undefined ||
   pipelines.branches !== undefined ||
   pipelines.tags !== undefined ||
-  pipelines["pull-requests"] !== undefined;
+  pipelines["pull-requests"] !== undefined ||
+  pipelines.custom !== undefined;
 
 /**
  * Whole-document checks. It only collects; `toDoc` is the one place that throws. Raw collisions are
@@ -174,5 +155,6 @@ export const validate = (config: PipelineConfig): readonly Diagnostic[] => {
     ...selectorProblems("branches", pipelines.branches),
     ...selectorProblems("tags", pipelines.tags),
     ...selectorProblems("pull-requests", pipelines["pull-requests"]),
+    ...customProblems(pipelines.custom),
   ];
 };

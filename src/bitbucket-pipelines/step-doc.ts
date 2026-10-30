@@ -5,10 +5,12 @@ import type {
   Changesets,
   Clone,
   Condition,
+  FinalItem,
   Image,
-  PipelineItem,
   Pipe,
   ScriptItem,
+  Step,
+  StepItem,
 } from "./types.js";
 
 /** Keys the step emits, so raw may not repeat them even when the field is absent. */
@@ -98,7 +100,7 @@ const changesetsDoc = (changesets: Changesets): Doc =>
   ]);
 
 /** Condition: `changesets` then `state`. */
-const conditionDoc = (condition: Condition): Doc =>
+export const conditionDoc = (condition: Condition): Doc =>
   map([
     ...entry(
       "changesets",
@@ -107,46 +109,56 @@ const conditionDoc = (condition: Condition): Doc =>
     ...entry("state", condition.state === undefined ? undefined : fromValue(condition.state)),
   ]);
 
-/** Step keys in Bitbucket's alphabetical schema order, then raw. */
-export const stepDoc = (item: PipelineItem, itemPath: string, diagnostics: Diagnostic[]): Doc => {
-  const { step: body } = item;
-  const stepPath = keyPath(itemPath, "step");
+/** The first half of a step's keys, in the schema's alphabetical order. */
+const headRows = (body: Step): readonly DocEntry[] => [
+  ...entry(
+    "after-script",
+    body["after-script"] === undefined ? undefined : scriptDoc(body["after-script"]),
+  ),
+  ...entry("artifacts", body.artifacts === undefined ? undefined : fromValue(body.artifacts)),
+  ...entry("caches", body.caches === undefined ? undefined : fromValue(body.caches)),
+  ...entry("clone", cloneDoc(body.clone)),
+  ...entry("condition", body.condition === undefined ? undefined : conditionDoc(body.condition)),
+  ...entry(
+    "concurrency-group",
+    body["concurrency-group"] === undefined ? undefined : fromValue(body["concurrency-group"]),
+  ),
+  ...entry("deployment", body.deployment === undefined ? undefined : fromValue(body.deployment)),
+];
 
-  const modelled = [
-    ...entry(
-      "after-script",
-      body["after-script"] === undefined ? undefined : scriptDoc(body["after-script"]),
-    ),
-    ...entry("artifacts", body.artifacts === undefined ? undefined : fromValue(body.artifacts)),
-    ...entry("caches", body.caches === undefined ? undefined : fromValue(body.caches)),
-    ...entry("clone", cloneDoc(body.clone)),
-    ...entry("condition", body.condition === undefined ? undefined : conditionDoc(body.condition)),
-    ...entry(
-      "concurrency-group",
-      body["concurrency-group"] === undefined ? undefined : fromValue(body["concurrency-group"]),
-    ),
-    ...entry("deployment", body.deployment === undefined ? undefined : fromValue(body.deployment)),
-    ...entry(
-      "environment",
-      body.environment === undefined ? undefined : fromValue(body.environment),
-    ),
-    ...entry(
-      "fail-fast",
-      body["fail-fast"] === undefined ? undefined : fromValue(body["fail-fast"]),
-    ),
-    ...entry("image", imageDoc(body.image)),
-    ...entry("max-time", body["max-time"] === undefined ? undefined : fromValue(body["max-time"])),
-    ...entry("name", body.name === undefined ? undefined : fromValue(body.name)),
-    ...entry("oidc", body.oidc === undefined ? undefined : fromValue(body.oidc)),
-    ...entry("runs-on", body["runs-on"] === undefined ? undefined : fromValue(body["runs-on"])),
-    { key: "script", value: scriptDoc(body.script) },
-    ...entry("services", body.services === undefined ? undefined : fromValue(body.services)),
-    ...entry("size", body.size === undefined ? undefined : fromValue(body.size)),
-    ...entry("trigger", body.trigger === undefined ? undefined : fromValue(body.trigger)),
-  ];
+/** The middle of a step's keys, from `environment` through `name`. */
+const middleRows = (body: Step): readonly DocEntry[] => [
+  ...entry("environment", body.environment === undefined ? undefined : fromValue(body.environment)),
+  ...entry("fail-fast", body["fail-fast"] === undefined ? undefined : fromValue(body["fail-fast"])),
+  ...entry("image", imageDoc(body.image)),
+  ...entry("max-time", body["max-time"] === undefined ? undefined : fromValue(body["max-time"])),
+  ...entry("name", body.name === undefined ? undefined : fromValue(body.name)),
+];
+
+/** The end of a step's keys; `script` is required and always emitted. */
+const lastRows = (body: Step): readonly DocEntry[] => [
+  ...entry("oidc", body.oidc === undefined ? undefined : fromValue(body.oidc)),
+  ...entry("runs-on", body["runs-on"] === undefined ? undefined : fromValue(body["runs-on"])),
+  { key: "script", value: scriptDoc(body.script) },
+  ...entry("services", body.services === undefined ? undefined : fromValue(body.services)),
+  ...entry("size", body.size === undefined ? undefined : fromValue(body.size)),
+  ...entry("trigger", body.trigger === undefined ? undefined : fromValue(body.trigger)),
+];
+
+/** Step keys in Bitbucket's alphabetical schema order, then raw. */
+const stepBodyDoc = (body: Step, bodyPath: string, diagnostics: Diagnostic[]): Doc => {
+  const modelled = [...headRows(body), ...middleRows(body), ...lastRows(body)];
 
   return map([
     ...modelled,
-    ...rawEntries(stepPath, body.raw, modelled, diagnostics, STEP_RESERVED, rawKeyPath),
+    ...rawEntries(bodyPath, body.raw, modelled, diagnostics, STEP_RESERVED, rawKeyPath),
   ]);
 };
+
+/** Lowers a `step:` item body at its own path. */
+export const stepDoc = (item: StepItem, itemPath: string, diagnostics: Diagnostic[]): Doc =>
+  stepBodyDoc(item.step, keyPath(itemPath, "step"), diagnostics);
+
+/** Lowers a `final:` item body at its own path. */
+export const finalDoc = (item: FinalItem, itemPath: string, diagnostics: Diagnostic[]): Doc =>
+  stepBodyDoc(item.final, keyPath(itemPath, "final"), diagnostics);

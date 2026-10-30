@@ -62,3 +62,19 @@ as the file (see the corpus README and ADR 0005).
   selecting by name, and two `pull-requests` selectors - the conditioned shapes the fourth slice must
   reproduce.
 - Vendored as: `rair-dapp.yml`, SHA-256 `35fd3f918a635cee9b8ad63526437fd33c9a47ab3f1b6857db620b3433edcebf`
+
+## aligent-graphql-mesh
+
+- Repo: <https://github.com/aligent/aligent-graphql-mesh>
+- Commit: `8095504bbdcd878c3e3e7adf6e48ebf953c01c28`
+- Path: `bitbucket-pipelines.yml`
+- Licence: MIT
+- Bytes: 4350
+- Lines: 135
+- Comparison: data
+- Why this entry: `custom` pipelines, a `pull-requests` parallel group and two `branches` stages,
+  plus `definitions` in all three forms, pipe variables and `size` - the composition shapes this
+  entry must reproduce. The file uses YAML anchors, which the parser resolves, so the fixture writes
+  the resolved data and each shared step body appears once in `definitions.steps` and again inline
+  wherever the anchor is referenced.
+- Vendored as: `aligent-graphql-mesh.yml`, SHA-256 `eb5de70a1a61c8b93f43610527a5ab27fc8d9e441dd39cabb7eda4b2b9ca1a47`

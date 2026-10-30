@@ -1,0 +1,135 @@
+image: node:18
+
+definitions:
+  caches:
+    yarn:
+      path: /usr/local/share/.cache/yarn/v6
+  services:
+    docker-extra-memory:
+      memory: 7168
+      type: docker
+  steps:
+    - step: &install
+        name: 🧶 Install
+        caches:
+          - yarn
+        script:
+          - yarn install
+        artifacts:
+          - node_modules/**
+
+    - step: &test
+        name: ⚙️ Test
+        script:
+          - FORCE_COLOR=true
+          - DESTINATION_BRANCH=origin/${DESTINATION_BRANCH:-$BITBUCKET_PR_DESTINATION_BRANCH} # Set DESTINATION_BRANCH to the PR destination branch if it is not already set
+          - yarn nx affected:test --base=$DESTINATION_BRANCH --ci --code-coverage --parallel --max-parallel=3 # Executes tests on affected projects/libs
+
+    - step: &code-quality
+        name: 🕵️‍♀️ Code Quality
+        size: 2x
+        script:
+          - FORCE_COLOR=true
+          - DESTINATION_BRANCH=origin/${DESTINATION_BRANCH:-$BITBUCKET_PR_DESTINATION_BRANCH} # Set DESTINATION_BRANCH to the PR destination branch if it is not already set
+          - yarn nx affected:lint --base=$DESTINATION_BRANCH --parallel --max-parallel=3 # Executes linting on affected projects/libs
+          - yarn nx format:check --base=$DESTINATION_BRANCH --parallel --max-parallel=3 # Runs prettier against the project
+          - yarn nx affected -t check-types --base=$DESTINATION_BRANCH --parallel --max-parallel=3
+
+    # Temporarily remove hive until we can generate a final schema from mesh application instance
+    # - step: &hive-check
+    #     name: 🐝 Hive Schema Check
+    #     script:
+    #       - npx hive schema:check --service ${SERVICE} ${PWD}/packages/mesh/.mesh/schema.graphql
+
+    # - step: &hive-publish
+    #     name: 🐝 Hive Schema Publish
+    #     script:
+    #       - npx hive schema:publish --service ${SERVICE} ${PWD}/packages/mesh/.mesh/schema.graphql --url $HIVE_URL
+
+    - step: &build
+        name: 🏭 Build all packages
+        script:
+          - yarn nx run-many -t build
+        artifacts:
+          - dist/**
+
+    - step: &build-all-containers
+        name: 🏗️ Build All Docker Containers
+        services:
+          - docker
+        script:
+          - yarn nx run-many -t docker-build
+
+    - step: &build-container
+        name: 🏗️ Build Docker Container
+        services:
+          - docker
+        script:
+          - yarn nx docker-build ${APPLICATION}
+          - docker save ${APPLICATION}:latest | gzip > ${APPLICATION}_latest.tar.gz
+        artifacts:
+          - '*.tar.gz'
+
+    - step: &deploy
+        name: 📦 Push to ECR
+        services:
+          - docker
+        script:
+          - docker load --input ${APPLICATION}_latest.tar.gz
+          - docker tag ${APPLICATION}:latest ${IMAGE_NAME}:latest
+          - pipe: atlassian/aws-ecr-push-image:2.4.0
+            variables:
+              IMAGE_NAME: ${IMAGE_NAME}
+
+pipelines:
+  custom:
+    owasp_scan:
+      - step:
+          name: 'OWASP Dependency Check'
+          script:
+            - pipe: docker://aligent/owasp-dependency-check-pipe
+              variables:
+                SCAN_PATH: './yarn.lock'
+                SUPPRESSION_FILE_PATH: './suppression.xml'
+                CVSS_FAIL_LEVEL: '1'
+    renovate:
+      - step:
+          name: 'Run Renovate'
+          size: 2x
+          script:
+            - pipe: docker://aligent/renovate-pipe:latest
+              variables:
+                RENOVATE_PASSWORD: $RENOVATE_PASSWORD
+                RENOVATE_USERNAME: $RENOVATE_USERNAME
+                GITHUB_COM_TOKEN: $GITHUB_COM_TOKEN
+                NPM_PUBLISH_TOKEN: $NPM_PUBLISH_TOKEN
+                CONFIG_FILE: 'renovate_config.js'
+          services:
+            - docker-extra-memory
+
+  pull-requests:
+    '**':
+      - step: *install
+      - step: *build
+      - parallel:
+          - step: *build-all-containers
+          - step: *code-quality
+          - step: *test
+
+  # Customise this depending on requirements
+  branches:
+    main:
+      - step: *install
+      - stage:
+          name: Deploy OroCommerce Mesh
+          deployment: orocommerce
+          steps:
+            - step: *build-container
+            - step: *deploy
+
+      - stage:
+          name: Deploy BigCommerce Mesh
+          deployment: bigcommerce
+          steps:
+            - step: *build-container
+            - step: *deploy
