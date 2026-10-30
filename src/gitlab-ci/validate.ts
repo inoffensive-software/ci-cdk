@@ -25,9 +25,6 @@ const IMPLICIT_STAGES: readonly string[] = [".pre", ".post"];
 
 const DEFAULT_STAGES: readonly string[] = [".pre", "build", "test", "deploy", ".post"];
 
-/** A job with no `stage` is assigned GitLab's `test` stage. */
-const DEFAULT_STAGE = "test";
-
 const stagePath = (index: number): string => `$.stages[${index}]`;
 
 const jobPath = (index: number): string => `$.jobs[${index}]`;
@@ -35,9 +32,6 @@ const jobPath = (index: number): string => `$.jobs[${index}]`;
 const namePath = (index: number): string => `${jobPath(index)}.name`;
 
 const scriptPath = (index: number): string => `${jobPath(index)}.script`;
-
-const stageOfPath = (index: number, explicit: boolean): string =>
-  explicit ? `${jobPath(index)}.stage` : jobPath(index);
 
 const positionsOf = (values: readonly string[]): ReadonlyMap<string, readonly number[]> => {
   const positions = new Map<string, number[]>();
@@ -140,30 +134,43 @@ const duplicateJobNames = (jobs: readonly Job[]): readonly Diagnostic[] => {
 const availableStages = (stages: readonly string[] | undefined): ReadonlySet<string> =>
   new Set([...(stages ?? DEFAULT_STAGES), ...IMPLICIT_STAGES]);
 
+/**
+ * Only a declared `stage` can be checked. An omitted one is unknowable here: GitLab resolves the
+ * merged job, and the stage may come from an `extends` target or from a job the same name defines in
+ * an `include`, neither of which is resolved. GitLab's `test` default applies only when nothing else
+ * supplies a stage, so diagnosing it would reject fragments that are valid after the merge.
+ */
 const jobStageProblems = (pipeline: Pipeline): readonly Diagnostic[] => {
   const available = availableStages(pipeline.stages);
   const diagnostics: Diagnostic[] = [];
 
   for (const [index, item] of pipeline.jobs.entries()) {
-    const stage = item.stage ?? DEFAULT_STAGE;
-
-    if (available.has(stage)) {
+    if (item.stage === undefined || available.has(item.stage)) {
       continue;
     }
 
     diagnostics.push({
-      path: stageOfPath(index, item.stage !== undefined),
-      message: `job "${item.name}" uses stage "${stage}", which is not declared`,
+      path: `${jobPath(index)}.stage`,
+      message: `job "${item.name}" uses stage "${item.stage}", which is not declared`,
     });
   }
 
   return diagnostics;
 };
 
+/**
+ * An absent `script` is legal - the job may be overriding an included job of the same name - and
+ * emits no key. A declared but empty script is still refused, because it says "no commands" where the
+ * author meant "leave it alone".
+ */
 const scriptProblems = (jobs: readonly Job[]): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
   for (const [index, item] of jobs.entries()) {
+    if (item.script === undefined) {
+      continue;
+    }
+
     if (typeof item.script === "string") {
       if (item.script === "") {
         diagnostics.push({ path: scriptPath(index), message: "script must not be empty" });
@@ -184,9 +191,9 @@ const scriptProblems = (jobs: readonly Job[]): readonly Diagnostic[] => {
 };
 
 /**
- * Whole-document checks. It only collects; `toDoc` is the one place that throws. Membership is
- * checked for explicit and implicit stages alike, so a pipeline that omits `test` from `stages` and
- * from every job's `stage` fails here rather than at pipeline creation.
+ * Whole-document checks. It only collects; `toDoc` is the one place that throws. Stage membership is
+ * checked only where a job declares `stage`: an omitted stage may be supplied by `extends` or by an
+ * included job of the same name, and neither is resolved here.
  */
 export const validate = (pipeline: Pipeline): readonly Diagnostic[] => [
   ...stageProblems(pipeline),

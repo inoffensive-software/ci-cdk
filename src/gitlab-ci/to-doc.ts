@@ -12,18 +12,26 @@ import { lowerRawBlock, rawEntries } from "../core/raw.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
-/** Job keys that are struct identity or already modelled at this level, so raw may not repeat them. */
+/**
+ * Job keys that are struct identity or already modelled at this level, so raw may not repeat them.
+ * `script` stays reserved even when the job omits it: the field, never `raw`, is how a job carries a
+ * script, so a scriptless job cannot smuggle one past validation.
+ */
 const JOB_RESERVED: readonly string[] = ["name", "stage", "script"];
 
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
 
-/** `stage` when set, then `script`, then raw. `name` is struct identity and never enters the body. */
+/**
+ * `stage` when set, then `script` when set, then raw. `name` is struct identity and never enters the
+ * body; a job with neither `script` nor `raw` lowers to an empty map, which is the shape a fragment
+ * uses to override an included job.
+ */
 const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("stage", item.stage === undefined ? undefined : fromValue(item.stage)),
-    { key: "script", value: fromValue(item.script) },
+    ...entry("script", item.script === undefined ? undefined : fromValue(item.script)),
   ];
 
   return map([

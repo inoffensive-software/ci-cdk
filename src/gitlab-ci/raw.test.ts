@@ -177,6 +177,19 @@ describe("raw collisions", () => {
   });
 });
 
+describe("raw script without the field", () => {
+  it("refuses raw script on a job that declares none", () => {
+    const refused = pipeline({ jobs: [job({ name: "override", raw: { script: "echo no" } })] });
+
+    expect(pairsOf(() => toDoc(refused))).toStrictEqual([
+      {
+        path: '$.jobs[0].raw["script"]',
+        message: 'raw key "script" is already emitted at this level',
+      },
+    ]);
+  });
+});
+
 describe("raw non-records", () => {
   it("refuses a pipeline raw block that is not a plain record", () => {
     const map = pipeline({

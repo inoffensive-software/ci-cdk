@@ -7,11 +7,17 @@ import type { Text, Value } from "../core/index.js";
  */
 export type Script = Text | readonly Text[];
 
-/** A named job. `name` is the map key in the output and never appears in the job body. */
+/**
+ * A named job. `name` is the map key in the output and never appears in the job body.
+ *
+ * `script` is optional because a file may be a fragment: GitLab merges included jobs by name, so a
+ * job here can override `rules`, `needs` or a matrix and leave `script` to the job it merges with. An
+ * absent `script` emits no key at all; an empty string or array is still refused.
+ */
 export interface Job {
   readonly name: string;
   readonly stage?: string;
-  readonly script: Script;
+  readonly script?: Script;
   /** Job keywords the vocabulary does not model, appended after `stage` and `script`. */
   readonly raw?: Readonly<Record<string, Value>>;
 }

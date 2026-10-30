@@ -116,6 +116,15 @@ describe("stages", () => {
 });
 
 describe("script", () => {
+  it("omits the key entirely when the job declares no script", () => {
+    const text = render(pipeline({ jobs: [job({ name: "markdownlint", raw: { needs: [] } })] }), {
+      header: "",
+    });
+
+    expect(parse(text)).toStrictEqual({ markdownlint: { needs: [] } });
+    expect(text).not.toContain("script");
+  });
+
   it("round-trips a single string", () => {
     const text = render(oneJob("build", "npm test"), { header: "" });
 
