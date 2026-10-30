@@ -45,13 +45,12 @@ vocabulary is closed to three values:
 An overclaim has no category: each is either a stale schema, an imprecise schema, or a bug, and the
 `reason` says which.
 
-The overclaim list at the time of writing, in full:
-
-| Path                        | Reason                                                                                                                           |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `$.on.*.inputs.*.options`   | `workflowDispatchInput` declares it, but `workflow_dispatch` has a sibling `oneOf` beside its `$ref`; draft-07 ignores it.       |
-| `$.on.*.inputs.*.options[]` | The element path of that unreachable `options` declaration.                                                                      |
-| `$.on.*.types[]`            | `types` is a bare array with no `items`, so the walk sees the array but not its element; GitHub documents string activity types. |
+The overclaim list is empty. The rows it held when the gate landed were walker blind spots rather
+than schema disagreements: every event node, and `workflow_dispatch` in particular, carries a sibling
+`oneOf` or `items` beside its `$ref`, draft-07 ignores keywords in that position, and a walk that
+read only the target therefore missed keys the schema allows and the validator accepts. The walk now
+resolves the `$ref` and then reads the node's own keywords, so the union includes both. A row belongs
+here only when the schema drops a key the vocabulary still writes.
 
 The `GAPS` list is the roadmap and is expected to be long; it lives in the test module rather than in
 this ADR so that a row can be added or deleted with the diff's tests, not by editing a decision record.
