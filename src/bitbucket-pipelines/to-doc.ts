@@ -10,13 +10,12 @@ import {
 } from "../core/index.js";
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
+import { cloneDoc, imageDoc, stepDoc } from "./step-doc.js";
 import type {
   Cache,
   PipelineConfig,
   PipelineItem,
   Pipelines,
-  Pipe,
-  ScriptItem,
   SelectorPipeline,
   Service,
 } from "./types.js";
@@ -31,41 +30,9 @@ const DOCUMENT_RESERVED: readonly string[] = [
   "pipelines",
 ];
 
-const STEP_RESERVED: readonly string[] = ["name", "oidc", "script"];
-
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
-
-const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
-
-/** Pipe keys in schema order; variable maps keep the author's insertion order. */
-const pipeDoc = (item: Pipe): Doc =>
-  map([
-    { key: "pipe", value: fromValue(item.pipe) },
-    ...entry("variables", item.variables === undefined ? undefined : fromValue(item.variables)),
-  ]);
-
-/** A script is always a sequence: commands and pipe maps are the same list. */
-const scriptDoc = (script: readonly ScriptItem[]): Doc =>
-  seq(script.map((item) => (isPipe(item) ? pipeDoc(item) : fromValue(item))));
-
-/** Step keys in Bitbucket's alphabetical schema order, then raw. */
-const stepDoc = (item: PipelineItem, itemPath: string, diagnostics: Diagnostic[]): Doc => {
-  const { step: body } = item;
-  const stepPath = keyPath(itemPath, "step");
-
-  const modelled = [
-    ...entry("name", body.name === undefined ? undefined : fromValue(body.name)),
-    ...entry("oidc", body.oidc === undefined ? undefined : fromValue(body.oidc)),
-    { key: "script", value: scriptDoc(body.script) },
-  ];
-
-  return map([
-    ...modelled,
-    ...rawEntries(stepPath, body.raw, modelled, diagnostics, STEP_RESERVED, rawKeyPath),
-  ]);
-};
 
 /** An item is a one-key map; the alias has one form today and widens without changing this shape. */
 const itemDoc = (item: PipelineItem, itemPath: string, diagnostics: Diagnostic[]): Doc =>
@@ -160,25 +127,6 @@ const optionsDoc = (config: PipelineConfig): Doc | undefined => {
   ]);
 };
 
-/** Clone: `depth`, `enabled`, `lfs`, `skip-ssl-verify`. Depth is never coerced. */
-const cloneDoc = (config: PipelineConfig): Doc | undefined => {
-  const clone = config.clone;
-
-  if (clone === undefined) {
-    return undefined;
-  }
-
-  return map([
-    ...entry("depth", clone.depth === undefined ? undefined : fromValue(clone.depth)),
-    ...entry("enabled", clone.enabled === undefined ? undefined : fromValue(clone.enabled)),
-    ...entry("lfs", clone.lfs === undefined ? undefined : fromValue(clone.lfs)),
-    ...entry(
-      "skip-ssl-verify",
-      clone["skip-ssl-verify"] === undefined ? undefined : fromValue(clone["skip-ssl-verify"]),
-    ),
-  ]);
-};
-
 /** One selector section: `pattern: [ ...items ]`, entries in array order. */
 const selectorDoc = (
   section: keyof Pipelines,
@@ -241,9 +189,9 @@ export const toDoc = (config: PipelineConfig): Doc => {
   const definitions = definitionsDoc(config, diagnostics);
 
   const modelled = [
-    ...entry("clone", cloneDoc(config)),
+    ...entry("clone", cloneDoc(config.clone)),
     ...entry("definitions", definitions),
-    ...entry("image", config.image === undefined ? undefined : fromValue(config.image)),
+    ...entry("image", imageDoc(config.image)),
     ...entry("options", optionsDoc(config)),
     { key: "pipelines", value: pipelinesDoc(config, diagnostics) },
   ];

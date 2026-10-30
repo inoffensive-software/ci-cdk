@@ -34,3 +34,31 @@ as the file (see the corpus README and ADR 0005).
   second slice must reproduce. The fixture writes the anchor's resolved data, so the shared step
   body appears once in `definitions.steps` and again inline in every selector.
 - Vendored as: `systemsdk-symfony.yml`, SHA-256 `e5e3bbedb042c62189b66e7da2068766950c1417b2dc87fc698eb28636f3a56e`
+
+## obuspa
+
+- Repo: <https://github.com/BroadbandForum/obuspa>
+- Commit: `59028beba21471d19bd3842ef2632ceb6ca8c7fc`
+- Path: `bitbucket-pipelines.yml`
+- Licence: BSD-3-Clause
+- Bytes: 3071
+- Lines: 60
+- Comparison: data
+- Why this entry: a root `clone`, self-hosted `runs-on` labels, artifacts and a multi-command
+  `after-script` across three sequential default steps - the step body shapes the fourth slice must
+  reproduce.
+- Vendored as: `obuspa.yml`, SHA-256 `0f80bab81faae1e8b58087b4efdd363a9cc6c528e5baff26ed4a1140ddc18afc`
+
+## rair-dapp
+
+- Repo: <https://github.com/rairprotocol/rair-dapp>
+- Commit: `0afccca0bd38a23e8fc2518cd1fb48612675b607`
+- Path: `bitbucket-pipelines.yml`
+- Licence: Apache-2.0
+- Bytes: 2126
+- Lines: 74
+- Comparison: data
+- Why this entry: `condition.changesets.includePaths` on every step, `caches` and `services` arrays
+  selecting by name, and two `pull-requests` selectors - the conditioned shapes the fourth slice must
+  reproduce.
+- Vendored as: `rair-dapp.yml`, SHA-256 `35fd3f918a635cee9b8ad63526437fd33c9a47ab3f1b6857db620b3433edcebf`

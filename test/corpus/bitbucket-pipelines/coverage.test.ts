@@ -10,6 +10,8 @@ import { describeCoverageDebt } from "../coverage.js";
 import { keyPath } from "../paths.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import { CONNECT_EXPRESS } from "./connect-express.fixture.js";
+import { OBUSPA } from "./obuspa.fixture.js";
+import { RAIR_DAPP } from "./rair-dapp.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "./systemsdk-symfony.fixture.js";
 
 /** The raw keys one step item wrote, named at the path the item sits on. */
@@ -44,9 +46,15 @@ const rawPathsOf = (config: PipelineConfig): readonly string[] => {
   return paths;
 };
 
-const PIPELINES = [CONNECT_EXPRESS, SYSTEMSDK_SYMFONY];
+const PIPELINES = [CONNECT_EXPRESS, OBUSPA, RAIR_DAPP, SYSTEMSDK_SYMFONY];
 
 describeCoverageDebt({ fixtures: PIPELINES, rawPathsOf, debt: COVERAGE_DEBT });
+
+describe("coverage ledger", () => {
+  it("is empty: every key the corpus uses has a modelled field", () => {
+    expect(COVERAGE_DEBT).toStrictEqual([]);
+  });
+});
 
 describe("rawPathsOf", () => {
   it("names the raw path where each step declares it", () => {
