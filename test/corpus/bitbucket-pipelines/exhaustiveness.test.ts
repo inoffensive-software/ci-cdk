@@ -1,15 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  type PipelineConfig,
-  pipelineConfig,
-  render,
-  step,
-} from "../../../src/bitbucket-pipelines/index.js";
+import { pipelineConfig, render, step } from "../../../src/bitbucket-pipelines/index.js";
 import { readVendored } from "../vendored.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
-import { ALIGENT_GRAPHQL_MESH } from "./aligent-graphql-mesh.fixture.js";
-import { CONNECT_EXPRESS } from "./connect-express.fixture.js";
+import { type CorpusEntry, ENTRIES } from "./entries.js";
 import {
   AUTHOR_NAMED,
   filledRawPaths,
@@ -22,24 +16,7 @@ import {
   unusedLedgerPaths,
 } from "./exhaustiveness.js";
 import { INVENTORY } from "./inventory.js";
-import { OBUSPA } from "./obuspa.fixture.js";
-import { RAIR_DAPP } from "./rair-dapp.fixture.js";
 import { rawPathsOf } from "./raw-paths.js";
-import { SYSTEMSDK_SYMFONY } from "./systemsdk-symfony.fixture.js";
-
-interface CorpusEntry {
-  readonly name: string;
-  readonly file: string;
-  readonly config: PipelineConfig;
-}
-
-const ENTRIES: readonly CorpusEntry[] = [
-  { name: "connect-express", file: "connect-express.yml", config: CONNECT_EXPRESS },
-  { name: "aligent-graphql-mesh", file: "aligent-graphql-mesh.yml", config: ALIGENT_GRAPHQL_MESH },
-  { name: "obuspa", file: "obuspa.yml", config: OBUSPA },
-  { name: "rair-dapp", file: "rair-dapp.yml", config: RAIR_DAPP },
-  { name: "systemsdk-symfony", file: "systemsdk-symfony.yml", config: SYSTEMSDK_SYMFONY },
-];
 
 const MODELLED = inventoryPaths();
 const MODELLED_SET = new Set(MODELLED);

@@ -1,0 +1,221 @@
+# Bitbucket Pipelines
+
+## Scope
+
+The provider behind the `@inoffensive/ci-cdk/bitbucket-pipelines` subpath export, built from
+`src/bitbucket-pipelines/` to `dist/bitbucket-pipelines/`. It emits the `bitbucket-pipelines.yml` a
+repository keeps at its root.
+
+It owns `index.ts` (the barrel), `render.ts`, `types.ts`, `to-doc.ts`, `step-doc.ts`, `item-doc.ts`,
+`validate.ts`, `item-problems.ts`, their colocated tests and the goldens in
+`src/bitbucket-pipelines/__snapshots__/`. The layers, the public surface and the emitted format are
+described once in [`docs/architecture.md`](../architecture.md); this file does not repeat them.
+
+## Coverage
+
+The claim is the corpus, and the corpus is asserted by these tests:
+
+- [`connect-express.test.ts`](../../test/corpus/bitbucket-pipelines/connect-express.test.ts),
+  [`systemsdk-symfony.test.ts`](../../test/corpus/bitbucket-pipelines/systemsdk-symfony.test.ts),
+  [`obuspa.test.ts`](../../test/corpus/bitbucket-pipelines/obuspa.test.ts),
+  [`rair-dapp.test.ts`](../../test/corpus/bitbucket-pipelines/rair-dapp.test.ts) and
+  [`aligent-graphql-mesh.test.ts`](../../test/corpus/bitbucket-pipelines/aligent-graphql-mesh.test.ts)
+  render each entry and compare it with the pinned file as parsed data.
+- [`exhaustiveness.test.ts`](../../test/corpus/bitbucket-pipelines/exhaustiveness.test.ts) holds the
+  modelled set to the corpus keys and the ledger in both directions.
+- [`coverage.test.ts`](../../test/corpus/bitbucket-pipelines/coverage.test.ts) holds the ledger to the
+  fixtures' `raw` usage.
+- [`schema-gap.test.ts`](../../test/corpus/bitbucket-pipelines/schema-gap.test.ts) holds the modelled
+  set and the pinned schema to each other in both directions.
+
+The table below is generated from the inventory's modelled key paths and the entries' corpus paths by
+`test/corpus/bitbucket-pipelines/coverage-table.ts`. Bitbucket repeats the step grammar at every
+pipeline position, so a key is shown once per shape: each pipeline section collapses to
+`$.pipelines.*`, the `step`, `final`, `stage` and `parallel` item wrappers collapse to `.item`, and a
+collapsed key carries the number of positions it stands for. `document.test.ts` compares the block
+with this file, so editing it by hand fails.
+
+<!-- coverage:start -->
+
+1282 modelled paths collapse to 149 display keys.
+
+| Area        | Keys                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Corpus entries                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Document    | `$.clone`<br>`$.clone.depth`<br>`$.clone.enabled`<br>`$.clone.lfs`<br>`$.clone["skip-ssl-verify"]`<br>`$.image`<br>`$.image.name`<br>`$.image.password`<br>`$.image.username`<br>`$.options`<br>`$.options.docker`<br>`$.options.size`<br>`$.options["max-time"]`<br>`$.options["runs-on"]`<br>`$.options["runs-on"][]`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | connect-express, systemsdk-symfony, obuspa, rair-dapp, aligent-graphql-mesh |
+| Definitions | `$.definitions`<br>`$.definitions.caches`<br>`$.definitions.caches.*`<br>`$.definitions.caches.*.key`<br>`$.definitions.caches.*.key.files`<br>`$.definitions.caches.*.key.files[]`<br>`$.definitions.caches.*.path`<br>`$.definitions.services`<br>`$.definitions.services.*`<br>`$.definitions.services.*.image`<br>`$.definitions.services.*.memory`<br>`$.definitions.services.*.type`<br>`$.definitions.services.*.variables`<br>`$.definitions.services.*.variables.*`<br>`$.definitions.steps`<br>`$.definitions.steps[]`<br>`$.definitions.steps[].item`<br>`$.definitions.steps[].item.artifacts`<br>`$.definitions.steps[].item.artifacts[]`<br>`$.definitions.steps[].item.caches`<br>`$.definitions.steps[].item.caches[]`<br>`$.definitions.steps[].item.clone`<br>`$.definitions.steps[].item.clone.depth`<br>`$.definitions.steps[].item.clone.enabled`<br>`$.definitions.steps[].item.clone.lfs`<br>`$.definitions.steps[].item.clone["skip-ssl-verify"]`<br>`$.definitions.steps[].item.condition`<br>`$.definitions.steps[].item.condition.changesets`<br>`$.definitions.steps[].item.condition.changesets.excludePaths`<br>`$.definitions.steps[].item.condition.changesets.excludePaths[]`<br>`$.definitions.steps[].item.condition.changesets.includePaths`<br>`$.definitions.steps[].item.condition.changesets.includePaths[]`<br>`$.definitions.steps[].item.condition.state`<br>`$.definitions.steps[].item.deployment`<br>`$.definitions.steps[].item.environment`<br>`$.definitions.steps[].item.image`<br>`$.definitions.steps[].item.image.name`<br>`$.definitions.steps[].item.image.password`<br>`$.definitions.steps[].item.image.username`<br>`$.definitions.steps[].item.name`<br>`$.definitions.steps[].item.oidc`<br>`$.definitions.steps[].item.script`<br>`$.definitions.steps[].item.script[]`<br>`$.definitions.steps[].item.script[].pipe`<br>`$.definitions.steps[].item.script[].variables`<br>`$.definitions.steps[].item.script[].variables.*`<br>`$.definitions.steps[].item.script[].variables.*[]`<br>`$.definitions.steps[].item.services`<br>`$.definitions.steps[].item.services[]`<br>`$.definitions.steps[].item.size`<br>`$.definitions.steps[].item.trigger`<br>`$.definitions.steps[].item["after-script"]`<br>`$.definitions.steps[].item["after-script"][]`<br>`$.definitions.steps[].item["after-script"][].pipe`<br>`$.definitions.steps[].item["after-script"][].variables`<br>`$.definitions.steps[].item["after-script"][].variables.*`<br>`$.definitions.steps[].item["after-script"][].variables.*[]`<br>`$.definitions.steps[].item["concurrency-group"]`<br>`$.definitions.steps[].item["fail-fast"]`<br>`$.definitions.steps[].item["max-time"]`<br>`$.definitions.steps[].item["runs-on"]`<br>`$.definitions.steps[].item["runs-on"][]`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | systemsdk-symfony, rair-dapp, aligent-graphql-mesh                          |
+| Pipelines   | `$.pipelines`<br>`$.pipelines.*` (x5)<br>`$.pipelines.*[]` (x5)<br>`$.pipelines.*[].item` (x25)<br>`$.pipelines.*[].item.artifacts` (x25)<br>`$.pipelines.*[].item.artifacts[]` (x25)<br>`$.pipelines.*[].item.caches` (x25)<br>`$.pipelines.*[].item.caches[]` (x25)<br>`$.pipelines.*[].item.clone` (x25)<br>`$.pipelines.*[].item.clone.depth` (x25)<br>`$.pipelines.*[].item.clone.enabled` (x25)<br>`$.pipelines.*[].item.clone.lfs` (x25)<br>`$.pipelines.*[].item.clone["skip-ssl-verify"]` (x25)<br>`$.pipelines.*[].item.condition` (x20)<br>`$.pipelines.*[].item.condition.changesets` (x20)<br>`$.pipelines.*[].item.condition.changesets.excludePaths` (x20)<br>`$.pipelines.*[].item.condition.changesets.excludePaths[]` (x20)<br>`$.pipelines.*[].item.condition.changesets.includePaths` (x15)<br>`$.pipelines.*[].item.condition.changesets.includePaths[]` (x15)<br>`$.pipelines.*[].item.condition.state` (x20)<br>`$.pipelines.*[].item.deployment` (x20)<br>`$.pipelines.*[].item.environment` (x25)<br>`$.pipelines.*[].item.image` (x25)<br>`$.pipelines.*[].item.image.name` (x25)<br>`$.pipelines.*[].item.image.password` (x25)<br>`$.pipelines.*[].item.image.username` (x25)<br>`$.pipelines.*[].item.name` (x25)<br>`$.pipelines.*[].item.oidc` (x25)<br>`$.pipelines.*[].item.script` (x25)<br>`$.pipelines.*[].item.script[]` (x25)<br>`$.pipelines.*[].item.script[].pipe` (x25)<br>`$.pipelines.*[].item.script[].variables` (x25)<br>`$.pipelines.*[].item.script[].variables.*` (x25)<br>`$.pipelines.*[].item.script[].variables.*[]` (x25)<br>`$.pipelines.*[].item.services` (x25)<br>`$.pipelines.*[].item.services[]` (x25)<br>`$.pipelines.*[].item.size` (x25)<br>`$.pipelines.*[].item.trigger` (x25)<br>`$.pipelines.*[].item["after-script"]` (x25)<br>`$.pipelines.*[].item["after-script"][]` (x25)<br>`$.pipelines.*[].item["after-script"][].pipe` (x25)<br>`$.pipelines.*[].item["after-script"][].variables` (x25)<br>`$.pipelines.*[].item["after-script"][].variables.*` (x25)<br>`$.pipelines.*[].item["after-script"][].variables.*[]` (x25)<br>`$.pipelines.*[].item["concurrency-group"]` (x25)<br>`$.pipelines.*[].item["fail-fast"]` (x20)<br>`$.pipelines.*[].item["max-time"]` (x25)<br>`$.pipelines.*[].item["runs-on"]` (x25)<br>`$.pipelines.*[].item["runs-on"][]` (x25)<br>`$.pipelines.*[].parallel` (x5)<br>`$.pipelines.*[].parallel.steps` (x5)<br>`$.pipelines.*[].parallel.steps[]` (x5)<br>`$.pipelines.*[].parallel["fail-fast"]` (x5)<br>`$.pipelines.*[].parallel[]` (x5)<br>`$.pipelines.*[].stage` (x5)<br>`$.pipelines.*[].stage.condition` (x5)<br>`$.pipelines.*[].stage.condition.changesets` (x5)<br>`$.pipelines.*[].stage.condition.changesets.excludePaths` (x5)<br>`$.pipelines.*[].stage.condition.changesets.excludePaths[]` (x5)<br>`$.pipelines.*[].stage.condition.changesets.includePaths` (x5)<br>`$.pipelines.*[].stage.condition.changesets.includePaths[]` (x5)<br>`$.pipelines.*[].stage.condition.state` (x5)<br>`$.pipelines.*[].stage.deployment` (x5)<br>`$.pipelines.*[].stage.environment` (x5)<br>`$.pipelines.*[].stage.name` (x5)<br>`$.pipelines.*[].stage.steps` (x5)<br>`$.pipelines.*[].stage.steps[]` (x5)<br>`$.pipelines.*[].stage.trigger` (x5)<br>`$.pipelines.branches`<br>`$.pipelines.custom`<br>`$.pipelines.tags`<br>`$.pipelines["pull-requests"]` | connect-express, systemsdk-symfony, obuspa, rair-dapp, aligent-graphql-mesh |
+
+<!-- coverage:end -->
+
+## Documented grammar
+
+[`docs/references/upstream-schemas.md`](../references/upstream-schemas.md) pins the schema this section
+reads as a grammar: a gap is a schema path the provider cannot emit, and an overclaim is a modelled
+path the schema rejects. `test/corpus/bitbucket-pipelines/documented-grammar.ts` generates the block
+below from the walker's paths, `GAPS` and `OVERCLAIMS`; `document.test.ts` compares it with this file,
+so editing it by hand fails. The gate and its refresh rule are in
+[ADR 0011](../decisions/0011-documented-grammar-gate.md).
+
+Unmodelled and schema-noise gaps are listed one path at a time. Out-of-scope gaps repeat at every
+pipeline position, so they are grouped by the coverage table's display key and the Positions column
+says how many places the non-goal covers.
+
+<!-- documented-grammar:start -->
+
+3725 documented paths. Gaps: 566 (unmodelled 29, out-of-scope 529, schema-noise 8). Overclaims: 6.
+
+### Unmodelled
+
+| Path                                                                          | Reason                                                                                                      |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `$.definitions.services.*.image.name`                                         | `name` on a service image; `Service.image` is a string, so Bitbucket's image map cannot be expressed        |
+| `$.definitions.services.*.image.password`                                     | `password` on a service image; `Service.image` is a string, so Bitbucket's image map cannot be expressed    |
+| `$.definitions.services.*.image.username`                                     | `username` on a service image; `Service.image` is a string, so Bitbucket's image map cannot be expressed    |
+| `$.definitions.services.*.image["run-as-user"]`                               | `run-as-user` on a service image; `Service.image` is a string, so Bitbucket's image map cannot be expressed |
+| `$.image["run-as-user"]`                                                      | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.branches.*[].final.image["run-as-user"]`                         | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.branches.*[].parallel.steps[].step.image["run-as-user"]`         | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.branches.*[].parallel[].step.image["run-as-user"]`               | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.branches.*[].stage.steps[].step.image["run-as-user"]`            | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.branches.*[].step.image["run-as-user"]`                          | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.custom.*[].parallel.steps[].step.image["run-as-user"]`           | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.custom.*[].parallel[].step.image["run-as-user"]`                 | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.custom.*[].stage.steps[].step.image["run-as-user"]`              | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.custom.*[].step.image["run-as-user"]`                            | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.default[].final.image["run-as-user"]`                            | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.default[].parallel.steps[].step.image["run-as-user"]`            | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.default[].parallel[].step.image["run-as-user"]`                  | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.default[].stage.steps[].step.image["run-as-user"]`               | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.default[].step.image["run-as-user"]`                             | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.tags.*[].final.image["run-as-user"]`                             | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.tags.*[].parallel.steps[].step.image["run-as-user"]`             | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.tags.*[].parallel[].step.image["run-as-user"]`                   | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.tags.*[].stage.steps[].step.image["run-as-user"]`                | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines.tags.*[].step.image["run-as-user"]`                              | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines["pull-requests"].*[].final.image["run-as-user"]`                 | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines["pull-requests"].*[].parallel.steps[].step.image["run-as-user"]` | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines["pull-requests"].*[].parallel[].step.image["run-as-user"]`       | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines["pull-requests"].*[].stage.steps[].step.image["run-as-user"]`    | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+| `$.pipelines["pull-requests"].*[].step.image["run-as-user"]`                  | `run-as-user` on an image; the vocabulary's `Image` type has no such field, and Bitbucket documents it      |
+
+### Out of scope
+
+| Key                                                        | Positions | Reason                                                                                                                          |
+| ---------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `$.definitions.agents`                                     | 1         | Bitbucket's agent/AI runtime definitions; the spec's Out of Scope section names `definitions.agents` a non-goal                 |
+| `$.definitions.imports`                                    | 1         | shared pipeline imports; the spec's Out of Scope section names `definitions.imports` a non-goal                                 |
+| `$.definitions.pipelines`                                  | 1         | definitions shared with other repositories; the spec's Out of Scope section names `definitions.pipelines` a non-goal            |
+| `$.definitions.services.*.image.aws`                       | 1         | AWS registry authentication for a service image; the spec's Out of Scope section names AWS image auth                           |
+| `$.export`                                                 | 1         | the flag that publishes definitions to other repositories; the spec's Out of Scope section names `export` a non-goal            |
+| `$.image.aws`                                              | 1         | AWS registry authentication for the root image; the spec's Out of Scope section names AWS image auth                            |
+| `$.labels`                                                 | 1         | pipeline labels; the spec's Out of Scope section names labels a non-goal                                                        |
+| `$.options.runtime`                                        | 1         | global self-hosted and cloud runtime settings; the spec's Out of Scope section names runtimes a non-goal                        |
+| `$.pipelines.*.import`                                     | 5         | an imported pipeline; the spec's Out of Scope section names imports                                                             |
+| `$.pipelines.*.variables`                                  | 5         | custom-pipeline variable declarations; the spec's Out of Scope section names them                                               |
+| `$.pipelines.*[].item.artifacts.download`                  | 24        | the expanded artifacts form; the spec's Out of Scope section names expanded artifacts                                           |
+| `$.pipelines.*[].item.artifacts.paths`                     | 24        | the expanded artifacts form; the spec's Out of Scope section names expanded artifacts                                           |
+| `$.pipelines.*[].item.artifacts.upload`                    | 24        | the expanded artifacts form; the spec's Out of Scope section names expanded artifacts                                           |
+| `$.pipelines.*[].item.auth`                                | 24        | step-level registry and cloud authentication (`auth.system.scopes`); the spec's Out of Scope section names `step.auth`          |
+| `$.pipelines.*[].item.condition`                           | 5         | a condition on a step inside a stage; Bitbucket carries the condition on the stage itself, so a stage step cannot set one       |
+| `$.pipelines.*[].item.custom`                              | 24        | the custom pipeline a child-pipeline step runs; the spec's Out of Scope section names `step.custom`                             |
+| `$.pipelines.*[].item.image.aws`                           | 24        | AWS registry authentication for a step image; the spec's Out of Scope section names AWS image auth                              |
+| `$.pipelines.*[].item.runtime`                             | 24        | step runtime settings, self-hosted volumes included; the spec's Out of Scope section names `step.runtime`                       |
+| `$.pipelines.*[].item.script[].agent`                      | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item.script[].config`                     | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item.script[].permissions`                | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item.script[].prompt`                     | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item.script[].provider`                   | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item.script[]["use-legacy-mcp"]`          | 24        | the agent task form of a script item; the spec's Out of Scope section names agent runtimes                                      |
+| `$.pipelines.*[].item.type`                                | 24        | the `type` discriminator Bitbucket uses to tell a step from an agent task; the spec's Out of Scope section names agent runtimes |
+| `$.pipelines.*[].item["after-script"][].agent`             | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item["after-script"][].config`            | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item["after-script"][].permissions`       | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item["after-script"][].prompt`            | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item["after-script"][].provider`          | 24        | the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime                           |
+| `$.pipelines.*[].item["after-script"][]["use-legacy-mcp"]` | 24        | the agent task form of a script item; the spec's Out of Scope section names agent runtimes                                      |
+| `$.pipelines.*[].item["input-variables"]`                  | 24        | typed input variables a manual run can override; the spec's Out of Scope section names input variables                          |
+| `$.pipelines.*[].variables`                                | 1         | custom-pipeline variable declarations; the spec's Out of Scope section names them                                               |
+| `$.triggers`                                               | 1         | trigger contexts that run a pipeline from another pipeline; the spec's Out of Scope section names triggers a non-goal           |
+
+### Schema noise
+
+| Path                                                  | Reason                                                                                                                                                               |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.pipelines.branches.*[].final.deployment`           | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines.branches.*[].final["fail-fast"]`         | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines.default[].final.deployment`              | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines.default[].final["fail-fast"]`            | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines.tags.*[].final.deployment`               | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines.tags.*[].final["fail-fast"]`             | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines["pull-requests"].*[].final.deployment`   | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| `$.pipelines["pull-requests"].*[].final["fail-fast"]` | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+
+### Overclaims
+
+| Path                                               | Reason                                                                                                                                                                                      |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.definitions.steps`                              | the schema documents reusable steps only through `definitions.pipelines`, but Bitbucket documents `definitions.steps` and every pipeline references one by name; the vocabulary models it   |
+| `$.pipelines.branches.*[].final.condition`         | the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition                         |
+| `$.pipelines.custom.*[].final`                     | the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline, and the vocabulary models one here |
+| `$.pipelines.default[].final.condition`            | the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition                         |
+| `$.pipelines.tags.*[].final.condition`             | the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition                         |
+| `$.pipelines["pull-requests"].*[].final.condition` | the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition                         |
+
+<!-- documented-grammar:end -->
+
+## Corpus
+
+Five vendored configs, pinned by commit. [`PROVENANCE.md`](../../test/corpus/bitbucket-pipelines/PROVENANCE.md)
+is the record for paths, hashes and licences; every entry is compared as data.
+
+| Entry                  | Repository                                                  | Commit                                     | Licence      | Comparison | File                      |
+| ---------------------- | ----------------------------------------------------------- | ------------------------------------------ | ------------ | ---------- | ------------------------- |
+| `connect-express`      | <https://bitbucket.org/atlassian/atlassian-connect-express> | `d00fcf7836356c3156b29cb5710e29d6da4c03c9` | Apache-2.0   | data       | `bitbucket-pipelines.yml` |
+| `systemsdk-symfony`    | <https://github.com/systemsdk/docker-nginx-php-symfony>     | `da31f3c30607a57f394338ce3b31d8bfc06a320a` | MIT          | data       | `bitbucket-pipelines.yml` |
+| `obuspa`               | <https://github.com/BroadbandForum/obuspa>                  | `59028beba21471d19bd3842ef2632ceb6ca8c7fc` | BSD-3-Clause | data       | `bitbucket-pipelines.yml` |
+| `rair-dapp`            | <https://github.com/rairprotocol/rair-dapp>                 | `0afccca0bd38a23e8fc2518cd1fb48612675b607` | Apache-2.0   | data       | `bitbucket-pipelines.yml` |
+| `aligent-graphql-mesh` | <https://github.com/aligent/aligent-graphql-mesh>           | `8095504bbdcd878c3e3e7adf6e48ebf953c01c28` | MIT          | data       | `bitbucket-pipelines.yml` |
+
+## Quirks
+
+- **`step:` versus `steps:`.** A pipeline item is a singular `step:`; a stage or a parallel group
+  holds a plural `steps:` sequence. The builders make the distinction a type, and `final:` is the
+  item form that closes a pipeline in place of a step.
+- **A pipe is a script item.** `script:` and `after-script:` mix command strings with
+  `{ pipe, variables }` maps; a pipe is not a step property and never a step of its own.
+- **Quoted `*` and `**` selectors.** A selector pattern is emitted quoted, so it parses back as the
+  string `*` or `**` rather than as a YAML alias.
+- **`clone.depth: full`.** The field is a number or the string `full`, and the string stays text.
+  `size` is likewise text such as `2x`, never a number.
+- **`final` is an item and comes last.** It is a position in the pipeline sequence, not a step
+  property, and only the last position is valid.
+- **`definitions.steps` is a documented shape the pinned schema does not describe.** Every real
+  config uses it; the schema carries reusable steps only through `definitions.pipelines`. The
+  provider models it, and the documented-grammar report declares it an overclaim.
+
+## Non-goals
+
+- Child pipelines and imported/shared definitions: `step.type: pipeline`, `step.custom`,
+  `step.config`, `definitions.step-config`, `definitions.imports`, `definitions.pipelines` and
+  `export`.
+- Bitbucket's agent/AI runtime: `definitions.agents` and the `agent_*` grammar the schema carries.
+- Event triggers (`triggers:`), pipeline `labels`, and custom-pipeline variable declarations.
+- `step.auth`, `step.input-variables`, `step.runtime`, `options.runtime`, self-hosted runtime
+  volumes and cloud runtime settings.
+- The expanded artifacts form (`download`/`upload`, named artifacts, capture-on), and AWS or OIDC
+  registry auth for images.
+- Resolving `definitions` names, `include`-like imports or any cross-file reference. They are
+  emitted, never loaded or verified.
+- A CLI or file-writing behaviour; `render` still returns text.
+- Refreshing the vendored schema, and modelling any declared `GAPS` row. Triage classifies; a row
+  becomes vocabulary only when a pinned corpus entry already needs it.
+
+Keys outside the vocabulary can still be written through `raw` where a struct exposes it; a corpus
+key that needs `raw` is a ledger row.
+
+## Open gaps
+
+<!-- open-gaps:start -->
+
+None. The coverage ledger is empty: every corpus key is modelled.
+<!-- open-gaps:end -->
