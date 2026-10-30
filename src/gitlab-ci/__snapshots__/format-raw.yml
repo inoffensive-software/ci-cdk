@@ -1,0 +1,17 @@
+stages:
+  - build
+build:
+  stage: build
+  script: make
+  needs: []
+  rules:
+    - if: $CI_COMMIT_BRANCH
+  artifacts:
+    paths:
+      - dist/
+image: node:24
+variables:
+  CI: "true"
+.template:
+  before_script:
+    - npm ci
