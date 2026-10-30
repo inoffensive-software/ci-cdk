@@ -1,0 +1,12 @@
+stages:
+  - build
+  - test
+zulu:
+  stage: build
+  script:
+    - npm ci
+    - npm run build
+alpha:
+  stage: test
+  script: npm test
+  coverage: /coverage/

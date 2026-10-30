@@ -1,0 +1,9 @@
+quotes:
+  script:
+    - "echo done: now"
+    - "echo done # note"
+    - "- not a sequence item"
+    - "yes"
+    - "no"
+    - "1.10"
+    - "echo one\necho two"
