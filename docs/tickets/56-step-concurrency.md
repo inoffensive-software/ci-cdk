@@ -8,18 +8,18 @@ parallel set. All seven documented-gap rows close, proved by `curl/curl`'s check
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A step accepts `background` (boolean), `cancel` (a step id), `wait` (one id or several),
+- [x] A step accepts `background` (boolean), `cancel` (a step id), `wait` (one id or several),
       `wait-all` (boolean or empty), and `parallel` (a list of steps), emitted in the order the GitHub
       syntax reference lists them.
-- [ ] A bare `wait-all:` in the upstream file is expressible and lowers to `null`, matching what the
+- [x] A bare `wait-all:` in the upstream file is expressible and lowers to `null`, matching what the
       file parses to.
-- [ ] The `curl/curl` workflow is vendored verbatim at the pinned commit, with repo, commit, path,
+- [x] The `curl/curl` workflow is vendored verbatim at the pinned commit, with repo, commit, path,
       curl licence and a why-this-entry recorded in provenance, and reproduces as parsed data.
-- [ ] The entry is registered, and the inventory exercises all seven paths, so the modelled set covers
+- [x] The entry is registered, and the inventory exercises all seven paths, so the modelled set covers
       `background`, `cancel`, `parallel`, `parallel[]`, `wait`, `wait[]` and `wait-all`.
-- [ ] The seven rows leave the documented-grammar debt, and both generated blocks in the provider
+- [x] The seven rows leave the documented-grammar debt, and both generated blocks in the provider
       document are regenerated to match.
-- [ ] A provider test proves a background step, a wait step and a parallel group emit as written.
-- [ ] `pnpm check` passes.
+- [x] A provider test proves a background step, a wait step and a parallel group emit as written.
+- [x] `pnpm check` passes.

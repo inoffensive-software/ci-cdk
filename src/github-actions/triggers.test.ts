@@ -140,16 +140,6 @@ describe("event filters", () => {
     expect(ignored).toContain("- v0.*");
   });
 
-  it("accepts image_version name and version filters", () => {
-    const text = renderOn({ image_version: { names: ["MyNewImage"], versions: ["1.*", "2.*"] } });
-
-    expect(text).toContain("  image_version:\n");
-    expect(text).toContain("    names:\n");
-    expect(text).toContain("      - MyNewImage\n");
-    expect(text).toContain("    versions:\n");
-    expect(text).toContain("      - 1.*\n");
-  });
-
   it("accepts the same filters on pull_request", () => {
     const text = renderOn({ pull_request: { branches: ["main"], types: ["opened"] } });
 

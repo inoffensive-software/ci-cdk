@@ -60,41 +60,41 @@ editing it by hand fails. The gate and its refresh rule are in
 
 <!-- documented-grammar:start -->
 
-180 documented paths. Gaps: 31 (unmodelled 7, out-of-scope 13, schema-noise 11). Overclaims: 0.
+180 documented paths. Gaps: 31 (unmodelled 2, out-of-scope 18, schema-noise 11). Overclaims: 0.
 
-| Path                                     | Category       | Reason                                                                                                                                                                                                   |
-| ---------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$.jobs.*.services.*.command`            | `unmodelled`   | a Docker `CMD` override for one service container, passed as arguments after the image name, and combined with `entrypoint` when both are given                                                          |
-| `$.jobs.*.services.*.entrypoint`         | `unmodelled`   | a Docker `ENTRYPOINT` override for one service container, a single executable given as a string                                                                                                          |
-| `$.jobs.*.snapshot`                      | `unmodelled`   | asks the job to build a custom runner image from its steps, either as an image name string or as a mapping of `image-name` and an optional `version`                                                     |
-| `$.jobs.*.snapshot.version`              | `unmodelled`   | the major version a generated image is built under, a string such as `1` or `1.2`, in the mapping form of `snapshot`                                                                                     |
-| `$.jobs.*.snapshot["image-name"]`        | `unmodelled`   | the name a generated image is published under, the required key of the mapping form of `snapshot`                                                                                                        |
-| `$.jobs.*.steps[].parallel[].parallel`   | `unmodelled`   | a `parallel` group inside a parallel group; a group's items reuse `#/definitions/step`, so the schema nests, and the inventory models one level of group alone                                           |
-| `$.jobs.*.steps[].parallel[].parallel[]` | `unmodelled`   | one step of a nested parallel group, with the same shape as any other step; the nested-group row covers it                                                                                               |
-| `$.jobs.*.strategy.matrix.*[].*.*`       | `schema-noise` | an object under a key of a matrix cell object; `definitions.configuration` recurses through `additionalProperties`, while GitHub documents cell object keys that hold scalars, one level deep            |
-| `$.jobs.*.strategy.matrix.*[].*.*.*`     | `schema-noise` | an object under a key of an object under a key of a matrix cell object, one more turn of the recursive `definitions.configuration` than GitHub documents                                                 |
-| `$.jobs.*.strategy.matrix.*[].*.*[]`     | `schema-noise` | an array under a key of an object under a key of a matrix cell object, the array branch of the recursive `definitions.configuration` one turn deeper than GitHub documents                               |
-| `$.jobs.*.strategy.matrix.*[].*[]`       | `schema-noise` | an array of cells under a key of a matrix cell object; the array branch of `definitions.configuration`, while GitHub documents those keys with scalar values                                             |
-| `$.jobs.*.strategy.matrix.*[].*[].*`     | `schema-noise` | an object under a key of an array of matrix cell objects, another turn of the recursive `definitions.configuration`                                                                                      |
-| `$.jobs.*.strategy.matrix.*[].*[][]`     | `schema-noise` | an array of arrays under a key of a matrix cell object, another turn of the recursive `definitions.configuration`                                                                                        |
-| `$.jobs.*.strategy.matrix.*[][]`         | `schema-noise` | an array whose elements are arrays, one more turn of the recursive `definitions.configuration`; GitHub documents a matrix variable as an array of scalars or of objects                                  |
-| `$.jobs.*.strategy.matrix.*[][].*`       | `schema-noise` | an object under an element of an array-valued matrix cell, another turn of the recursive `definitions.configuration`                                                                                     |
-| `$.jobs.*.strategy.matrix.*[][][]`       | `schema-noise` | an array whose elements are arrays of matrix cells, one more turn of the recursive `definitions.configuration` than the existing row declares                                                            |
-| `$.jobs.*["runs-on"].group`              | `out-of-scope` | the runner group of the mapping form of `runs-on`; docs/providers/github-actions.md#non-goals rules that form out                                                                                        |
-| `$.jobs.*["runs-on"].labels`             | `out-of-scope` | the label list of the mapping form of `runs-on`; the `runs-on` non-goal in docs/providers/github-actions.md#non-goals covers it                                                                          |
-| `$.jobs.*["runs-on"].labels[]`           | `out-of-scope` | one label of the mapping form of `runs-on`; the `runs-on` non-goal in docs/providers/github-actions.md#non-goals covers it                                                                               |
-| `$.on.*.*`                               | `schema-noise` | `definitions.eventObject` sets `additionalProperties: true`, so the schema accepts any key under any event; GitHub documents only the filters the trigger vocabulary already types                       |
-| `$.on.*.inputs.*.deprecationMessage`     | `schema-noise` | the schema borrows `deprecationMessage` from the action metadata syntax; the workflow-syntax reference for `on.workflow_dispatch.inputs` documents only description, required, type, default and options |
-| `$.on.*.outputs`                         | `out-of-scope` | workflow_call output declarations; docs/providers/github-actions.md#non-goals rules them out                                                                                                             |
-| `$.on.*.outputs.*`                       | `out-of-scope` | one workflow_call output under the author's chosen name; the workflow_call outputs non-goal covers it                                                                                                    |
-| `$.on.*.outputs.*.description`           | `out-of-scope` | the description of one workflow_call output; the workflow_call outputs non-goal covers it                                                                                                                |
-| `$.on.*.outputs.*.value`                 | `out-of-scope` | the expression one workflow_call output is mapped to; the workflow_call outputs non-goal covers it                                                                                                       |
-| `$.on.*.secrets`                         | `out-of-scope` | workflow_call secret declarations; docs/providers/github-actions.md#non-goals rules them out                                                                                                             |
-| `$.on.*.secrets.*`                       | `out-of-scope` | one workflow_call secret under the author's chosen name; the workflow_call secrets non-goal covers it                                                                                                    |
-| `$.on.*.secrets.*.description`           | `out-of-scope` | the description of one workflow_call secret; the workflow_call secrets non-goal covers it                                                                                                                |
-| `$.on.*.secrets.*.required`              | `out-of-scope` | whether a workflow_call secret must be supplied; the workflow_call secrets non-goal covers it                                                                                                            |
-| `$.on.*.workflows`                       | `out-of-scope` | the `workflow_run` filter that lists which workflows may trigger the run; the per-event filters non-goal in docs/providers/github-actions.md#non-goals stops at the configured events                    |
-| `$.on.*.workflows[]`                     | `out-of-scope` | one workflow name in the `workflow_run` filter; the per-event filters non-goal in docs/providers/github-actions.md#non-goals covers it                                                                   |
+| Path                                     | Category       | Reason                                                                                                                                                                                                                                              |
+| ---------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.jobs.*.services.*.command`            | `out-of-scope` | a Docker `CMD` override for one service container; the service `command`/`entrypoint` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using it        |
+| `$.jobs.*.services.*.entrypoint`         | `out-of-scope` | a Docker `ENTRYPOINT` override for one service container; the service `command`/`entrypoint` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using it |
+| `$.jobs.*.snapshot`                      | `out-of-scope` | the `snapshot` job key in both its string and mapping forms; the `snapshot` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using it                  |
+| `$.jobs.*.snapshot.version`              | `out-of-scope` | the version of the mapping form of `snapshot`; the `snapshot` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using the key                           |
+| `$.jobs.*.snapshot["image-name"]`        | `out-of-scope` | the image name of the mapping form of `snapshot`; the `snapshot` non-goal in docs/providers/github-actions.md#non-goals covers it, after a search on 2026-10-29 found no permissively licensed public workflow using the key                        |
+| `$.jobs.*.steps[].parallel[].parallel`   | `unmodelled`   | a `parallel` group inside a parallel group; a group's items reuse `#/definitions/step`, so the schema nests, and the inventory models one level of group alone                                                                                      |
+| `$.jobs.*.steps[].parallel[].parallel[]` | `unmodelled`   | one step of a nested parallel group, with the same shape as any other step; the nested-group row covers it                                                                                                                                          |
+| `$.jobs.*.strategy.matrix.*[].*.*`       | `schema-noise` | an object under a key of a matrix cell object; `definitions.configuration` recurses through `additionalProperties`, while GitHub documents cell object keys that hold scalars, one level deep                                                       |
+| `$.jobs.*.strategy.matrix.*[].*.*.*`     | `schema-noise` | an object under a key of an object under a key of a matrix cell object, one more turn of the recursive `definitions.configuration` than GitHub documents                                                                                            |
+| `$.jobs.*.strategy.matrix.*[].*.*[]`     | `schema-noise` | an array under a key of an object under a key of a matrix cell object, the array branch of the recursive `definitions.configuration` one turn deeper than GitHub documents                                                                          |
+| `$.jobs.*.strategy.matrix.*[].*[]`       | `schema-noise` | an array of cells under a key of a matrix cell object; the array branch of `definitions.configuration`, while GitHub documents those keys with scalar values                                                                                        |
+| `$.jobs.*.strategy.matrix.*[].*[].*`     | `schema-noise` | an object under a key of an array of matrix cell objects, another turn of the recursive `definitions.configuration`                                                                                                                                 |
+| `$.jobs.*.strategy.matrix.*[].*[][]`     | `schema-noise` | an array of arrays under a key of a matrix cell object, another turn of the recursive `definitions.configuration`                                                                                                                                   |
+| `$.jobs.*.strategy.matrix.*[][]`         | `schema-noise` | an array whose elements are arrays, one more turn of the recursive `definitions.configuration`; GitHub documents a matrix variable as an array of scalars or of objects                                                                             |
+| `$.jobs.*.strategy.matrix.*[][].*`       | `schema-noise` | an object under an element of an array-valued matrix cell, another turn of the recursive `definitions.configuration`                                                                                                                                |
+| `$.jobs.*.strategy.matrix.*[][][]`       | `schema-noise` | an array whose elements are arrays of matrix cells, one more turn of the recursive `definitions.configuration` than the existing row declares                                                                                                       |
+| `$.jobs.*["runs-on"].group`              | `out-of-scope` | the runner group of the mapping form of `runs-on`; docs/providers/github-actions.md#non-goals rules that form out                                                                                                                                   |
+| `$.jobs.*["runs-on"].labels`             | `out-of-scope` | the label list of the mapping form of `runs-on`; the `runs-on` non-goal in docs/providers/github-actions.md#non-goals covers it                                                                                                                     |
+| `$.jobs.*["runs-on"].labels[]`           | `out-of-scope` | one label of the mapping form of `runs-on`; the `runs-on` non-goal in docs/providers/github-actions.md#non-goals covers it                                                                                                                          |
+| `$.on.*.*`                               | `schema-noise` | `definitions.eventObject` sets `additionalProperties: true`, so the schema accepts any key under any event; GitHub documents only the filters the trigger vocabulary already types                                                                  |
+| `$.on.*.inputs.*.deprecationMessage`     | `schema-noise` | the schema borrows `deprecationMessage` from the action metadata syntax; the workflow-syntax reference for `on.workflow_dispatch.inputs` documents only description, required, type, default and options                                            |
+| `$.on.*.outputs`                         | `out-of-scope` | workflow_call output declarations; docs/providers/github-actions.md#non-goals rules them out                                                                                                                                                        |
+| `$.on.*.outputs.*`                       | `out-of-scope` | one workflow_call output under the author's chosen name; the workflow_call outputs non-goal covers it                                                                                                                                               |
+| `$.on.*.outputs.*.description`           | `out-of-scope` | the description of one workflow_call output; the workflow_call outputs non-goal covers it                                                                                                                                                           |
+| `$.on.*.outputs.*.value`                 | `out-of-scope` | the expression one workflow_call output is mapped to; the workflow_call outputs non-goal covers it                                                                                                                                                  |
+| `$.on.*.secrets`                         | `out-of-scope` | workflow_call secret declarations; docs/providers/github-actions.md#non-goals rules them out                                                                                                                                                        |
+| `$.on.*.secrets.*`                       | `out-of-scope` | one workflow_call secret under the author's chosen name; the workflow_call secrets non-goal covers it                                                                                                                                               |
+| `$.on.*.secrets.*.description`           | `out-of-scope` | the description of one workflow_call secret; the workflow_call secrets non-goal covers it                                                                                                                                                           |
+| `$.on.*.secrets.*.required`              | `out-of-scope` | whether a workflow_call secret must be supplied; the workflow_call secrets non-goal covers it                                                                                                                                                       |
+| `$.on.*.workflows`                       | `out-of-scope` | the `workflow_run` filter that lists which workflows may trigger the run; the per-event filters non-goal in docs/providers/github-actions.md#non-goals stops at the configured events                                                               |
+| `$.on.*.workflows[]`                     | `out-of-scope` | one workflow name in the `workflow_run` filter; the per-event filters non-goal in docs/providers/github-actions.md#non-goals covers it                                                                                                              |
 
 | Path | Reason                                                       |
 | ---- | ------------------------------------------------------------ |
@@ -103,8 +103,8 @@ editing it by hand fails. The gate and its refresh rule are in
 <!-- documented-grammar:end -->
 
 The overclaim table covers exercised vocabulary only, because the inventory cannot hold an arm the
-schema rejects: `image_version` is typed but unproven, so its note stays under Non-goals rather than
-appearing here (spec 0005, Further Notes).
+schema rejects. That blind spot used to hide `image_version`; the arm is gone from the vocabulary, and
+[ADR 0012](../decisions/0012-drop-image-version.md) records the removal.
 
 ## Corpus
 
@@ -149,8 +149,10 @@ is the record for paths, hashes and licences; every entry is compared as data.
 - `runs-on` as `{ group, labels }`.
 - Per-event filters beyond the events the trigger vocabulary configures.
 - Expression parsing: `expr` is text interpolation, and conditions are never evaluated.
-- The `image_version` trigger is typed but unproven: no corpus entry uses it, and the vendored
-  schema does not recognise it.
+- The `snapshot` job key, in both its string and mapping forms: a search on 2026-10-29 found no
+  permissively licensed public workflow using it.
+- `command` and `entrypoint` overrides on a service container: a search on 2026-10-29 found no
+  permissively licensed public workflow using either key.
 
 Keys outside the vocabulary can still be written through `raw` where a struct exposes it; a corpus
 key that needs `raw` is a ledger row.
@@ -160,5 +162,4 @@ key that needs `raw` is a ledger row.
 <!-- open-gaps:start -->
 
 None. The coverage ledger is empty: every corpus key is modelled.
-
 <!-- open-gaps:end -->

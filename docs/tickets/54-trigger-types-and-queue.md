@@ -8,18 +8,18 @@ pipeline, which sets `on.release.types` and `concurrency.queue: max` in the same
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The trigger vocabulary accepts `types` on every event GitHub documents it for, and claims no
+- [x] The trigger vocabulary accepts `types` on every event GitHub documents it for, and claims no
       option an event does not take; an event with no options still lowers to `null` (ADR 0006).
-- [ ] `ConcurrencyGroup` gains `queue` as `single` or `max`, emitted after `cancel-in-progress`, at
+- [x] `ConcurrencyGroup` gains `queue` as `single` or `max`, emitted after `cancel-in-progress`, at
       workflow and job level.
-- [ ] The `jdx/mise` workflow is vendored verbatim at the pinned commit, with repo, commit, path, MIT
+- [x] The `jdx/mise` workflow is vendored verbatim at the pinned commit, with repo, commit, path, MIT
       licence and a why-this-entry recorded in provenance, and reproduces as parsed data.
-- [ ] The entry is registered in the provider's entry list, and the inventory exercises
+- [x] The entry is registered in the provider's entry list, and the inventory exercises
       `release.types`, a workflow-level queue and a job-level queue, so the modelled set covers them.
-- [ ] The documented-grammar rows for `$.concurrency.queue` and `$.jobs.*.concurrency.queue` are
+- [x] The documented-grammar rows for `$.concurrency.queue` and `$.jobs.*.concurrency.queue` are
       deleted, and both generated blocks in the provider document are regenerated to match.
-- [ ] A provider test shows a types-bearing event emitting its `types` sequence, and a concurrency
+- [x] A provider test shows a types-bearing event emitting its `types` sequence, and a concurrency
       group emitting its queue policy.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.
