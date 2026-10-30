@@ -2,7 +2,7 @@ import type { Gap, Overclaim } from "../../schemas/gap-debt.js";
 
 export { GAP_CATEGORIES } from "../../schemas/gap-debt.js";
 
-export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
+export type { Gap, Overclaim } from "../../schemas/gap-debt.js";
 
 /**
  * The roadmap of documented grammar this provider cannot emit. Adding a row declares a path on
