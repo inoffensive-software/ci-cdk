@@ -9,11 +9,46 @@ export interface Pipe {
 /** One element of a script: a command string, a leaf, or a pipe. */
 export type ScriptItem = Text | Pipe;
 
-/** A step body. Keys keep Bitbucket's own spelling; the tracer models only these four. */
+/** A step image: a name string, a name map, or a private registry with credentials. */
+export type Image =
+  | Text
+  | { readonly name: Text }
+  | { readonly name: Text; readonly username: Text; readonly password: Text };
+
+/** Path filters on a changeset condition; exactly one list, never both. */
+export type Changesets =
+  | { readonly includePaths: readonly string[]; readonly excludePaths?: never }
+  | { readonly excludePaths: readonly string[]; readonly includePaths?: never };
+
+/** A step condition: a state expression or a changeset filter. */
+export interface Condition {
+  readonly state?: Text;
+  readonly changesets?: Changesets;
+}
+
+/** How a step or stage starts. */
+export type Trigger = "automatic" | "manual";
+
+/** A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. */
 export interface Step {
+  readonly "after-script"?: readonly ScriptItem[];
+  readonly artifacts?: readonly string[];
+  readonly caches?: readonly Text[];
+  readonly clone?: Clone;
+  readonly condition?: Condition;
+  readonly "concurrency-group"?: Text;
+  readonly deployment?: Text;
+  readonly environment?: Text;
+  readonly "fail-fast"?: boolean;
+  readonly image?: Image;
+  readonly "max-time"?: number;
   readonly name?: Text;
   readonly oidc?: boolean;
+  readonly "runs-on"?: readonly Text[];
   readonly script: readonly ScriptItem[];
+  readonly services?: readonly Text[];
+  readonly size?: Size;
+  readonly trigger?: Trigger;
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
@@ -82,7 +117,7 @@ export interface Pipelines {
  * entry as well as for the file.
  */
 export interface PipelineConfig {
-  readonly image?: Text;
+  readonly image?: Image;
   readonly options?: Options;
   readonly clone?: Clone;
   readonly definitions?: Definitions;

@@ -62,8 +62,8 @@ describe("toDoc", () => {
   it("lowers definitions.steps to the same one-key item a pipeline uses", () => {
     const doc = toDoc(
       pipelineConfig({
-        definitions: { steps: [step({ script: ["true"], raw: { artifacts: ["reports/**"] } })] },
-        pipelines: { default: [step({ script: ["true"], raw: { artifacts: ["reports/**"] } })] },
+        definitions: { steps: [step({ script: ["true"], raw: { after: "raw" } })] },
+        pipelines: { default: [step({ script: ["true"], raw: { after: "raw" } })] },
       }),
     );
 

@@ -2,8 +2,11 @@ export { pipe, pipelineConfig, step } from "./types.js";
 
 export type {
   Cache,
+  Changesets,
   Clone,
+  Condition,
   Definitions,
+  Image,
   Options,
   PipelineConfig,
   PipelineItem,
@@ -15,6 +18,7 @@ export type {
   Size,
   Step,
   StepItem,
+  Trigger,
 } from "./types.js";
 
 export { render } from "./render.js";

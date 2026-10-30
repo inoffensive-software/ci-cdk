@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-express.fixture.js";
+import { OBUSPA } from "../../test/corpus/bitbucket-pipelines/obuspa.fixture.js";
+import { RAIR_DAPP } from "../../test/corpus/bitbucket-pipelines/rair-dapp.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "../../test/corpus/bitbucket-pipelines/systemsdk-symfony.fixture.js";
 import * as provider from "./index.js";
 import { type PipelineConfig, pipelineConfig, pipe, render, step } from "./index.js";
@@ -21,6 +23,16 @@ describe("render", () => {
   it("pins the systemsdk-symfony fixture with the header suppressed", async () => {
     await expect(render(SYSTEMSDK_SYMFONY, { header: "" })).toMatchFileSnapshot(
       "__snapshots__/systemsdk-symfony.yml",
+    );
+  });
+
+  it("pins the obuspa fixture with the header suppressed", async () => {
+    await expect(render(OBUSPA, { header: "" })).toMatchFileSnapshot("__snapshots__/obuspa.yml");
+  });
+
+  it("pins the rair-dapp fixture with the header suppressed", async () => {
+    await expect(render(RAIR_DAPP, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/rair-dapp.yml",
     );
   });
 

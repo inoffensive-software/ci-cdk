@@ -13,11 +13,34 @@ const DEFAULT_PATH = "$.pipelines.default";
 
 const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
 
+const conditionProblems = (item: PipelineItem, stepPath: string): readonly Diagnostic[] => {
+  const changesets = item.step.condition?.changesets;
+
+  if (changesets === undefined) {
+    return [];
+  }
+
+  const hasIncludePaths = "includePaths" in changesets && changesets.includePaths !== undefined;
+  const hasExcludePaths = "excludePaths" in changesets && changesets.excludePaths !== undefined;
+  const path = `${stepPath}.condition.changesets`;
+
+  if (!hasIncludePaths && !hasExcludePaths) {
+    return [{ path, message: "changesets needs includePaths or excludePaths" }];
+  }
+
+  if (hasIncludePaths && hasExcludePaths) {
+    return [{ path, message: "changesets takes includePaths or excludePaths, not both" }];
+  }
+
+  return [];
+};
+
 const stepProblems = (items: readonly PipelineItem[], base: string): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
   for (const [index, item] of items.entries()) {
-    const scriptPath = `${base}[${index}].step.script`;
+    const stepPath = `${base}[${index}].step`;
+    const scriptPath = `${stepPath}.script`;
 
     if (item.step.script.length === 0) {
       diagnostics.push({
@@ -34,6 +57,27 @@ const stepProblems = (items: readonly PipelineItem[], base: string): readonly Di
         });
       }
     }
+
+    diagnostics.push(...conditionProblems(item, stepPath));
+  }
+
+  return diagnostics;
+};
+
+/** One reusable-definition record: every author-chosen key must be non-empty. */
+const blankNameProblems = <T>(
+  record: Readonly<Record<string, T>> | undefined,
+  base: string,
+): readonly Diagnostic[] => {
+  const diagnostics: Diagnostic[] = [];
+
+  for (const name of Object.keys(record ?? {})) {
+    if (name === "") {
+      diagnostics.push({
+        path: keyPath(base, name),
+        message: "definition name must not be empty",
+      });
+    }
   }
 
   return diagnostics;
@@ -41,27 +85,12 @@ const stepProblems = (items: readonly PipelineItem[], base: string): readonly Di
 
 const definitionProblems = (config: PipelineConfig): readonly Diagnostic[] => {
   const definitions = config.definitions;
-  const diagnostics: Diagnostic[] = [];
 
-  for (const name of Object.keys(definitions?.caches ?? {})) {
-    if (name === "") {
-      diagnostics.push({
-        path: keyPath("$.definitions.caches", name),
-        message: "definition name must not be empty",
-      });
-    }
-  }
-
-  for (const name of Object.keys(definitions?.services ?? {})) {
-    if (name === "") {
-      diagnostics.push({
-        path: keyPath("$.definitions.services", name),
-        message: "definition name must not be empty",
-      });
-    }
-  }
-
-  return diagnostics;
+  return [
+    ...blankNameProblems(definitions?.caches, "$.definitions.caches"),
+    ...blankNameProblems(definitions?.services, "$.definitions.services"),
+    ...stepProblems(definitions?.steps ?? [], "$.definitions.steps"),
+  ];
 };
 
 const defaultProblems = (config: PipelineConfig): readonly Diagnostic[] => {

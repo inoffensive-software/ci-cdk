@@ -10,8 +10,7 @@ import {
  * the parser resolves; a fixture writes the resolved data, so the shared step body appears once under
  * `definitions.steps` and again inline in every selector that referenced the anchor.
  *
- * `artifacts` has no modelled field yet, so it is written through the step's `raw` block and declared
- * once per occurrence in the coverage ledger.
+ * `artifacts` is modelled, so it sits in the schema's alphabetical position rather than in `raw`.
  */
 const buildTestAnalyze = (): StepItem =>
   step({
@@ -36,7 +35,7 @@ const buildTestAnalyze = (): StepItem =>
       "make phpcpd",
       "make down-test",
     ],
-    raw: { artifacts: ["reports/**"] },
+    artifacts: ["reports/**"],
   });
 
 export const SYSTEMSDK_SYMFONY: PipelineConfig = pipelineConfig({

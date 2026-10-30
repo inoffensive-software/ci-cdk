@@ -11,26 +11,8 @@ export interface CoverageDebt {
  *
  * A row is always a vocabulary gap: the key has no modelled field. An empty ledger means the
  * vocabulary can express every key the corpus uses.
+ *
+ * The step body is modelled through ticket 48, and `aligent-graphql-mesh` has not landed yet, so the
+ * four entries present need no raw at all. Ticket 47 must land its entry with an empty ledger too.
  */
-export const COVERAGE_DEBT: readonly CoverageDebt[] = [
-  {
-    path: "$.definitions.steps[0].step.raw.artifacts",
-    reason: "step artifacts are ticket 48; the shared step group declares its reports glob raw",
-  },
-  {
-    path: "$.pipelines.branches[0].pipeline[0].step.raw.artifacts",
-    reason: "step artifacts are ticket 48; the main branch resolves the shared step's anchor",
-  },
-  {
-    path: "$.pipelines.branches[1].pipeline[0].step.raw.artifacts",
-    reason: "step artifacts are ticket 48; the develop branch resolves the shared step's anchor",
-  },
-  {
-    path: '$.pipelines["pull-requests"][0].pipeline[0].step.raw.artifacts',
-    reason: "step artifacts are ticket 48; the pull-request selector resolves the shared step",
-  },
-  {
-    path: "$.pipelines.tags[0].pipeline[0].step.raw.artifacts",
-    reason: "step artifacts are ticket 48; the tag selector resolves the shared step",
-  },
-];
+export const COVERAGE_DEBT: readonly CoverageDebt[] = [];

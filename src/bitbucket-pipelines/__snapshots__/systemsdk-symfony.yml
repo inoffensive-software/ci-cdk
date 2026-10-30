@@ -1,6 +1,8 @@
 definitions:
   steps:
     - step:
+        artifacts:
+          - reports/**
         name: Build, Test and Analyze
         script:
           - chmod +x .bitbucket/dependencies.sh
@@ -21,8 +23,6 @@ definitions:
           - make phpmd
           - make phpcpd
           - make down-test
-        artifacts:
-          - reports/**
 image: docker:stable
 options:
   docker: true
@@ -30,6 +30,8 @@ pipelines:
   branches:
     main:
       - step:
+          artifacts:
+            - reports/**
           name: Build, Test and Analyze
           script:
             - chmod +x .bitbucket/dependencies.sh
@@ -50,10 +52,10 @@ pipelines:
             - make phpmd
             - make phpcpd
             - make down-test
-          artifacts:
-            - reports/**
     develop:
       - step:
+          artifacts:
+            - reports/**
           name: Build, Test and Analyze
           script:
             - chmod +x .bitbucket/dependencies.sh
@@ -74,11 +76,11 @@ pipelines:
             - make phpmd
             - make phpcpd
             - make down-test
-          artifacts:
-            - reports/**
   tags:
     "*":
       - step:
+          artifacts:
+            - reports/**
           name: Build, Test and Analyze
           script:
             - chmod +x .bitbucket/dependencies.sh
@@ -99,11 +101,11 @@ pipelines:
             - make phpmd
             - make phpcpd
             - make down-test
-          artifacts:
-            - reports/**
   pull-requests:
     "**":
       - step:
+          artifacts:
+            - reports/**
           name: Build, Test and Analyze
           script:
             - chmod +x .bitbucket/dependencies.sh
@@ -124,5 +126,3 @@ pipelines:
             - make phpmd
             - make phpcpd
             - make down-test
-          artifacts:
-            - reports/**

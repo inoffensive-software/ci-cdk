@@ -249,3 +249,20 @@ describe("raw", () => {
     expect(diagnosticsOf(broken)).toHaveLength(3);
   });
 });
+
+describe("step body raw", () => {
+  it("refuses a raw key for a newly modelled step field", () => {
+    expect(
+      pairsOf(
+        pipelineConfig({
+          pipelines: { default: [step({ script: ["true"], raw: { artifacts: ["dist/**"] } })] },
+        }),
+      ),
+    ).toStrictEqual([
+      {
+        path: '$.pipelines.default[0].step.raw["artifacts"]',
+        message: 'raw key "artifacts" is already emitted at this level',
+      },
+    ]);
+  });
+});
