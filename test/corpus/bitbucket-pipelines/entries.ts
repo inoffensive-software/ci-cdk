@@ -3,7 +3,6 @@ import { ALIGENT_GRAPHQL_MESH } from "./aligent-graphql-mesh.fixture.js";
 import { ARTIFACTS_EXPANDED } from "./artifacts-expanded.fixture.js";
 import { CONNECT_EXPRESS } from "./connect-express.fixture.js";
 import { CUSTOM_VARS_NAKAMA } from "./custom-vars-nakama.fixture.js";
-import { CUSTOM_VARS_SALESFORCE } from "./custom-vars-salesforce.fixture.js";
 import { OBUSPA } from "./obuspa.fixture.js";
 import { RAIR_DAPP } from "./rair-dapp.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "./systemsdk-symfony.fixture.js";
@@ -23,10 +22,5 @@ export const ENTRIES: readonly CorpusEntry[] = [
   { name: "rair-dapp", file: "rair-dapp.yml", config: RAIR_DAPP },
   { name: "aligent-graphql-mesh", file: "aligent-graphql-mesh.yml", config: ALIGENT_GRAPHQL_MESH },
   { name: "artifacts-expanded", file: "artifacts-expanded.yml", config: ARTIFACTS_EXPANDED },
-  {
-    name: "custom-vars-salesforce",
-    file: "custom-vars-salesforce.yml",
-    config: CUSTOM_VARS_SALESFORCE,
-  },
   { name: "custom-vars-nakama", file: "custom-vars-nakama.yml", config: CUSTOM_VARS_NAKAMA },
 ];

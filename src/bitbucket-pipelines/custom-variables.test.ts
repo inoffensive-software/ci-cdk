@@ -41,6 +41,19 @@ const withVariables = (variables: readonly CustomVariable[]): PipelineConfig =>
 
 const parsed = (config: PipelineConfig): ParsedDocument => parse(render(config, { header: "" }));
 
+/**
+ * The pinned schema's `CustomVariable` shape. `description` is typed there, but no vendored config
+ * carries it, so this synthetic fixture is the evidence for that key.
+ */
+const SCHEMA_DERIVED_VARIABLES: readonly CustomVariable[] = [
+  {
+    name: "TARGET",
+    description: "Where to deploy",
+    default: "staging",
+    "allowed-values": ["staging", "production"],
+  },
+];
+
 const diagnosticsOf = (config: PipelineConfig): readonly Diagnostic[] => {
   try {
     render(config);
@@ -164,6 +177,13 @@ describe("custom-pipeline variable data", () => {
     expect(
       parsed(withVariables([{ name: "TOKEN" }])).pipelines["custom"]["release"]?.[0]?.variables,
     ).toStrictEqual([{ name: "TOKEN" }]);
+  });
+
+  it("round-trips the schema's description key from a synthetic fixture", () => {
+    expect(
+      parsed(withVariables(SCHEMA_DERIVED_VARIABLES)).pipelines["custom"]["release"]?.[0]
+        ?.variables,
+    ).toStrictEqual(SCHEMA_DERIVED_VARIABLES);
   });
 
   it("keeps a custom pipeline without variables exactly as before", () => {

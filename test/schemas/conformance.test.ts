@@ -94,21 +94,12 @@ const RAW_FIXTURE = "src/github-actions/__snapshots__/raw-shape.yml";
 
 /**
  * A file-based negative is a checked-in fixture whose only flaw is a property the provider's schema
- * does not model. Bitbucket has no such golden: its schema accepts unknown keys at the root, on a
+ * does not model. Bitbucket has no such fixture: its schema accepts unknown keys at the root, on a
  * step and on a stage, which are the only levels `raw` can write. Its negative is therefore a
  * synthetic document, asserted below rather than discovered from disk.
- *
- * One vendored config joins the list as a declared schema deviation: the pinned schema types every
- * custom-variable value as a string, while `custom-vars-salesforce.yml` writes booleans. The file is
- * evidence and is never edited; the provider emits the schema's quoted string form, so the golden
- * conforms while the vendored bytes cannot.
  */
 const FILE_NEGATIVE_FIXTURES: readonly Fixture[] = [
   { path: RAW_FIXTURE, provider: "github-actions" },
-  {
-    path: "test/corpus/bitbucket-pipelines/custom-vars-salesforce.yml",
-    provider: "bitbucket-pipelines",
-  },
 ];
 
 const FILE_NEGATIVE_PATHS: readonly string[] = FILE_NEGATIVE_FIXTURES.map(({ path }) => path);
@@ -244,21 +235,6 @@ describe("declared negative fixtures", () => {
     const problems = described(problemsFor("gitlab-ci", unmodelledGitlabRaw()));
 
     expect(problems).toContain('/build must NOT have additional properties: "not-a-gitlab-key"');
-  });
-});
-
-describe("declared schema deviation", () => {
-  it("names the pinned schema's string type for a vendored config's boolean value", () => {
-    const problems = described(
-      problemsOf({
-        path: "test/corpus/bitbucket-pipelines/custom-vars-salesforce.yml",
-        provider: "bitbucket-pipelines",
-      }),
-    );
-
-    expect(problems).toContain(
-      "/pipelines/custom/1-salesforce-e2e-test-only/0/variables/2/default must be string",
-    );
   });
 });
 

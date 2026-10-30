@@ -92,22 +92,6 @@ as the file (see the corpus README and ADR 0005).
   runs two pipes - the expanded shape whose list-form sibling every earlier entry already exercises.
 - Vendored as: `artifacts-expanded.yml`, SHA-256 `043f661cc2ee991bac5316607fd05edbd48ea19bc24d1f5c6e08679c16ca2da6`
 
-## custom-vars-salesforce
-
-- Repo: <https://github.com/dawiddiwad/salesforce-e2e-test-automation>
-- Commit: `df236454fd51129cbeb118c4339a8b6908e21740`
-- Path: `bitbucket-pipelines.yml`
-- Licence: MIT
-- Bytes: 4647
-- Lines: 110
-- Comparison: data
-- Why this entry: three custom pipelines, each opening with a `variables` item, and between them
-  every variable key - `name`, `default`, `description` and `allowed-values` - plus YAML anchors that
-  the parser resolves into the repeated step bodies the fixture writes. The config writes its boolean
-  variable values as literals where the pinned schema types them as strings; the fixture and golden
-  carry the schema's quoted form, and the comparison parses both sides under the failsafe schema.
-- Vendored as: `custom-vars-salesforce.yml`, SHA-256 `d5c30a9675389a50820b9ee53c3fc3f04a13c4d245eabfc539602cbc662fd30f`
-
 ## custom-vars-nakama
 
 - Repo: <https://github.com/Nakama-Partnering-Services/nakama-project-scaffolding>
@@ -128,3 +112,10 @@ Bitbucket documents the named `upload` entry and the name-list `download`, and n
 config uses either shape. The synthetic fixture in `artifacts-expanded.test.ts` is built from
 <https://support.atlassian.com/bitbucket-cloud/docs/child-pipeline-step-options/> retrieved
 2026-10-29; no file is vendored for it.
+
+## Schema-derived fixtures
+
+The pinned schema copied 2026-10-29 (`test/schemas/bitbucket-pipelines.json`) types a custom
+variable's `description` as a string, but no vendored config uses that key. The synthetic fixture in
+`src/bitbucket-pipelines/custom-variables.test.ts` covers it from the schema; no file is vendored for
+it. Every other variable key is exercised by `custom-vars-nakama.yml` and the inventory.
