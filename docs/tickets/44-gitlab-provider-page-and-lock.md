@@ -6,7 +6,7 @@
 gate, the final goldens, and a locked empty ledger. This ticket closes the initiative, so it runs only
 after every vocabulary ticket.
 
-**Blocked by:** 42 (Delivery and scheduling), 43 (The `!reference` leaf).
+**Blocked by:** 42 (Delivery and scheduling), 43 (The `!reference` leaf), 59 (Model the job trigger).
 
 **Status:** ready-for-agent
 
@@ -18,8 +18,8 @@ after every vocabulary ticket.
       category, and the overclaims, each row with its reason, beside the corpus coverage.
 - [ ] The coverage document names the three pinned entries, their commits and their licences, and links
       to the corpus tests rather than restating them.
-- [ ] The GitLab coverage ledger is empty: every raw path has been modelled, and the coverage test
-      asserts set equality with an empty declared set.
+- [ ] The GitLab coverage ledger is empty: every raw path has been modelled, including the labkit
+      `trigger`, and the coverage test asserts set equality with an empty declared set.
 - [ ] The exhaustiveness gate is green for all three entries, with no modelled key written through
       `raw` and no unused ledger row.
 - [ ] The documented-grammar diff is green: every gap is modelled or declared with a category and a
