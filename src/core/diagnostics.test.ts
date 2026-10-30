@@ -217,7 +217,8 @@ describe("leaves", () => {
   });
 
   it("ignores a DOC symbol inherited from a prototype", () => {
-    const inherited = Object.create({ [DOC]: () => scalar("x") }) as { name: string };
+    // The prototype carries `DOC`; lowering reads own properties only, so it must not dispatch.
+    const inherited: { name: string } = Object.create({ [DOC]: () => scalar("x") });
 
     inherited.name = "n";
 

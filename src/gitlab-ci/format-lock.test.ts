@@ -212,24 +212,24 @@ describe("ordering", () => {
 
     expect(text.startsWith("stages:\n")).toBe(true);
     expect(text.indexOf("zulu:")).toBeLessThan(text.indexOf("alpha:"));
-    expect(Object.keys(parse(text) as object)).toStrictEqual(["stages", "zulu", "alpha"]);
+    expect(Object.keys(parse(text))).toStrictEqual(["stages", "zulu", "alpha"]);
   });
 
   it("emits a job's stage before its script and its raw entries last", () => {
-    const parsed = parse(bare(ordering())) as { zulu: object; alpha: object };
+    const parsed = parse(bare(ordering()));
 
     expect(Object.keys(parsed.zulu)).toStrictEqual(["stage", "script"]);
     expect(Object.keys(parsed.alpha)).toStrictEqual(["stage", "script", "coverage"]);
   });
 
   it("emits templates after stages and before the jobs, in record order", () => {
-    const parsed = parse(bare(withTemplates())) as object;
+    const parsed = parse(bare(withTemplates()));
 
     expect(Object.keys(parsed)).toStrictEqual(["stages", ".setup", ".versions", "build"]);
   });
 
   it("emits pipeline raw last, and job raw last, in insertion order", () => {
-    const parsed = parse(bare(rawAtBothLevels())) as { build: object };
+    const parsed = parse(bare(rawAtBothLevels()));
 
     expect(Object.keys(parsed)).toStrictEqual([
       "stages",

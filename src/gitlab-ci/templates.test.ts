@@ -38,12 +38,7 @@ describe("template placement", () => {
       { header: "" },
     );
 
-    expect(Object.keys(parse(text) as object)).toStrictEqual([
-      "stages",
-      ".zulu",
-      ".alpha",
-      "build",
-    ]);
+    expect(Object.keys(parse(text))).toStrictEqual(["stages", ".zulu", ".alpha", "build"]);
   });
 
   it("lowers values as plain data of any shape, round-tripping through the emitter", () => {
@@ -60,9 +55,7 @@ describe("template placement", () => {
       },
     };
 
-    const parsed = parse(render(withTemplate(templates), { header: "" })) as {
-      ".versions": object;
-    };
+    const parsed = parse(render(withTemplate(templates), { header: "" }));
 
     expect(parsed[".versions"]).toStrictEqual(templates[".versions"]);
   });
