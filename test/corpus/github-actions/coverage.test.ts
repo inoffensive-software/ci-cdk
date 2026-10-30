@@ -1,14 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import type { Workflow } from "../../../src/github-actions/index.js";
+import { keyPath } from "../paths.js";
 import { COVERAGE_DEBT } from "./coverage-debt.js";
 import * as fixtures from "./fixtures.js";
-
-const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
-
-/** The diagnostic notation, so a ledger row reads exactly like the path an author would be given. */
-const keyPath = (path: string, key: string): string =>
-  IDENTIFIER.test(key) ? `${path}.${key}` : `${path}[${JSON.stringify(key)}]`;
 
 /** Every raw key a fixture wrote, at the level it wrote it. */
 const rawPathsOf = (workflow: Workflow): readonly string[] => {
