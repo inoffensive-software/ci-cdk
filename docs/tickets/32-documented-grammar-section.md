@@ -8,19 +8,19 @@ sees what the provider cannot emit and why, in the same file as the claim it qua
 
 **Blocked by:** 31 (Triage the first report)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `docs/providers/github-actions.md` gains a generated section with the count of documented paths,
+- [x] `docs/providers/github-actions.md` gains a generated section with the count of documented paths,
       the gaps grouped by category, and the overclaims, each in a table with its reason.
-- [ ] The section is produced by one function over the walker's paths and the two lists, and a test
+- [x] The section is produced by one function over the walker's paths and the two lists, and a test
       compares the marked block with that function's output byte for byte.
-- [ ] Every declared gap and overclaim appears in the document, asserted by a test, so a list row cannot
+- [x] Every declared gap and overclaim appears in the document, asserted by a test, so a list row cannot
       be invisible.
-- [ ] The prose note about `image_version` in the non-goals stays, because the diff cannot see a
+- [x] The prose note about `image_version` in the non-goals stays, because the diff cannot see a
       vocabulary arm the inventory is forbidden to contain (spec decision 14), and the section says so
       in one line rather than implying the overclaim table covers it.
-- [ ] The section names the schema's pinned origin by linking `docs/references/upstream-schemas.md`
+- [x] The section names the schema's pinned origin by linking `docs/references/upstream-schemas.md`
       rather than restating the URL or date.
-- [ ] The document still does not restate invariants, the emitted format or decisions that belong in
+- [x] The document still does not restate invariants, the emitted format or decisions that belong in
       `docs/architecture.md`.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.
