@@ -234,6 +234,7 @@ export type When = "on_success" | "on_failure" | "always" | "never" | "manual" |
 | `parallel`    | `number` or `{ matrix: readonly Readonly<Record<string, Scalar>>[] }`                                                                                                                                                                                                                 |
 | `retry`       | `number` or `{ max: number; when?: readonly string[]; exit_codes?: readonly number[] }`                                                                                                                                                                                               |
 | `release`     | `{ tag_name: Text; description: Text; name?: Text; ref?: Text; milestone?: Text; released_at?: Text }`                                                                                                                                                                                |
+| `trigger`     | `Text` or `{ project: Text; branch?: Text; ref?: Text; strategy?: "depend" \| "mirror"; inputs?: Record<string, Scalar> }` or `{ include: IncludeEntry \| readonly IncludeEntry[]; strategy?: "depend" \| "mirror" }`; emitted as data, never resolved                                |
 | `include`     | one entry or readonly array; each entry is `{ local: Text }`, `{ remote: Text }`, `{ template: Text }`, `{ project: Text; ref?: Text; file: Text \| readonly Text[] }` or `{ component: Text; inputs?: Record<string, Scalar> }`, each optionally with `rules` and `integrity`        |
 | `workflow`    | `{ name?: Text; auto_cancel?: { on_new_commit?: "conservative" \| "interruptible" \| "none"; on_job_failure?: "all" \| "none" }; rules?: readonly Rule[] }`                                                                                                                           |
 | `templates`   | `Record<string, Value>`; every key starts with `.`, values are plain data of any shape, order preserved                                                                                                                                                                               |
@@ -252,8 +253,9 @@ definitions with the same data byte-identical.
 - Default: `image`, `services`, `tags`, `before_script`, `after_script`, `cache`, `artifacts`, `retry`,
   `timeout`, `interruptible`.
 - Job: `stage`, `extends`, `needs`, `rules`, `tags`, `image`, `services`, `variables`, `cache`,
-  `artifacts`, `before_script`, `script`, `after_script`, `environment`, `release`, `parallel`, `retry`,
-  `timeout`, `interruptible`, `allow_failure`, `when`, `resource_group`, `coverage`, then job `raw`.
+  `artifacts`, `before_script`, `script`, `after_script`, `environment`, `release`, `trigger`,
+  `parallel`, `retry`, `timeout`, `interruptible`, `allow_failure`, `when`, `resource_group`,
+  `coverage`, then job `raw`.
 
 Within author maps (`variables`, `reports`, `matrix` rows), insertion order is preserved.
 
@@ -371,24 +373,35 @@ reuses them rather than restating the mechanism.
 
 ## Out of Scope
 
+Two kinds of exclusion, and only the first is permanent.
+
+**Architectural non-goals.** These are properties of a typed constructor rather than missing fields,
+and no provider in this package will resolve them:
+
 - Bitbucket Pipelines.
 - Resolving `include`, `extends`, `!reference` or cross-file job references. They are emitted, never
   loaded or verified.
 - A `spec` header, inputs interpolation and component context (`$[[ ... ]]`); `include:inputs` is
   passed through as data only.
-- `pages`, `trigger`, `secrets`, `id_tokens`, `hooks`, `identity`, `manual_confirmation`, `run`,
-  `start_in`, `dast_configuration`, `inherit`, `dependencies`, and `rules:changes:compare_to`.
-- Child pipelines and multi-document pipelines.
+- Child pipelines and multi-document pipelines as a composition mechanism.
 - A CLI or file-writing behaviour; `render` still returns text.
-- Refreshing the vendored schema, and modelling any declared `GAPS` row. Triage classifies; a row
-  becomes vocabulary only when a pinned corpus entry already needs it.
+- Refreshing the vendored schema.
+
+**Deferred keywords.** `pages`, `secrets`, `id_tokens`, `hooks`, `identity`, `manual_confirmation`,
+`run`, `start_in`, `dast_configuration`, `inherit`, `dependencies` and `rules:changes:compare_to` are
+not modelled in this slice. They are ordinary fields GitLab documents, deferred to keep this slice
+finite; spec 0008 is the vehicle that promotes them, one pinned corpus entry at a time. `trigger` is
+no longer deferred: ticket 59 models it because the labkit corpus already uses it.
+
+`GAPS` still labels a deferred keyword `out-of-scope` until a corpus entry obliges us to model it. The
+gap report is therefore a snapshot of this slice, not a claim that the key can never be supported.
 
 ## Further Notes
 
 - The tracker is local: tickets are files under `docs/tickets/`, no issue is published. The
   `ready-for-agent` status stands in for a triage label.
-- The next free ticket number is 33; 29-32 belong to spec 0005's documented-grammar work and 28 to the
-  concurrent GitHub Actions constant-naming ticket.
+- The next free ticket number depends on the Bitbucket work; check `docs/tickets/` on main before
+  allocating. 29-32 belong to spec 0005 and 45-58 to the Bitbucket provider and release chores.
 - Ticket 35 depends on spec 0005's shared walker. If that work has not merged, 33, 34 and 37-44 can
   still proceed; only 35 and 36 wait.
 - The three corpus files are pinned external artifacts. Fetch them at the commit and verify the hash
