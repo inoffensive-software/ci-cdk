@@ -24,10 +24,20 @@ const ymlFiles = (dir: string): readonly string[] =>
         .toSorted()
     : [];
 
+/**
+ * Providers with a vendored schema. A provider can exist before its schema does, and a golden can
+ * only be checked against a schema that exists.
+ */
+const schemaProviders = new Set(
+  readdirSync(join(root, "test", "schemas"), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => entry.name.slice(0, -".json".length)),
+);
+
 /** Emitted goldens, one directory per provider under `src/<provider>/__snapshots__`. */
 const snapshotFixtures = (): readonly Fixture[] =>
   readdirSync(join(root, "src"), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => entry.isDirectory() && schemaProviders.has(entry.name))
     .flatMap((entry) =>
       ymlFiles(join(root, "src", entry.name, "__snapshots__")).map((file) => ({
         path: `src/${entry.name}/__snapshots__/${file}`,

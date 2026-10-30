@@ -26,6 +26,9 @@ const YAML_OPTIONS = {
   indent: 2,
   indentSeq: true,
   aliasDuplicateObjects: false,
+  // Long double-quoted scalars otherwise fold across physical lines with blank lines between them,
+  // which the format contract forbids. JSON escaping keeps them on one line and round-trips exactly.
+  doubleQuotedAsJSON: true,
 } as const;
 
 const NUMBER_LITERAL = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/u;
