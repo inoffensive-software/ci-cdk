@@ -22,7 +22,14 @@ export const GAPS: readonly Gap[] = debt.map((row) => ({
 }));
 
 /**
- * Modelled paths the schema does not enumerate. The first diff found none, and an empty list is a
- * claim the test below proves: every path the inventory emits is in the schema.
+ * Modelled paths the schema does not enumerate. Each row is a modelled shape GitLab accepts and the
+ * pinned schema states too loosely for the walk to see; the gate proves both directions, so a row
+ * cannot outlive the path it describes.
  */
-export const OVERCLAIMS: readonly Overclaim[] = [];
+export const OVERCLAIMS: readonly Overclaim[] = [
+  {
+    path: "$.default.image.entrypoint[]",
+    reason:
+      "the schema declares `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; GitLab documents a list of strings, which is what the vocabulary emits",
+  },
+];

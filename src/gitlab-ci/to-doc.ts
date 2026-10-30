@@ -9,28 +9,43 @@ import {
 } from "../core/index.js";
 import { rawKeyPath } from "../core/paths.js";
 import { lowerRawBlock, rawEntries } from "../core/raw.js";
+import { defaultDoc, includeDoc, variablesDoc, workflowDoc } from "./blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
 /**
- * Job keys that are struct identity or already modelled at this level, so raw may not repeat them.
- * `script` stays reserved even when the job omits it: the field, never `raw`, is how a job carries a
- * script, so a scriptless job cannot smuggle one past validation.
+ * Global keys that are modelled here, so raw may not repeat them. They stay reserved when the
+ * pipeline omits them: the field, never `raw`, is how the DSL carries the keyword, so an absent
+ * `default` cannot be smuggled in through the escape hatch.
  */
-const JOB_RESERVED: readonly string[] = ["name", "stage", "script"];
+const PIPELINE_RESERVED: readonly string[] = [
+  "default",
+  "include",
+  "stages",
+  "variables",
+  "workflow",
+];
+
+/**
+ * Job keys that are struct identity or modelled at this level, so raw may not repeat them. `script`
+ * and `variables` stay reserved even when the job omits them: the field, never `raw`, is how a job
+ * carries them, so an absent one cannot be smuggled in through the escape hatch.
+ */
+const JOB_RESERVED: readonly string[] = ["name", "stage", "script", "variables"];
 
 /** Only a declared field with a value is emitted; absent fields are not lowered at all. */
 const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
   value === undefined ? [] : [{ key, value }];
 
 /**
- * `stage` when set, then `script` when set, then raw. `name` is struct identity and never enters the
- * body; a job with neither `script` nor `raw` lowers to an empty map, which is the shape a fragment
- * uses to override an included job.
+ * `stage`, `variables`, `script`, then raw. `name` is struct identity and never enters the body; a
+ * job with none of the fields lowers to an empty map, which is the shape a fragment uses to override
+ * an included job.
  */
 const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("stage", item.stage === undefined ? undefined : fromValue(item.stage)),
+    ...entry("variables", item.variables === undefined ? undefined : variablesDoc(item.variables)),
     ...entry("script", item.script === undefined ? undefined : fromValue(item.script)),
   ];
 
@@ -70,13 +85,24 @@ const templateEntries = (
 /**
  * Validates the whole document, then lowers it. `jobs` is an array on the struct so composition is
  * spread and concat; it becomes a map keyed by name here, in array order, with `name` stripped from
- * the body. Hidden templates sit between `stages` and the jobs; raw entries come last at each level.
+ * the body. The global keys keep the spec's fixed order, the hidden templates sit between
+ * `workflow` and the jobs, and raw entries come last at each level.
  */
 export const toDoc = (pipeline: Pipeline): Doc => {
   const diagnostics: Diagnostic[] = [...validate(pipeline)];
 
   const modelled = [
+    ...entry("default", pipeline.default === undefined ? undefined : defaultDoc(pipeline.default)),
+    ...entry("include", pipeline.include === undefined ? undefined : includeDoc(pipeline.include)),
     ...entry("stages", pipeline.stages === undefined ? undefined : fromValue(pipeline.stages)),
+    ...entry(
+      "variables",
+      pipeline.variables === undefined ? undefined : variablesDoc(pipeline.variables),
+    ),
+    ...entry(
+      "workflow",
+      pipeline.workflow === undefined ? undefined : workflowDoc(pipeline.workflow),
+    ),
     ...templateEntries(pipeline.templates, diagnostics),
     ...pipeline.jobs.map((item, index) => ({
       key: item.name,
@@ -86,15 +112,7 @@ export const toDoc = (pipeline: Pipeline): Doc => {
 
   const doc = map([
     ...modelled,
-    ...rawEntries(
-      "$",
-      pipeline.raw,
-      // Template entries are in `modelled`, so a raw key equal to one collides like any other key.
-      modelled,
-      diagnostics,
-      ["stages", ...pipeline.jobs.map((item) => item.name)],
-      rawKeyPath,
-    ),
+    ...rawEntries("$", pipeline.raw, modelled, diagnostics, PIPELINE_RESERVED, rawKeyPath),
   ]);
 
   if (diagnostics.length > 0) {

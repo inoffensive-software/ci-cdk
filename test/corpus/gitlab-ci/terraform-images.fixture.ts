@@ -68,11 +68,11 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
         'crane copy "$TERRAFORM_IMAGE_NAME" "$RELEASE_IMAGE_NAME:$CI_COMMIT_TAG"',
         'if [ "$TERRAFORM_VERSION" = "$STABLE_VERSION" ]; then crane copy "$TERRAFORM_IMAGE_NAME" "$STABLE_IMAGE_NAME"; fi',
       ],
+      variables: {
+        RELEASE_IMAGE_NAME: "$CI_REGISTRY_IMAGE/releases/$TERRAFORM_VERSION",
+      },
       raw: {
         extends: ".terraform-versions",
-        variables: {
-          RELEASE_IMAGE_NAME: "$CI_REGISTRY_IMAGE/releases/$TERRAFORM_VERSION",
-        },
         image: {
           name: "gcr.io/go-containerregistry/crane:debug",
           entrypoint: [""],
@@ -95,23 +95,21 @@ export const TERRAFORM_IMAGES: Pipeline = pipeline({
       },
     }),
   ],
-  raw: {
-    workflow: {
-      rules: [
-        { if: '$CI_PROJECT_PATH == "gitlab-org/terraform-images"', when: "never" },
-        { if: "$CI_MERGE_REQUEST_IID" },
-        { if: "$CI_COMMIT_TAG" },
-        { if: "$CI_COMMIT_BRANCH && $CI_COMMIT_REF_PROTECTED == 'true'" },
-      ],
-    },
-    variables: {
-      BASE_IMAGE: "alpine:3.18.4",
-      TERRAFORM_IMAGE_NAME:
-        "$CI_REGISTRY_IMAGE/branches/$CI_COMMIT_REF_SLUG-$TERRAFORM_VERSION:$CI_COMMIT_SHA",
-      DOCKER_DIND_IMAGE: "docker:24.0.7-dind",
-      PLATFORMS: "linux/amd64,linux/arm64",
-      STABLE_IMAGE_NAME: "$CI_REGISTRY_IMAGE/stable:latest",
-      STABLE_VERSION: "1.5",
-    },
+  workflow: {
+    rules: [
+      { if: '$CI_PROJECT_PATH == "gitlab-org/terraform-images"', when: "never" },
+      { if: "$CI_MERGE_REQUEST_IID" },
+      { if: "$CI_COMMIT_TAG" },
+      { if: "$CI_COMMIT_BRANCH && $CI_COMMIT_REF_PROTECTED == 'true'" },
+    ],
+  },
+  variables: {
+    BASE_IMAGE: "alpine:3.18.4",
+    TERRAFORM_IMAGE_NAME:
+      "$CI_REGISTRY_IMAGE/branches/$CI_COMMIT_REF_SLUG-$TERRAFORM_VERSION:$CI_COMMIT_SHA",
+    DOCKER_DIND_IMAGE: "docker:24.0.7-dind",
+    PLATFORMS: "linux/amd64,linux/arm64",
+    STABLE_IMAGE_NAME: "$CI_REGISTRY_IMAGE/stable:latest",
+    STABLE_VERSION: "1.5",
   },
 });

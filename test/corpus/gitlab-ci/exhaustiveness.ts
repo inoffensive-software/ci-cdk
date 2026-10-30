@@ -9,6 +9,22 @@ import { INVENTORY } from "./inventory.js";
 const ROOT_SEGMENT = /^\$(?:\.([A-Za-z_$][\w$]*)|\[("(?:[^"\\]|\\.)*")\])/u;
 
 /**
+ * Map keys that belong to the author, not to GitLab: a scalar map's keys are names the caller chose,
+ * so two names at the same position are the same grammar and both normalise to `*`.
+ *
+ * The list is written in the gate's notation, after the root has been normalised, so `$.variables`
+ * is the pipeline map and `$.*.variables` is any job's. The schema walk reads the same list directly,
+ * because a schema path is already in that notation.
+ */
+export const AUTHOR_NAMED: readonly string[] = [
+  "$.variables",
+  "$.*.variables",
+  "$.default.services[].variables",
+  "$.include[].inputs",
+  "$.workflow.rules[].variables",
+];
+
+/**
  * A hidden key is author data, whether it arrived through `templates` or the corpus's own text, and a
  * `templates` key is always quoted by `keyPath` because `.` cannot start an identifier.
  */
@@ -37,16 +53,37 @@ const normaliseRoot = (path: string): string | undefined => {
   return GLOBAL_KEYWORDS.includes(segment.slice(2)) ? path : `$.*${path.slice(segment.length)}`;
 };
 
+/** The path without its final key segment, so an author-named map can be recognised by its parent. */
+const parentPath = (path: string): string => {
+  const cut = Math.max(path.lastIndexOf("."), path.lastIndexOf("["));
+
+  return cut <= 0 ? path : path.slice(0, cut);
+};
+
 /**
- * Every key path in a YAML document, with job names, sequence positions and hidden templates
- * normalised. The input is text, so the parse result crosses the boundary once here and is never
- * seen as untyped data again.
+ * A key directly under an author-named path is a name the caller chose, so it becomes `*`. This runs
+ * after the root is normalised, because a job's body is only reachable at `$.*` once its name is.
+ */
+const normaliseAuthor = (path: string): string => {
+  const parent = parentPath(path);
+
+  return AUTHOR_NAMED.includes(parent) ? `${parent}.*` : path;
+};
+
+/**
+ * Every key path in a YAML document, with job names, sequence positions, hidden templates and
+ * author-chosen map keys normalised. The input is text, so the parse result crosses the boundary once
+ * here and is never seen as untyped data again.
  */
 export const keyPaths = (text: string): readonly string[] => {
   const document: YamlNode = parse(text);
 
   return [
-    ...new Set(walkPaths(document, []).flatMap((path) => normaliseRoot(path) ?? [])),
+    ...new Set(
+      walkPaths(document, [])
+        .flatMap((path) => normaliseRoot(path) ?? [])
+        .map((path) => normaliseAuthor(path)),
+    ),
   ].toSorted();
 };
 
