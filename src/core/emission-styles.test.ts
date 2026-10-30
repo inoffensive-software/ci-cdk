@@ -149,9 +149,9 @@ describe("tag validation", () => {
   });
 
   it("accepts a secondary tag", () => {
-    const doc = map([{ key: "a", value: tagged("!!str", scalar("1")) }]);
+    const doc = map([{ key: "a", value: tagged("!reference", scalar("1")) }]);
 
-    expect(renderDoc(doc, { header: "" })).toBe("a: !!str 1\n");
+    expect(renderDoc(doc, { header: "" })).toBe("a: !reference 1\n");
   });
 });
 
@@ -160,6 +160,12 @@ describe("type markers", () => {
     const doc = map([{ key: "a", value: tagged("!!null", scalar("null")) }]);
 
     expect(renderDoc(doc, { header: "" })).toBe("a: null\n");
+  });
+
+  it("resolves the string marker to a quoted scalar without emitting it", () => {
+    const doc = map([{ key: "a", value: tagged("!!str", scalar("1")) }]);
+
+    expect(renderDoc(doc, { header: "" })).toBe('a: "1"\n');
   });
 
   it("only emits tags its own parser accepts", () => {

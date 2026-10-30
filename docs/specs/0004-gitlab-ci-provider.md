@@ -37,7 +37,7 @@ same two-function surface GitHub Actions settled in ADR 0003. This slice models 
 GitLab's `${VAR}` interpolation is plain text, and `!reference` is out of scope.
 
 The first corpus entry is `gitlab-org/terraform-images` at commit
-`4230b972896ea9b4c23322855bcf76256e5ae1c9`. It is 113 lines under the MIT licence, has four real jobs
+`4230b972896ea9b4c23322855bcf76256e5ae1c9`. It is 113 lines under the MIT licence, has five real jobs
 and one hidden template, and uses `stages`, `stage`, `script` and `before_script` beside `workflow`,
 `variables`, `image`, `needs`, `rules`, `release` and `parallel`. The modelled fields reproduce; the
 rest is `raw`, which is exactly the coverage ledger the corpus exists to produce.
@@ -254,7 +254,7 @@ The reserved job-name set is GitLab's global keywords: `default`, `include`, `st
   choose. It is therefore compared as parsed data per ADR 0005, not byte for byte; provenance records
   `data`, not `byte-identical`.
 - The fixture writes `workflow`, `variables` and the hidden `.terraform-versions` template through
-  pipeline raw, and the four jobs' unmodelled keywords through job raw. `stages`, `stage` and
+  pipeline raw, and the five jobs' unmodelled keywords through job raw. `stages`, `stage` and
   `script` are modelled.
 - The vendored file is never edited. A value the fixture cannot express is a ledger row, not a
   fixture fix.

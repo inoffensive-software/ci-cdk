@@ -45,10 +45,14 @@ const snapshotFixtures = (): readonly Fixture[] =>
       })),
     );
 
-/** Pinned real-world configs, added one provider directory at a time. */
+/**
+ * Pinned real-world configs, added one provider directory at a time. A provider's corpus is only
+ * checkable once its schema is vendored, so a corpus directory without one is skipped for the same
+ * reason a provider without a schema has no goldens here.
+ */
 const corpusFixtures = (): readonly Fixture[] =>
   readdirSync(join(ROOT, "test", "corpus"), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => entry.isDirectory() && SCHEMA_PROVIDERS.has(entry.name))
     .flatMap((entry) =>
       ymlFiles(join(ROOT, "test", "corpus", entry.name)).map((file) => ({
         path: `test/corpus/${entry.name}/${file}`,

@@ -20,7 +20,7 @@ import { GOT } from "./got.fixture.js";
 import { INVENTORY } from "./inventory.js";
 import { TRPC_MAIN } from "./trpc-main.fixture.js";
 import { TRPC_RELEASE } from "./trpc-release.fixture.js";
-import { vendored } from "./vendored.js";
+import { readVendored } from "../vendored.js";
 
 interface Entry {
   readonly name: string;
@@ -42,7 +42,11 @@ const DECLARED = unique(LEDGER.map((path) => translateLedgerPath(path)));
 
 /** The corpus differs from the modelled set by exactly the ledger's raw paths. */
 const differenceOf = async (entry: Entry): Promise<readonly string[]> =>
-  unique((await keyPaths(await vendored(entry.file))).filter((path) => !MODELLED_SET.has(path)));
+  unique(
+    (await keyPaths(await readVendored(import.meta.dirname, entry.file))).filter(
+      (path) => !MODELLED_SET.has(path),
+    ),
+  );
 
 describe("inventory", () => {
   it("renders every document to data the vendored schema accepts", () => {
@@ -78,7 +82,7 @@ describe("exhaustiveness gate", () => {
   });
 
   it.each(ENTRIES)("$name declares no ledger row it does not use", async (entry: Entry) => {
-    const corpus = await keyPaths(await vendored(entry.file));
+    const corpus = await keyPaths(await readVendored(import.meta.dirname, entry.file));
 
     expect(unusedLedgerPaths(corpus, LEDGER)).toStrictEqual([]);
   });

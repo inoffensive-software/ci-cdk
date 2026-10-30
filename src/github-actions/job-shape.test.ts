@@ -157,7 +157,7 @@ describe("container and services", () => {
         "        NODE_ENV: test\n" +
         "      ports:\n" +
         "        - 8080\n" +
-        "        - 9090\n" +
+        '        - "9090"\n' +
         "      volumes:\n" +
         "        - /tmp:/tmp\n" +
         "      options: --cpus 2\n",

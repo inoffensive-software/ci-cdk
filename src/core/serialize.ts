@@ -1,8 +1,10 @@
 import { Document, Pair, Scalar, YAMLMap, YAMLSeq, type Node } from "yaml";
 
+import { canonicalNumber } from "./canonical-number.js";
 import {
   BOOL_TAG,
   NULL_TAG,
+  STRING_TAG,
   type Doc,
   type DocMap,
   type DocScalar,
@@ -31,24 +33,8 @@ const YAML_OPTIONS = {
   doubleQuotedAsJSON: true,
 } as const;
 
-const NUMBER_LITERAL = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/u;
 const YAML_11_BOOLEAN = /^(?:y|n|yes|no|on|off)$/iu;
 const MULTILINE = /[\r\n]/u;
-
-/** `1.1` stays a number; `1.10` is already a string and must stay one. */
-const canonicalNumber = (value: string): number | undefined => {
-  if (!NUMBER_LITERAL.test(value)) {
-    return undefined;
-  }
-
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed) || String(parsed) !== value) {
-    return undefined;
-  }
-
-  return parsed;
-};
 
 /**
  * Resolves a type marker back to a typed value. `fromValue` reduces `null` and booleans to text, so
@@ -66,6 +52,16 @@ const typedScalar = (doc: DocScalar): Scalar | undefined => {
 
   if (doc.tag === BOOL_TAG && (doc.value === "true" || doc.value === "false")) {
     return new Scalar(doc.value === "true");
+  }
+
+  // The string marker resolves to a quoted scalar: quoting is what makes the text parse back as a
+  // string, and no tag is emitted because the quoting already says what the value is.
+  if (doc.tag === STRING_TAG) {
+    const node = new Scalar(doc.value);
+
+    node.type = Scalar.QUOTE_DOUBLE;
+
+    return node;
   }
 
   return undefined;

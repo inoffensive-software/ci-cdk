@@ -1,7 +1,9 @@
+import { canonicalNumber } from "./canonical-number.js";
 import {
   BOOL_TAG,
   DOC,
   NULL_TAG,
+  STRING_TAG,
   map,
   scalar,
   seq,
@@ -55,6 +57,10 @@ const reject = (
 
   return scalar("");
 };
+
+/** A string whose text is a canonical number carries the marker, or the emitter would read it as one. */
+const lowerString = (value: string): Doc =>
+  canonicalNumber(value) === undefined ? scalar(value) : scalar(value, { tag: STRING_TAG });
 
 const lowerNumber = (value: number, path: string, diagnostics: Diagnostic[]): Doc => {
   if (!Number.isFinite(value)) {
@@ -228,7 +234,7 @@ const lower = (
   }
 
   if (typeof input === "string") {
-    return scalar(input);
+    return lowerString(input);
   }
 
   if (typeof input === "boolean") {
