@@ -22,12 +22,6 @@ export const GAPS: readonly Gap[] = [
     category: "unmodelled",
   },
   {
-    path: "$.jobs.*.environment.deployment",
-    reason:
-      "a boolean on an environment reference that decides whether the job creates a deployment record, defaulting to true; the vocabulary emits only `name` and `url`",
-    category: "unmodelled",
-  },
-  {
     path: "$.jobs.*.services.*.command",
     reason:
       "a Docker `CMD` override for one service container, passed as arguments after the image name, and combined with `entrypoint` when both are given",
@@ -114,12 +108,6 @@ export const GAPS: readonly Gap[] = [
     reason:
       "an array whose elements are arrays, one more turn of the recursive `definitions.configuration`; GitHub documents a matrix variable as an array of scalars or of objects",
     category: "schema-noise",
-  },
-  {
-    path: '$.jobs.*["cache-mode"]',
-    reason:
-      "a cache access policy for a single job, one of `read`, `write`, `write-only` or `none`",
-    category: "unmodelled",
   },
   {
     path: '$.jobs.*["runs-on"].group',
@@ -210,18 +198,6 @@ export const GAPS: readonly Gap[] = [
     reason:
       "one workflow name in the `workflow_run` filter; the per-event filters non-goal in docs/providers/github-actions.md#non-goals covers it",
     category: "out-of-scope",
-  },
-  {
-    path: "$.on.*[].timezone",
-    reason:
-      "an IANA timezone on a schedule entry so its cron runs relative to that zone instead of UTC; the vocabulary emits only `cron`",
-    category: "unmodelled",
-  },
-  {
-    path: '$["cache-mode"]',
-    reason:
-      "a cache access policy for the whole workflow, one of `read`, `write`, `write-only` or `none`",
-    category: "unmodelled",
   },
 ];
 

@@ -1,6 +1,7 @@
 export { job, step, workflow } from "./types.js";
 
 export type {
+  CacheMode,
   Concurrency,
   ConcurrencyGroup,
   Container,

@@ -53,9 +53,10 @@ export interface ImageVersionFilter {
 
 export interface CronEntry {
   readonly cron: string;
+  readonly timezone?: string;
 }
 
-export type InputType = "string" | "boolean" | "choice" | "environment";
+export type InputType = "string" | "boolean" | "number" | "choice" | "environment";
 
 interface CommonInput {
   readonly description?: string;
@@ -72,6 +73,11 @@ export interface BooleanInput extends CommonInput {
   readonly default?: boolean;
 }
 
+export interface NumberInput extends CommonInput {
+  readonly type: "number";
+  readonly default?: number;
+}
+
 export interface ChoiceInput extends CommonInput {
   readonly type: "choice";
   readonly default?: string;
@@ -84,7 +90,7 @@ export interface EnvironmentInput extends CommonInput {
 }
 
 /** Discriminated by `type`, so `options` is only legal on a choice input. */
-export type Input = StringInput | BooleanInput | ChoiceInput | EnvironmentInput;
+export type Input = StringInput | BooleanInput | NumberInput | ChoiceInput | EnvironmentInput;
 
 /** `workflow_call` accepts the string and boolean arms; choice and environment are dispatch-only. */
 export type WorkflowCallInput = StringInput | BooleanInput;

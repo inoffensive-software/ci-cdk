@@ -136,3 +136,62 @@ describe("toDoc ordering", () => {
     });
   });
 });
+
+describe("toDoc cache-mode", () => {
+  it("emits cache-mode directly after permissions at both levels", () => {
+    const doc = toDoc(
+      workflow({
+        name: "CI",
+        on: "push",
+        permissions: "read-all",
+        "cache-mode": "none",
+        jobs: [
+          job({
+            id: "build",
+            permissions: { contents: "read" },
+            "cache-mode": "write-only",
+            "runs-on": "ubuntu-latest",
+            steps: [step({ run: "true" })],
+          }),
+        ],
+      }),
+    );
+
+    expect(keys(doc)).toStrictEqual(["name", "on", "permissions", "cache-mode", "jobs"]);
+    expect(keys(entry(entry(doc, "jobs"), "build"))).toStrictEqual([
+      "permissions",
+      "cache-mode",
+      "runs-on",
+      "steps",
+    ]);
+  });
+});
+
+describe("toDoc environment", () => {
+  it("emits deployment directly after url on an environment target", () => {
+    const doc = toDoc(
+      workflow({
+        name: "CI",
+        on: "push",
+        jobs: [
+          job({
+            id: "deploy",
+            "runs-on": "ubuntu-latest",
+            environment: { name: "production", url: "https://example.com", deployment: false },
+            steps: [step({ run: "true" })],
+          }),
+        ],
+      }),
+    );
+
+    const environment = entry(entry(entry(doc, "jobs"), "deploy"), "environment");
+
+    expect(keys(environment)).toStrictEqual(["name", "url", "deployment"]);
+    expect(entry(environment, "deployment")).toStrictEqual({
+      kind: "scalar",
+      value: "false",
+      style: "plain",
+      tag: "!!bool",
+    });
+  });
+});

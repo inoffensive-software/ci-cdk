@@ -91,6 +91,7 @@ const environmentDoc = (environment: Environment): Doc => {
   return map([
     { key: "name", value: fromValue(environment.name) },
     ...entry("url", present(environment.url)),
+    ...entry("deployment", present(environment.deployment)),
   ]);
 };
 
@@ -126,6 +127,7 @@ const jobDoc = (job: Job, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("name", present(job.name)),
     ...entry("permissions", job.permissions === undefined ? undefined : fromValue(job.permissions)),
+    ...entry("cache-mode", present(job["cache-mode"])),
     ...entry("needs", present(job.needs)),
     ...entry("if", present(job.if)),
     ...entry("runs-on", present(job["runs-on"])),
@@ -177,6 +179,7 @@ export const toDoc = (workflow: Workflow): Doc => {
       "permissions",
       workflow.permissions === undefined ? undefined : fromValue(workflow.permissions),
     ),
+    ...entry("cache-mode", present(workflow["cache-mode"])),
     ...entry("env", present(workflow.env)),
     ...entry(
       "defaults",

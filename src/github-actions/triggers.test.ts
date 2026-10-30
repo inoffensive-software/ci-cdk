@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 
 import {
   type EventName,
@@ -157,5 +158,36 @@ describe("closed event names", () => {
     const invalid = workflow({ name: "CI", on: "puhs", jobs: [] });
 
     expect(invalid.on).toBe("puhs");
+  });
+});
+
+describe("schedule timezone and number inputs", () => {
+  it("emits a schedule timezone directly after its cron", () => {
+    const text = renderOn({ schedule: [{ cron: "23 3 * * *", timezone: "Europe/Paris" }] });
+
+    expect(text).toContain("  schedule:\n    - cron: 23 3 * * *\n      timezone: Europe/Paris\n");
+  });
+
+  it("emits a number dispatch input with its default as a number", () => {
+    const text = renderOn({
+      workflow_dispatch: {
+        inputs: {
+          issue: { type: "number", description: "An issue number", required: false, default: 42 },
+        },
+      },
+    });
+
+    expect(text).toContain("        type: number\n");
+    expect(parse(text)).toStrictEqual({
+      name: "CI",
+      on: {
+        workflow_dispatch: {
+          inputs: {
+            issue: { type: "number", description: "An issue number", required: false, default: 42 },
+          },
+        },
+      },
+      jobs: { build: { "runs-on": "ubuntu-latest", steps: [{ run: "npm test" }] } },
+    });
   });
 });

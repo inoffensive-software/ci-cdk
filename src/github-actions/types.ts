@@ -98,7 +98,11 @@ export interface Container {
 export interface EnvironmentTarget {
   readonly name: Text;
   readonly url?: Text;
+  readonly deployment?: boolean;
 }
+
+/** The closed set of cache access policies GitHub documents for a workflow or a job. */
+export type CacheMode = "read" | "write" | "write-only" | "none";
 
 export type Environment = string | EnvironmentTarget;
 
@@ -113,6 +117,7 @@ export interface Job {
   readonly id: string;
   readonly name?: Text;
   readonly permissions?: Permissions;
+  readonly "cache-mode"?: CacheMode;
   readonly needs?: string | readonly string[];
   readonly if?: Text;
   /** A label, a label set, or an expression leaf: a string lowers to a scalar, an array to a sequence. */
@@ -140,6 +145,7 @@ export interface Workflow {
   readonly "run-name"?: Text;
   readonly on: On;
   readonly permissions?: Permissions;
+  readonly "cache-mode"?: CacheMode;
   readonly env?: Readonly<Record<string, Scalar>>;
   readonly defaults?: Defaults;
   readonly concurrency?: Concurrency;
