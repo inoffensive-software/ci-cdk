@@ -41,6 +41,13 @@ export const NULL_TAG: string = "!!null";
 /** Boolean counterpart of `NULL_TAG`. */
 export const BOOL_TAG: string = "!!bool";
 
+/**
+ * String counterpart of `NULL_TAG`, carried only when the text would otherwise read as a number.
+ * `1.5` is both a legal number and a legal string; without the marker the emitter has no way to keep
+ * the string a string. The marker resolves to a quoted scalar and is never emitted as a tag.
+ */
+export const STRING_TAG: string = "!!str";
+
 export interface LeafNode {
   readonly [DOC]: () => Doc;
   /** Debugging only; core never calls it. */

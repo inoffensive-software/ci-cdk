@@ -22,11 +22,15 @@ describe("quoting", () => {
     );
   });
 
-  it("cannot tell a canonically numeric string from a number", () => {
-    // Numbers are the one type still carried as text: `fromValue` serialises them with `String(n)`,
-    // so a canonical spelling is already a number by the time the serializer sees it.
-    expect(emit({ a: "42" })).toBe("a: 42\n");
-    expect(emit({ a: "1.5" })).toBe("a: 1.5\n");
+  it("keeps a canonically numeric string a string", () => {
+    // `fromValue` tags a string whose text is a canonical number, so the serializer can tell it from
+    // the number literal that spells the same text.
+    expect(emit({ a: "42" })).toBe('a: "42"\n');
+    expect(emit({ a: "1.5" })).toBe('a: "1.5"\n');
+  });
+
+  it("still emits a number as a number", () => {
+    expect(emit({ a: 42, b: 1.5 })).toBe("a: 42\nb: 1.5\n");
   });
 
   it("quotes the string null but keeps a null a null", () => {
