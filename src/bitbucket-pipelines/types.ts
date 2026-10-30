@@ -24,16 +24,57 @@ export interface StepItem {
 
 export type PipelineItem = StepItem;
 
-/** One `branches` entry: a selector pattern and the pipeline it runs. */
+/** The memory sizes Bitbucket accepts for a step or pipeline. */
+export type Size = "1x" | "2x" | "4x" | "8x" | "16x" | "24x" | "32x";
+
+/** Global pipeline settings, emitted in the schema's alphabetical order. */
+export interface Options {
+  readonly docker?: boolean;
+  readonly "max-time"?: number;
+  readonly size?: Size;
+  readonly "runs-on"?: readonly Text[];
+}
+
+/** Global clone behaviour; `depth` stays a number or the string `full`. */
+export interface Clone {
+  readonly depth?: number | "full";
+  readonly enabled?: boolean;
+  readonly lfs?: boolean;
+  readonly "skip-ssl-verify"?: boolean;
+}
+
+/** A named cache: a path string, or a path plus a key built from files. */
+export type Cache =
+  | Text
+  | { readonly path: Text; readonly key?: { readonly files: readonly string[] } };
+
+/** A named service container. */
+export interface Service {
+  readonly image?: Text;
+  readonly memory?: number;
+  readonly type?: "docker";
+  readonly variables?: Readonly<Record<string, Text>>;
+}
+
+/** Reusable caches, services and step groups, declared once and referenced by name. */
+export interface Definitions {
+  readonly caches?: Readonly<Record<string, Cache>>;
+  readonly services?: Readonly<Record<string, Service>>;
+  readonly steps?: readonly StepItem[];
+}
+
+/** One `branches`, `tags` or `pull-requests` entry: a selector pattern and the pipeline it runs. */
 export interface SelectorPipeline {
   readonly pattern: string;
   readonly pipeline: readonly PipelineItem[];
 }
 
-/** The trigger sections the tracer models. Every other section is out of scope. */
+/** The trigger sections the provider models. Every other section is out of scope. */
 export interface Pipelines {
   readonly default?: readonly PipelineItem[];
   readonly branches?: readonly SelectorPipeline[];
+  readonly tags?: readonly SelectorPipeline[];
+  readonly "pull-requests"?: readonly SelectorPipeline[];
 }
 
 /**
@@ -42,6 +83,9 @@ export interface Pipelines {
  */
 export interface PipelineConfig {
   readonly image?: Text;
+  readonly options?: Options;
+  readonly clone?: Clone;
+  readonly definitions?: Definitions;
   readonly pipelines: Pipelines;
   readonly raw?: Readonly<Record<string, Value>>;
 }

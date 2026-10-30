@@ -19,3 +19,18 @@ as the file (see the corpus README and ADR 0005).
 - Why this entry: root `image`, a `default` pipeline, a `branches` selector, `oidc` and a pipe as
   the last item of a script - the tracer shapes the first slice must reproduce.
 - Vendored as: `connect-express.yml`, SHA-256 `4ca824baaaea30212fdbb69aab0c6f7bc65e644d0c145e10a2c17cdd12b9bbf3`
+
+## systemsdk-symfony
+
+- Repo: <https://github.com/systemsdk/docker-nginx-php-symfony>
+- Commit: `da31f3c30607a57f394338ce3b31d8bfc06a320a`
+- Path: `bitbucket-pipelines.yml`
+- Licence: MIT
+- Bytes: 948
+- Lines: 45
+- Comparison: data
+- Why this entry: `options.docker`, a `definitions.steps` group referenced by YAML anchor, and
+  `tags` plus `pull-requests` alongside two branch selectors - the global and definition shapes the
+  second slice must reproduce. The fixture writes the anchor's resolved data, so the shared step
+  body appears once in `definitions.steps` and again inline in every selector.
+- Vendored as: `systemsdk-symfony.yml`, SHA-256 `e5e3bbedb042c62189b66e7da2068766950c1417b2dc87fc698eb28636f3a56e`

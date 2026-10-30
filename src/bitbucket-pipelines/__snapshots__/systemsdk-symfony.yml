@@ -1,0 +1,128 @@
+definitions:
+  steps:
+    - step:
+        name: Build, Test and Analyze
+        script:
+          - chmod +x .bitbucket/dependencies.sh
+          - .bitbucket/dependencies.sh
+          - make build-test
+          - make start-test
+          - docker ps -a
+          - make wait-for-db
+          - make drop-migrate
+          - make messenger-setup-transports
+          - make info
+          - make phpunit
+          - make composer-audit
+          - make ecs
+          - make phpcs
+          - make phpstan
+          - make phpinsights
+          - make phpmd
+          - make phpcpd
+          - make down-test
+        artifacts:
+          - reports/**
+image: docker:stable
+options:
+  docker: true
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Build, Test and Analyze
+          script:
+            - chmod +x .bitbucket/dependencies.sh
+            - .bitbucket/dependencies.sh
+            - make build-test
+            - make start-test
+            - docker ps -a
+            - make wait-for-db
+            - make drop-migrate
+            - make messenger-setup-transports
+            - make info
+            - make phpunit
+            - make composer-audit
+            - make ecs
+            - make phpcs
+            - make phpstan
+            - make phpinsights
+            - make phpmd
+            - make phpcpd
+            - make down-test
+          artifacts:
+            - reports/**
+    develop:
+      - step:
+          name: Build, Test and Analyze
+          script:
+            - chmod +x .bitbucket/dependencies.sh
+            - .bitbucket/dependencies.sh
+            - make build-test
+            - make start-test
+            - docker ps -a
+            - make wait-for-db
+            - make drop-migrate
+            - make messenger-setup-transports
+            - make info
+            - make phpunit
+            - make composer-audit
+            - make ecs
+            - make phpcs
+            - make phpstan
+            - make phpinsights
+            - make phpmd
+            - make phpcpd
+            - make down-test
+          artifacts:
+            - reports/**
+  tags:
+    "*":
+      - step:
+          name: Build, Test and Analyze
+          script:
+            - chmod +x .bitbucket/dependencies.sh
+            - .bitbucket/dependencies.sh
+            - make build-test
+            - make start-test
+            - docker ps -a
+            - make wait-for-db
+            - make drop-migrate
+            - make messenger-setup-transports
+            - make info
+            - make phpunit
+            - make composer-audit
+            - make ecs
+            - make phpcs
+            - make phpstan
+            - make phpinsights
+            - make phpmd
+            - make phpcpd
+            - make down-test
+          artifacts:
+            - reports/**
+  pull-requests:
+    "**":
+      - step:
+          name: Build, Test and Analyze
+          script:
+            - chmod +x .bitbucket/dependencies.sh
+            - .bitbucket/dependencies.sh
+            - make build-test
+            - make start-test
+            - docker ps -a
+            - make wait-for-db
+            - make drop-migrate
+            - make messenger-setup-transports
+            - make info
+            - make phpunit
+            - make composer-audit
+            - make ecs
+            - make phpcs
+            - make phpstan
+            - make phpinsights
+            - make phpmd
+            - make phpcpd
+            - make down-test
+          artifacts:
+            - reports/**

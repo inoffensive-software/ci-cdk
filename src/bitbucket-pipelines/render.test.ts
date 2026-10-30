@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 
 import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-express.fixture.js";
+import { SYSTEMSDK_SYMFONY } from "../../test/corpus/bitbucket-pipelines/systemsdk-symfony.fixture.js";
 import * as provider from "./index.js";
 import { type PipelineConfig, pipelineConfig, pipe, render, step } from "./index.js";
 
@@ -14,6 +15,12 @@ describe("render", () => {
   it("pins the connect-express fixture with the header suppressed", async () => {
     await expect(render(CONNECT_EXPRESS, { header: "" })).toMatchFileSnapshot(
       "__snapshots__/connect-express.yml",
+    );
+  });
+
+  it("pins the systemsdk-symfony fixture with the header suppressed", async () => {
+    await expect(render(SYSTEMSDK_SYMFONY, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/systemsdk-symfony.yml",
     );
   });
 

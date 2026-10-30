@@ -64,6 +64,47 @@ describe("pipelines", () => {
       },
     ]);
   });
+
+  it("refuses an empty pipeline in pull-requests", () => {
+    expect(
+      pairsOf(
+        pipelineConfig({ pipelines: { "pull-requests": [{ pattern: "**", pipeline: [] }] } }),
+      ),
+    ).toStrictEqual([
+      {
+        path: '$.pipelines["pull-requests"][0].pipeline',
+        message: "pipeline must contain at least one item",
+      },
+    ]);
+  });
+});
+
+describe("definitions", () => {
+  it("refuses an empty cache name at the bracket path", () => {
+    expect(
+      pairsOf(
+        pipelineConfig({
+          definitions: { caches: { "": "node_modules" } },
+          pipelines: { default: [step({ script: ["true"] })] },
+        }),
+      ),
+    ).toStrictEqual([
+      { path: '$.definitions.caches[""]', message: "definition name must not be empty" },
+    ]);
+  });
+
+  it("refuses an empty service name at the bracket path", () => {
+    expect(
+      pairsOf(
+        pipelineConfig({
+          definitions: { services: { "": { image: "postgres:16" } } },
+          pipelines: { default: [step({ script: ["true"] })] },
+        }),
+      ),
+    ).toStrictEqual([
+      { path: '$.definitions.services[""]', message: "definition name must not be empty" },
+    ]);
+  });
 });
 
 describe("selector patterns", () => {
@@ -73,6 +114,24 @@ describe("selector patterns", () => {
     ]);
   });
 
+  it("refuses an empty pattern in tags and pull-requests", () => {
+    expect(
+      pairsOf(
+        pipelineConfig({
+          pipelines: {
+            tags: [{ pattern: "", pipeline: [step({ script: ["true"] })] }],
+            "pull-requests": [{ pattern: "", pipeline: [step({ script: ["true"] })] }],
+          },
+        }),
+      ),
+    ).toStrictEqual([
+      { path: "$.pipelines.tags[0].pattern", message: "pattern must not be empty" },
+      { path: '$.pipelines["pull-requests"][0].pattern', message: "pattern must not be empty" },
+    ]);
+  });
+});
+
+describe("selector pipelines", () => {
   it("refuses a duplicate at the later entry", () => {
     expect(
       pairsOf(
@@ -89,6 +148,26 @@ describe("selector patterns", () => {
       {
         path: "$.pipelines.branches[1].pattern",
         message: 'duplicate pattern "main": two pipelines for one branch',
+      },
+    ]);
+  });
+
+  it("refuses a duplicate at the later entry in tags", () => {
+    expect(
+      pairsOf(
+        pipelineConfig({
+          pipelines: {
+            tags: [
+              { pattern: "v*", pipeline: [step({ script: ["one"] })] },
+              { pattern: "v*", pipeline: [step({ script: ["two"] })] },
+            ],
+          },
+        }),
+      ),
+    ).toStrictEqual([
+      {
+        path: "$.pipelines.tags[1].pattern",
+        message: 'duplicate pattern "v*": two pipelines for one branch',
       },
     ]);
   });
