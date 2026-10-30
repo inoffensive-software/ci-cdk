@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/fallow/schema.json",
   "ignorePatterns": ["tools/**"],
+  // The anti-slop lint plugin is loaded through oxlint config, so no source file imports it.
+  "ignoreDependencies": ["@oxlint/plugins"],
   "duplicates": {
     // Hide pair-only clones; report only widespread copy-paste worth refactoring.
     "minOccurrences": 3
