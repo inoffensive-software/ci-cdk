@@ -1,4 +1,4 @@
-# 45: Revert function bindings to camelCase
+# 54: Revert function bindings to camelCase
 
 **Spec:** none (review of PR #22; reverses the function half of ticket 28)
 
