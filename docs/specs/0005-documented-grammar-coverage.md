@@ -110,8 +110,8 @@ evidence, and the next provider inherits the walker rather than inventing one.
 22. As a consumer, I want the unsupported shapes written down with reasons, so that I can tell whether
     my configuration is inside the claim before I write it.
 
-23. As a consumer, I want the `image_version` inconsistency recorded as a row rather than as prose, so
-    that it is visible in the same place as every other gap.
+23. As a consumer, I want the `image_version` inconsistency to stay visible where a reader looks for
+    support, so that a typed-but-unproven arm is not mistaken for one the schema accepts.
 
 24. As the next agent, I want each ticket in this spec to be checkable on its own, so that a single
     fresh context can finish one.
@@ -178,9 +178,11 @@ evidence, and the next provider inherits the walker rather than inventing one.
     modelled or declared; the pinned copy's origin and date are already recorded in
     `docs/references/upstream-schemas.md` and are not restated.
 
-14. **`image_version` becomes an overclaim row.** The provider types it, the vendored schema does not
-    allow it, and no corpus entry uses it. Recording it in the overclaim list replaces the prose note in
-    the provider document's non-goals, which is the only place the inconsistency is visible today.
+14. **`image_version` is outside this diff.** The provider types it, the vendored schema does not allow
+    it, and the inventory cannot legally contain it, because every inventory document is schema-validated.
+    The overclaim direction compares the modelled set, which is inventory-derived, so an arm the inventory
+    is forbidden to hold is invisible to it. The provider document keeps its prose note; catching this
+    class needs a comparison at the type level, which is not this spec (Further Notes).
 
 15. **Determinism is part of the contract.** Both the walker and the diff return sorted, de-duplicated
     paths, and tests assert the sets rather than a formatted string.
@@ -242,3 +244,11 @@ This spec deliberately does not build. The temptation is to treat the schema as 
 implement it; that would put the schema, which nobody runs, ahead of the corpus, which is the only
 evidence of what users write. The rule stays: a pinned config creates the obligation, the schema only
 names the possibility.
+
+The overclaim direction has a known blind spot, and it is worth stating rather than discovering.
+Because the modelled set is derived from the inventory, and every inventory document must validate
+against the schema, the inventory cannot contain a vocabulary arm the schema rejects. `image_version`
+is that case today: typed, absent from the schema, impossible to place in the inventory, therefore
+invisible to the diff. Catching that class needs a comparison at the type level, which is separate
+work. Until then the provider document's prose note is the honest record, and the overclaim list means
+"exercised vocabulary the schema rejects", not "all vocabulary the schema rejects".
