@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest";
+
 import type { Workflow } from "../../../src/github-actions/index.js";
 import { describeCoverageDebt } from "../coverage.js";
 import { keyPath } from "../paths.js";
@@ -29,4 +31,10 @@ describeCoverageDebt({
   fixtures: ENTRIES.map((entry) => entry.workflow),
   rawPathsOf,
   debt: COVERAGE_DEBT,
+});
+
+describe("coverage ledger", () => {
+  it("has no remaining paths", () => {
+    expect(COVERAGE_DEBT.map((row) => row.path)).toStrictEqual([]);
+  });
 });
