@@ -43,7 +43,15 @@ export const BOOL_TAG: string = "!!bool";
 
 export interface LeafNode {
   readonly [DOC]: () => Doc;
+  /** Debugging only; core never calls it. */
+  readonly toString?: () => string;
 }
+
+/**
+ * A field that may hold plain text or a leaf that decides its own scalar style. It is provider-neutral
+ * because it only names the two shapes a scalar can enter the tree as.
+ */
+export type Text = string | LeafNode;
 
 export interface ScalarOptions {
   readonly style?: ScalarStyle;

@@ -1,6 +1,18 @@
-/** A shell step. The only body an action step can have in this first thread is `run`. */
+import type { Text } from "../core/index.js";
+
+/** A shell or action step, in GitHub's documented key order. */
 export interface Step {
-  readonly run: string;
+  readonly id?: string;
+  readonly if?: Text;
+  readonly name?: Text;
+  readonly uses?: string;
+  readonly run?: Text;
+  readonly "working-directory"?: Text;
+  readonly shell?: string;
+  readonly with?: Readonly<Record<string, Text>>;
+  readonly env?: Readonly<Record<string, Text>>;
+  readonly "continue-on-error"?: boolean | Text;
+  readonly "timeout-minutes"?: number;
 }
 
 export interface Job {

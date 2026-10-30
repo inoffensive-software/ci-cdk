@@ -9,6 +9,7 @@ export type {
   LeafNode,
   ScalarOptions,
   ScalarStyle,
+  Text,
 } from "./doc.js";
 
 export { DiagnosticError, fail, formatDiagnostics } from "./errors.js";

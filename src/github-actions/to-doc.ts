@@ -1,8 +1,37 @@
-import { block, fromValue, map, seq, type Doc } from "../core/index.js";
+import { block, fromValue, map, seq, type Doc, type DocEntry, type Text } from "../core/index.js";
 import type { Job, Step, Workflow } from "./types.js";
 
-/** Declared field order, not the order the author wrote the properties in. */
-const stepDoc = (step: Step): Doc => map([{ key: "run", value: block(step.run) }]);
+/** Only a declared field with a value is emitted; absent fields are not lowered at all. */
+const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
+  value === undefined ? [] : [{ key, value }];
+
+const present = (
+  value: Text | number | boolean | Readonly<Record<string, Text>> | undefined,
+): Doc | undefined => (value === undefined ? undefined : fromValue(value));
+
+/** A plain string is shell text; a leaf carries its own style. */
+const run = (value: Text | undefined): Doc | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return typeof value === "string" ? block(value) : fromValue(value);
+};
+
+const stepDoc = (step: Step): Doc =>
+  map([
+    ...entry("id", present(step.id)),
+    ...entry("if", present(step.if)),
+    ...entry("name", present(step.name)),
+    ...entry("uses", present(step.uses)),
+    ...entry("run", run(step.run)),
+    ...entry("working-directory", present(step["working-directory"])),
+    ...entry("shell", present(step.shell)),
+    ...entry("with", present(step.with)),
+    ...entry("env", present(step.env)),
+    ...entry("continue-on-error", present(step["continue-on-error"])),
+    ...entry("timeout-minutes", present(step["timeout-minutes"])),
+  ]);
 
 const jobDoc = (job: Job): Doc =>
   map([

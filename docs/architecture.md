@@ -59,10 +59,14 @@ export const DOC: unique symbol = Symbol("ci-cdk/doc");
 
 export interface LeafNode {
   readonly [DOC]: () => Doc;
+  readonly toString?: () => string; // debugging only
 }
 
 // provider
-export const expr = (strings: TemplateStringsArray, ...values: readonly unknown[]): LeafNode => ({
+export const expr = (
+  strings: TemplateStringsArray,
+  ...values: readonly (string | number)[]
+): LeafNode => ({
   [DOC]: () => scalar(`\${{ ${interpolate(strings, values)} }}`, { style: "double" }),
   toString: () => `\${{ ${interpolate(strings, values)} }}`, // debugging only
 });
