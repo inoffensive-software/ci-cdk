@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import { describeSchemaGapGate } from "../../schemas/schema-gap.js";
 import {
   GAPS,
-  GAP_CATEGORIES,
-  type Gap,
-  type GapCategory,
   MODELLED_PATHS,
-  type Overclaim,
   OVERCLAIMS,
   SCHEMA_PATHS,
+  type Gap,
+  type Overclaim,
   gapRemedies,
   orphanedGapPaths,
   staleGapPaths,
@@ -19,53 +18,14 @@ import {
   unusedOverclaimPaths,
 } from "./schema-gap.js";
 
+describeSchemaGapGate({
+  schemaPaths: SCHEMA_PATHS,
+  modelledPaths: MODELLED_PATHS,
+  gaps: GAPS,
+  overclaims: OVERCLAIMS,
+});
+
 const GAP_PATHS = GAPS.map((gap) => gap.path);
-const OVERCLAIM_PATHS = OVERCLAIMS.map((overclaim) => overclaim.path);
-const CLOSED_CATEGORIES: readonly GapCategory[] = GAP_CATEGORIES;
-
-describe("schema gap gate", () => {
-  it("models or declares every schema path", () => {
-    expect(undeclaredSchemaPaths(SCHEMA_PATHS, MODELLED_PATHS, GAPS)).toStrictEqual([]);
-  });
-
-  it("declares no gap the schema does not allow", () => {
-    expect(orphanedGapPaths(SCHEMA_PATHS, GAPS)).toStrictEqual([]);
-  });
-
-  it("declares no gap the vocabulary already models", () => {
-    expect(staleGapPaths(MODELLED_PATHS, GAPS)).toStrictEqual([]);
-  });
-
-  it("declares every modelled path the schema lacks", () => {
-    expect(undeclaredOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, OVERCLAIMS)).toStrictEqual([]);
-  });
-
-  it("declares no overclaim for a path the schema allows", () => {
-    expect(unusedOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, OVERCLAIMS)).toStrictEqual([]);
-  });
-});
-
-describe("schema gap report", () => {
-  it("lists gaps sorted and de-duplicated", () => {
-    expect(GAP_PATHS).toStrictEqual([...new Set(GAP_PATHS)].toSorted());
-  });
-
-  it("lists overclaims sorted and de-duplicated", () => {
-    expect(OVERCLAIM_PATHS).toStrictEqual([...new Set(OVERCLAIM_PATHS)].toSorted());
-  });
-
-  it("uses only the closed category vocabulary", () => {
-    expect(GAPS.filter((gap) => !CLOSED_CATEGORIES.includes(gap.category))).toStrictEqual([]);
-  });
-
-  it("gives every declared row a reason", () => {
-    expect([...GAPS, ...OVERCLAIMS].filter((row) => row.reason.trim() === "")).toStrictEqual([]);
-  });
-
-  it("names each schema path once", () => {
-    expect(SCHEMA_PATHS).toStrictEqual([...new Set(SCHEMA_PATHS)].toSorted());
-  });
-});
 
 describe("gap row subsumption", () => {
   it("needs no row for a path below a declared gap", () => {
@@ -123,13 +83,13 @@ describe("stale gap rows", () => {
 });
 
 /** Every failure case invents one path, so the assertions read as the same rule four ways. */
-const inventedGap: Gap = {
+const INVENTED_GAP: Gap = {
   path: "$.not.in.the.schema",
   reason: "invented",
   category: "unmodelled",
 };
 
-const inventedOverclaim: Overclaim = { path: "$.not.modelled", reason: "invented" };
+const INVENTED_OVERCLAIM: Overclaim = { path: "$.not.modelled", reason: "invented" };
 
 describe("schema gap failure cases", () => {
   it("reports an invented schema path with no row, naming both remedies", () => {
@@ -143,8 +103,8 @@ describe("schema gap failure cases", () => {
   });
 
   it("reports a GAPS row with no schema path", () => {
-    expect(orphanedGapPaths(SCHEMA_PATHS, [...GAPS, inventedGap])).toStrictEqual([
-      inventedGap.path,
+    expect(orphanedGapPaths(SCHEMA_PATHS, [...GAPS, INVENTED_GAP])).toStrictEqual([
+      INVENTED_GAP.path,
     ]);
   });
 
@@ -158,8 +118,8 @@ describe("schema gap failure cases", () => {
 
   it("reports an overclaim row that names no modelled path", () => {
     expect(
-      unusedOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, [...OVERCLAIMS, inventedOverclaim]),
-    ).toStrictEqual([inventedOverclaim.path]);
+      unusedOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, [...OVERCLAIMS, INVENTED_OVERCLAIM]),
+    ).toStrictEqual([INVENTED_OVERCLAIM.path]);
   });
 
   it("reports an overclaim row for a path the schema already allows", () => {

@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 
+import { describeSchemaGapGate } from "../../schemas/schema-gap.js";
 import {
   GAPS,
-  GAP_CATEGORIES,
-  type Gap,
-  type GapCategory,
   MODELLED_PATHS,
-  type Overclaim,
   OVERCLAIMS,
   SCHEMA_PATHS,
+  type Gap,
+  type Overclaim,
   gapRemedies,
   orphanedGapPaths,
   undeclaredOverclaimPaths,
@@ -16,44 +15,11 @@ import {
   unusedOverclaimPaths,
 } from "./schema-gap.js";
 
-const GAP_PATHS = GAPS.map((gap) => gap.path);
-const OVERCLAIM_PATHS = OVERCLAIMS.map((overclaim) => overclaim.path);
-const CLOSED_CATEGORIES: readonly GapCategory[] = GAP_CATEGORIES;
-
-describe("schema gap gate", () => {
-  it("models or declares every schema path", () => {
-    expect(undeclaredSchemaPaths(SCHEMA_PATHS, MODELLED_PATHS, GAPS)).toStrictEqual([]);
-  });
-
-  it("declares no gap the schema does not allow", () => {
-    expect(orphanedGapPaths(SCHEMA_PATHS, GAPS)).toStrictEqual([]);
-  });
-
-  it("declares every modelled path the schema lacks", () => {
-    expect(undeclaredOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, OVERCLAIMS)).toStrictEqual([]);
-  });
-
-  it("declares no overclaim for a path the schema allows", () => {
-    expect(unusedOverclaimPaths(SCHEMA_PATHS, MODELLED_PATHS, OVERCLAIMS)).toStrictEqual([]);
-  });
-});
-
-describe("schema gap report", () => {
-  it("lists gaps sorted and de-duplicated", () => {
-    expect(GAP_PATHS).toStrictEqual([...new Set(GAP_PATHS)].toSorted());
-  });
-
-  it("lists overclaims sorted and de-duplicated", () => {
-    expect(OVERCLAIM_PATHS).toStrictEqual([...new Set(OVERCLAIM_PATHS)].toSorted());
-  });
-
-  it("uses only the closed category vocabulary", () => {
-    expect(GAPS.filter((gap) => !CLOSED_CATEGORIES.includes(gap.category))).toStrictEqual([]);
-  });
-
-  it("gives every declared row a reason", () => {
-    expect([...GAPS, ...OVERCLAIMS].filter((row) => row.reason.trim() === "")).toStrictEqual([]);
-  });
+describeSchemaGapGate({
+  schemaPaths: SCHEMA_PATHS,
+  modelledPaths: MODELLED_PATHS,
+  gaps: GAPS,
+  overclaims: OVERCLAIMS,
 });
 
 describe("schema gap failure cases", () => {
