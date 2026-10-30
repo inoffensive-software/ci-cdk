@@ -29,16 +29,16 @@ export const GITLAB_PAGES: Pipeline = pipeline({
     job({
       name: "download deps",
       script: ["make deps-download"],
+      extends: ".common",
+      cache: {
+        key: {
+          files: ["go.mod", "go.sum"],
+        },
+        paths: [".GOPATH/pkg/mod/"],
+        policy: "push",
+      },
       raw: {
         needs: [],
-        extends: ".common",
-        cache: {
-          key: {
-            files: ["go.mod", "go.sum"],
-          },
-          paths: [".GOPATH/pkg/mod/"],
-          policy: "push",
-        },
       },
     }),
   ],

@@ -1,0 +1,47 @@
+stages:
+  - build
+build:
+  stage: build
+  extends:
+    - .common
+    - .go-cache
+  tags:
+    - gitlab-org
+    - docker
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint:
+      - ""
+    pull_policy: never
+  services:
+    - postgres:16
+    - name: redis:7
+      alias: cache
+      command:
+        - redis-server
+      variables:
+        REDIS_URL: redis://cache:6379
+  variables:
+    CI: "true"
+  cache:
+    key:
+      files:
+        - go.sum
+      prefix: build-
+    paths:
+      - .cache/go
+    policy: pull-push
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+    reports:
+      junit:
+        - report.xml
+  before_script:
+    - make deps
+  script:
+    - make build
+  after_script: echo done
+  needs:
+    - prep

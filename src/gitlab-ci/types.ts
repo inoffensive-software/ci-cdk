@@ -70,8 +70,12 @@ export interface Artifacts {
   readonly expose_as?: Text;
   readonly public?: boolean;
   readonly when?: OnStatus;
-  /** Report names are the author's, so the map keeps insertion order. */
-  readonly reports?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Report names are the author's, so the map keeps insertion order. GitLab accepts one path or a
+   * list of them, so both stay expressible; flattening a single path into a list would change the
+   * value the provider reads.
+   */
+  readonly reports?: Readonly<Record<string, Text | readonly Text[]>>;
 }
 
 export interface RetryOptions {
@@ -164,8 +168,18 @@ export interface Default {
 export interface Job {
   readonly name: string;
   readonly stage?: string;
+  /** One template name or several. Never resolved: the target may live in an include. */
+  readonly extends?: string | readonly string[];
+  readonly tags?: readonly string[];
+  readonly image?: Image;
+  readonly services?: readonly Service[];
   readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly cache?: CacheList;
+  readonly artifacts?: Artifacts;
+  /** The same shape and lowering as `script`; a `ref` leaf keeps its tag. */
+  readonly before_script?: Script;
   readonly script?: Script;
+  readonly after_script?: Script;
   /** Job keywords the vocabulary does not model, appended after the modelled keys. */
   readonly raw?: Readonly<Record<string, Value>>;
 }

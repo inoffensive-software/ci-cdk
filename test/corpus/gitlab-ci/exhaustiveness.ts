@@ -20,8 +20,10 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.variables",
   "$.*.variables",
   "$.default.services[].variables",
+  "$.*.services[].variables",
   "$.include[].inputs",
   "$.workflow.rules[].variables",
+  "$.*.artifacts.reports",
 ];
 
 /**

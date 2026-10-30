@@ -158,7 +158,7 @@ const serviceOptionsDoc = (service: ServiceOptions): Doc =>
 const serviceDoc = (service: Service): Doc =>
   typeof service === "string" || isLeaf(service) ? fromValue(service) : serviceOptionsDoc(service);
 
-const servicesDoc = (services: readonly Service[]): Doc =>
+export const servicesDoc = (services: readonly Service[]): Doc =>
   seq(services.map((item) => serviceDoc(item)));
 
 const cacheKeyDoc = (key: CacheKeyFiles): Doc =>
@@ -187,10 +187,10 @@ const cacheItemDoc = (cache: Cache): Doc =>
     ...entry("fallback_keys", present(cache.fallback_keys)),
   ]);
 
-const cacheDoc = (cache: Cache | readonly Cache[]): Doc =>
+export const cacheDoc = (cache: Cache | readonly Cache[]): Doc =>
   isSequence(cache) ? seq(cache.map((item) => cacheItemDoc(item))) : cacheItemDoc(cache);
 
-const artifactsDoc = (artifacts: Artifacts): Doc =>
+export const artifactsDoc = (artifacts: Artifacts): Doc =>
   map([
     ...entry("paths", present(artifacts.paths)),
     ...entry("exclude", present(artifacts.exclude)),
@@ -199,7 +199,7 @@ const artifactsDoc = (artifacts: Artifacts): Doc =>
     ...entry("expose_as", present(artifacts.expose_as)),
     ...entry("public", present(artifacts.public)),
     ...entry("when", present(artifacts.when)),
-    ...entry("reports", present(artifacts.reports)),
+    ...entry("reports", artifacts.reports === undefined ? undefined : fromValue(artifacts.reports)),
   ]);
 
 const retryOptionsDoc = (retry: RetryOptions): Doc =>
@@ -214,7 +214,7 @@ const retryDoc = (retry: Retry): Doc =>
   typeof retry === "number" ? fromValue(retry) : retryOptionsDoc(retry);
 
 /** An image keeps its string form; the map form carries `name` first, then the overrides. */
-const imageDoc = (image: Image): Doc =>
+export const imageDoc = (image: Image): Doc =>
   typeof image === "string" || isLeaf(image)
     ? fromValue(image)
     : map([

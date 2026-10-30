@@ -29,6 +29,11 @@ export const GAPS: readonly Gap[] = debt.map((row) => ({
  */
 export const OVERCLAIMS: readonly Overclaim[] = [
   {
+    path: "$.*.image.entrypoint[]",
+    reason:
+      "the schema declares a job's `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; GitLab documents a list of strings, which is what the vocabulary emits",
+  },
+  {
     path: "$.default.image.entrypoint[]",
     reason:
       "the schema declares `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; GitLab documents a list of strings, which is what the vocabulary emits",
