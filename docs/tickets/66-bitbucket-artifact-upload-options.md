@@ -1,0 +1,18 @@
+# 66: Artifact upload options
+
+**Spec:** `docs/specs/0008-bitbucket-grammar-completion.md`
+
+**What to build:** the rest of an artifact upload entry: `type`, `capture-on`, `depth` and `ignore-paths`, so the expanded artifacts family is complete rather than partially modelled.
+
+**Blocked by:** 59 (Expanded artifacts)
+
+**Status:** ready-for-agent
+
+- [ ] `ArtifactUpload` gains `type?: "shared" | "scoped" | "test-reports"`, `"capture-on"?: "success" | "failed" | "always"`, `depth?: number` and `"ignore-paths"?: readonly string[]`.
+- [ ] Emission is alphabetical after `name` and before `paths`: `capture-on`, `depth`, `ignore-paths`, `name`, `paths`, `type`; absent keys are not emitted.
+- [ ] A `depth` below 1 is refused at its path; `type` and `capture-on` stay closed unions, so an unknown value is a type error rather than an emitted string.
+- [ ] The shape is schema-derived: no corpus config and no Atlassian page documents these four keys, and the PR body says so.
+- [ ] The inventory exercises all four keys at every position where an upload can appear; the documented-grammar rows for them leave GAPS, and the stale-row check is empty.
+- [ ] The provider page's generated blocks are regenerated; Non-goals and other prose are untouched.
+- [ ] Goldens are added or updated deliberately; no unrelated golden changes.
+- [ ] `pnpm check` passes.
