@@ -1,0 +1,518 @@
+default:
+  image: golang:${GL_ASDF_GOLANG_VERSION}
+  tags:
+    - gitlab-org
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# Requires stages validate, release and renovate_bot
+stages:
+  - prepare
+  - validate
+  - release
+  - renovate_bot
+
+include:
+  - local: .gitlab-ci-asdf-versions.yml
+  # This template should be included in all Infrastructure projects.
+  # It includes standard checks, gitlab-scanners, validations and release processes
+  # common to all projects using this template library.
+  # see https://gitlab.com/gitlab-com/gl-infra/common-ci-tasks/-/blob/main/templates/standard.md
+  - project: "gitlab-com/gl-infra/common-ci-tasks"
+    ref: v5.23  # renovate:managed
+    file: templates/standard.yml
+
+  # Runs golang standard tests, including tests, goreleaser, golangci-lint and go-mod-tidy
+  # see https://gitlab.com/gitlab-com/gl-infra/common-ci-tasks/-/blob/main/templates/golang.md
+  - project: 'gitlab-com/gl-infra/common-ci-tasks'
+    ref: v5.23  # renovate:managed
+    file: templates/golang.yml
+
+  - component: "gitlab.com/gitlab-com/gl-infra/common-ci-tasks/danger@v5.23"
+
+  - component: "gitlab.com/components/markdownlint/markdownlint@2.1.0"
+    inputs:
+      job_name: markdownlint
+      stage: validate
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Disable select jobs included from common-ci-tasks
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# From templates/standard.yml
+semantic_release_check:
+  rules:
+    - when: never
+
+# From templates/standard.yml
+semantic_release_dry_run:
+  rules:
+    - when: never
+
+# From templates/standard.yml
+semantic_release:
+  rules:
+    - when: never
+
+# From templates/golang.yml
+goreleaser_build:
+  rules:
+    - when: never
+
+# From templates/golang.yml
+goreleaser_validate:
+  rules:
+    - when: never
+
+go_unittests:
+  rules:
+    - when: never
+
+# From templates/golangci-lint.yml, via templates/golang.yml.
+# The job declares its own `cache:` with no `key:`, so it lands on the runner's
+# shared `default` key and merges GOMODCACHE, GOCACHE and GOLANGCI_LINT_CACHE
+# into one archive that no dependency change invalidates. `extends: .go-cache`
+# cannot displace it: extends supplies defaults, and a job's own keys win over
+# them. The `lint` job replaces it.
+golangci_lint:
+  rules:
+    - when: never
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+variables:
+  REPO_NAME: gitlab.com/gitlab-org/labkit
+  SAST_EXCLUDED_ANALYZERS: "eslint,gosec,nodejs-scan"
+
+# Seed the shared module cache before the validate stage.
+# This is the sole writer of the module cache (policy: pull-push); consumers via
+# .go-cache read it only.
+warm-go-mod-cache:
+  stage: prepare
+  variables:
+    GOMODCACHE: $CI_PROJECT_DIR/.cache/go-mod
+  cache:
+    key:
+      files:
+        - go.sum
+        - v2/go.sum
+    paths:
+      - .cache/go-mod
+    policy: pull-push
+  script:
+    - go mod download
+    - cd v2 && go mod download
+
+# Go caches, relocated into $CI_PROJECT_DIR so the runner can cache them
+# (their defaults live outside the build directory and are silently skipped).
+.go-cache:
+  variables:
+    GOMODCACHE: $CI_PROJECT_DIR/.cache/go-mod
+    GOCACHE: $CI_PROJECT_DIR/.cache/go-build
+  cache:
+    # Shared, read-only module download cache. Seeded once by the
+    # warm-go-mod-cache job; consumers pull it read-only so a job that only
+    # downloaded a subset of modules can never overwrite the complete set. The
+    # module set is independent of Go version and build tags, so one cache is
+    # shared across the whole matrix. Keyed on both go.sum files so a dependency
+    # change in either module invalidates it.
+    - &go-mod-cache
+      key:
+        files:
+          - go.sum
+          - v2/go.sum
+      paths:
+        - .cache/go-mod
+      policy: pull
+    # Per-job compiled-object cache. Compilation output is specific to the build
+    # tags, Go version, and -race vs not, so each matrix cell keeps its own
+    # complete archive (keyed on the job slug) and reuses it on subsequent runs
+    # rather than recompiling the dependency graph from scratch.
+    - &go-build-cache
+      key:
+        files:
+          - go.sum
+          - v2/go.sum
+        prefix: gobuild-$CI_JOB_NAME_SLUG
+      paths:
+        - .cache/go-build
+      policy: pull-push
+
+# NOTE: before changing the `GO_VERSION` matrix,
+# have you reviewed
+# https://docs.gitlab.com/ee/development/go_guide/go_upgrade.html#testing-against-shipped-go-versions?
+.go-versions: &go-versions ["1.25", "1.26", "1.27"]
+
+# Versions of the golang-fips image tested by test-fips. 1.26 is the last
+# golang-fips/go fork release; from 1.27 the image keeps its name but ships Go's
+# native FIPS 140-3 module, so new versions go in the native list. Native FIPS on
+# the upstream image is covered by test-fips-native across *go-versions.
+.golang-fips-fork-versions: &golang-fips-fork-versions ["1.25", "1.26"]
+.golang-fips-native-versions: &golang-fips-native-versions ["1.27"]
+
+build:
+  extends: .go-cache
+  image: golang:${GO_VERSION}
+  stage: validate
+  parallel:
+    matrix:
+      - GO_VERSION: *go-versions
+        BUILD_TAGS:
+          - "tracer_static tracer_static_jaeger"
+          - "tracer_static tracer_static_lightstep"
+          - "tracer_static tracer_static_datadog"
+          - "tracer_static tracer_static_stackdriver"
+          - "tracer_static tracer_static_jaeger tracer_static_lightstep tracer_static_datadog tracer_static_stackdriver"
+          - "continuous_profiler_stackdriver"
+  script:
+    - ./scripts/compile.sh
+
+test:
+  extends: .go-cache
+  image: golang:${GO_VERSION}
+  stage: validate
+  parallel:
+    matrix:
+      - GO_VERSION: *go-versions
+        BUILD_TAGS:
+          - ""
+          - "tracer_static tracer_static_jaeger tracer_static_lightstep tracer_static_datadog tracer_static_stackdriver"
+          - "continuous_profiler_stackdriver"
+  script:
+    - ./scripts/test.sh
+
+# Lints both the root and v2 modules.
+lint:
+  extends: .go-cache
+  image:
+    name: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/golangci-lint:${GL_ASDF_GOLANGCI_LINT_VERSION}
+    # The image has no ENTRYPOINT today; this pins a shell if a bump adds one.
+    entrypoint: ["/bin/bash", "-c"]
+  stage: validate
+  variables:
+    GOLANGCI_LINT_CACHE: $CI_PROJECT_DIR/.cache/golangci-lint
+  cache:
+    # A local cache: replaces the list .go-cache supplies rather than merging
+    # with it, so both of its entries are relisted here.
+    - *go-mod-cache
+    - *go-build-cache
+    # golangci-lint's analysis cache. Per job like the compiled-object cache,
+    # and declared here rather than in .go-cache because no other job has one.
+    - key:
+        files:
+          - go.sum
+          - v2/go.sum
+        prefix: golangci-$CI_JOB_NAME_SLUG
+      paths:
+        - .cache/golangci-lint
+      policy: pull-push
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+  script:
+    - ./scripts/golangci-lint.sh
+
+# Override template jobs to cover both the root and v2 modules.
+# Job names match the common-ci-tasks template definitions.
+go_mod_tidy:
+  script:
+    - ./scripts/go-mod-tidy.sh
+    - git diff --exit-code || {
+        echo "running 'go mod tidy' produced changes in root or v2 module.";
+        echo "please run './scripts/go-mod-tidy.sh' and commit the changes.";
+        exit 1;
+      }
+
+# The template runs the validator at the repository root with no directory
+# argument, and the scan stops at any subdirectory holding its own go.mod, so
+# v2 was never looked at and the job passed on the legacy module alone. The
+# template exposes no directory input, so the script is replaced instead.
+go-logging-field-validator:
+  script:
+    - ./scripts/validate-log-fields.sh
+
+# danger-review reads its token from Vault, which the community fork has no
+# access to, so it fails on merge requests from the fork. Let it fail for those;
+# the second rule is the component's own. See
+# https://gitlab.com/gitlab-org/labkit/-/work_items/171
+danger-review:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_PROJECT_PATH == "gitlab-community/gitlab-org/labkit"
+      exists:
+        - Dangerfile
+      allow_failure: true
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      exists:
+        - Dangerfile
+
+.postgres-integration-trigger-paths:
+  changes:
+    - v2/postgres/**/*
+    - v2/go.mod
+    - v2/go.sum
+
+"integration:postgres":
+  extends: .go-cache
+  image: golang:${GL_ASDF_GOLANG_VERSION}
+  stage: validate
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+      changes: !reference [.postgres-integration-trigger-paths, changes]
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: !reference [.postgres-integration-trigger-paths, changes]
+  variables:
+    FF_NETWORK_PER_BUILD: 1
+    POSTGRES_DSN: "postgres://labkit:labkit@postgres:5432/labkit_test?sslmode=disable"
+    PGBOUNCER_DSN: "postgres://labkit:labkit@pgbouncer:5432/labkit_test?sslmode=disable"
+  services:
+    - name: postgres:18-alpine
+      alias: postgres
+      variables:
+        POSTGRES_USER: labkit
+        POSTGRES_PASSWORD: labkit
+        POSTGRES_DB: labkit_test
+    - name: edoburu/pgbouncer:v1.23.1-p3
+      alias: pgbouncer
+      variables:
+        DATABASE_URL: "postgres://labkit:labkit@postgres:5432/labkit_test"
+        POOL_MODE: transaction
+        MAX_CLIENT_CONN: 100
+        DEFAULT_POOL_SIZE: 20
+        AUTH_TYPE: plain
+  before_script:
+    # Wait for PostgreSQL and PgBouncer to accept connections.
+    - apt-get update -qq && apt-get install -y -qq postgresql-client > /dev/null
+    - |
+      echo "Waiting for PostgreSQL..."
+      for i in $(seq 1 30); do
+        pg_isready -h postgres -p 5432 -U labkit -q && break
+        sleep 1
+      done
+      echo "Waiting for PgBouncer..."
+      for i in $(seq 1 30); do
+        pg_isready -h pgbouncer -p 5432 -U labkit -q && break
+        sleep 1
+      done
+  script:
+    - cd v2
+    - go test -v -tags integration -count=1 -timeout=60s ./postgres/
+
+.redis-integration-trigger-paths:
+  changes:
+    - v2/redis/**/*
+    - v2/go.mod
+    - v2/go.sum
+
+.integration-redis-base:
+  extends: .go-cache
+  image: golang:${GL_ASDF_GOLANG_VERSION}
+  stage: validate
+  variables:
+    REDIS_TEST_RUN: "TestIntegration_"
+    REDIS_TEST_SKIP: ""
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+      changes: !reference [.redis-integration-trigger-paths, changes]
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: !reference [.redis-integration-trigger-paths, changes]
+  script:
+    - cd v2 && go test -v -tags integration -count=1 -timeout=60s -run "${REDIS_TEST_RUN}" ${REDIS_TEST_SKIP:+-skip "${REDIS_TEST_SKIP}"} ./redis/
+
+"integration:redis":
+  extends: .integration-redis-base
+  variables:
+    REDIS_TEST_SKIP: "Cluster|Sentinel"
+    REDIS_ADDR: "127.0.0.1:6379"
+  before_script:
+    - v2/redis/testdata/ci/setup-single.sh
+
+"integration:redis:cluster":
+  extends: .integration-redis-base
+  variables:
+    REDIS_TEST_RUN: Cluster
+    REDIS_CLUSTER_ADDRS: "127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003"
+  before_script:
+    - v2/redis/testdata/ci/setup-cluster.sh
+
+"integration:redis:sentinel":
+  extends: .integration-redis-base
+  variables:
+    REDIS_TEST_RUN: Sentinel
+    REDIS_SENTINEL_ADDRS: "127.0.0.1:26379"
+    REDIS_SENTINEL_MASTER: "mymaster"
+  before_script:
+    - v2/redis/testdata/ci/setup-sentinel.sh
+
+.azure-integration-trigger-paths:
+  changes:
+    - v2/objectstore/**/*
+    - v2/go.mod
+    - v2/go.sum
+
+"integration:azure":
+  extends: .go-cache
+  image: golang:${GL_ASDF_GOLANG_VERSION}
+  stage: validate
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+      changes: !reference [.azure-integration-trigger-paths, changes]
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: !reference [.azure-integration-trigger-paths, changes]
+  variables:
+    FF_NETWORK_PER_BUILD: 1
+    # devstoreaccount1 and the key below are Azurite's built-in emulator
+    # credentials, not secrets:
+    # https://learn.microsoft.com/en-us/azure/storage/common/storage-connect-azurite?tabs=blob-storage#use-a-well-known-storage-account-and-key
+    #
+    # The emulator is reached by service alias; --skipApiVersionCheck lets it accept
+    # the newer x-ms-version the azblob SDK sends.
+    OBJECTSTORE2_AZURE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    OBJECTSTORE2_AZURE_STORAGE_DOMAIN: "azurite:10000"
+  services:
+    - name: mcr.microsoft.com/azure-storage/azurite:3.37.0
+      alias: azurite
+      command: ["azurite-blob", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--skipApiVersionCheck"]
+  before_script:
+    - v2/objectstore/providers/azure/testdata/ci/wait-for-azurite.sh
+  script:
+    - cd v2
+    - go test -v -tags integration -count=1 -timeout=60s ./objectstore/providers/azure/
+
+.conformance-trigger-paths:
+  changes:
+    # Any v2 change, deliberately broader than what labkit-spec's Go server
+    # links in today: a curated import list silently skips the gate when the
+    # server grows a new import, and labkit-spec main moves independently.
+    - v2/**/*
+    - .gitlab-ci.yml
+
+# Gate v2 changes on the labkit-spec conformance suite, run remotely: trigger
+# a downstream pipeline in labkit-spec that checks out this pipeline's commit
+# (LABKIT_SHA) and runs the Go conformance suite plus the qemu memory tests
+# against it. strategy:depend mirrors the downstream result here, so a red run
+# blocks the merge. In merged-results and merge-train pipelines CI_COMMIT_SHA
+# is the merged result, so the gate tests exactly what lands on master.
+# See https://gitlab.com/gitlab-org/theseus/theseus/-/work_items/30
+conformance-spec:
+  stage: validate
+  needs: []
+  variables:
+    LABKIT_SHA: $CI_COMMIT_SHA
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes: !reference [.conformance-trigger-paths, changes]
+  trigger:
+    project: gitlab-org/quality/tooling/labkit-spec
+    branch: main
+    strategy: depend
+
+test-fips:
+  extends: .go-cache
+  image: ${CI_REGISTRY}/gitlab-com/gl-infra/common-ci-tasks-images/golang-fips:${GO_FIPS_VERSION}
+  stage: validate
+  parallel:
+    matrix:
+      - GO_FIPS_VERSION: *golang-fips-fork-versions
+        # https://go.googlesource.com/go/+/refs/heads/dev.boringcrypto/README.boringcrypto.md
+        GOEXPERIMENT: boringcrypto
+        # cmd/go rejects GOEXPERIMENT=boringcrypto unless GOFIPS140 is off. Pin it
+        # explicitly so the job does not depend on the image's default, which
+        # otherwise fails with "use of GOEXPERIMENT=boringcrypto requires
+        # GOFIPS140=off" before any test runs. Native FIPS 140-3 is covered by
+        # test-fips-native.
+        GOFIPS140: "off"
+      # The image's own GOFIPS140 and GODEBUG apply, as they do for services
+      # building in it.
+      - GO_FIPS_VERSION: *golang-fips-native-versions
+        FIPS_EXPECT_NATIVE_MODULE: "1"
+  variables:
+    BUILD_TAGS: fips
+    CGO_ENABLED: 1
+    # Without GOLANG_FIPS crypto/boring.Enabled() reports false, because a
+    # CI container has no /proc/sys/crypto/fips_enabled, and the job compiles
+    # the BoringCrypto path without ever activating it.
+    #
+    # OPENSSL_FORCE_FIPS_MODE pins the other half of the pair. Measured in
+    # this image it is currently redundant: GOLANG_FIPS alone already makes
+    # the Go binding select OpenSSL's FIPS provider, which then refuses a
+    # SHA-1 signature. It is set anyway so both layers are stated rather
+    # than one being inferred from the other, and so the job keeps behaving
+    # as intended if the base image stops forcing the provider for us.
+    GOLANG_FIPS: 1
+    OPENSSL_FORCE_FIPS_MODE: 1
+  script:
+    - ./scripts/test.sh
+
+test-fips-native:
+  extends: .go-cache
+  image: golang:${GO_VERSION}
+  stage: validate
+  parallel:
+    matrix:
+      - GO_VERSION: *go-versions
+  variables:
+    BUILD_TAGS: fips
+    # Exercise the fips build tag against upstream Go's native FIPS 140-3
+    # module instead of the golang-fips fork. GOFIPS140 freezes the module
+    # version at build time and bakes GODEBUG=fips140=on as the default.
+    # Must run on a non-golang-fips image: cmd/go rejects GOFIPS140
+    # combined with GOEXPERIMENT=boringcrypto.
+    # https://go.dev/doc/security/fips140
+    GOFIPS140: v1.0.0
+    FIPS_EXPECT_NATIVE_MODULE: "1"
+  script:
+    - ./scripts/test.sh
+
+check-mock-files:
+  stage: validate
+  image: golang:${GL_ASDF_GOLANG_VERSION}
+  script:
+    - ./scripts/check-mock-files.sh
+
+# The go directive is the minimum Go version consumers must have, so an accidental bump
+# (e.g. from `go mod tidy` picking up a dependency) forces every downstream
+# service to upgrade Go.
+#
+# This job blocks accidental go version upgrades. To purposefully upgrade,
+# update the pinned values in scripts/check-go-version.sh.
+check-go-version:
+  stage: validate
+  image: golang:${GL_ASDF_GOLANG_VERSION}
+  needs: []
+  script:
+    - ./scripts/check-go-version.sh
+
+markdownlint:
+  needs: []
+
+.release-base:
+  stage: release
+  rules:
+    # Run only for commits to master
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    # Skip tag pipelines to prevent a release from triggering another release
+    - if: $CI_COMMIT_TAG
+      when: never
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq jq
+    # Authenticate using CI_JOB_TOKEN for pushing tags.
+    # https://docs.gitlab.com/ci/jobs/ci_job_token/#allow-git-push-requests-to-your-project-repository
+    - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+
+release-v1:
+  extends: .release-base
+  script:
+    - ./scripts/release.sh v1
+
+release-v2:
+  extends: .release-base
+  script:
+    - ./scripts/release.sh v2

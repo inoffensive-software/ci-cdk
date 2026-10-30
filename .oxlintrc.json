@@ -88,6 +88,12 @@
         "anti-slop/no-object-parameters": "off",
         "anti-slop/no-unknown-parameters": "off"
       }
+    },
+    {
+      "files": ["test/corpus/gitlab-ci/labkit.fixture.ts"],
+      "rules": {
+        "max-lines": "off"
+      }
     }
   ]
 }

@@ -265,7 +265,8 @@ Within author maps (`variables`, `reports`, `matrix` rows), insertion order is p
   document-level diagnostic.
 - `needs` is not checked for dangling names for the same reason: the target may be included. Only the
   existing checks remain: empty/duplicate/reserved/hidden job names, empty/duplicate stages, an
-  unavailable explicit or implicit stage, and an empty script.
+  unavailable explicit stage, and an empty script. Neither `script` nor `stage` need be declared, and
+  an omitted stage is not checked against `stages`, because a merge may supply either (ADR 0014).
 - `rules` order is author order. `when: never`, `allow_failure` and `needs` inside a rule are preserved
   as written.
 - `include` entries are never fetched, resolved or verified; their values are typed strings and maps.

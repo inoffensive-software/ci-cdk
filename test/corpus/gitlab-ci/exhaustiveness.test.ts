@@ -58,12 +58,14 @@ describe("exhaustiveness gate", () => {
     expect(filledRawPaths(entry.pipeline, MODELLED)).toStrictEqual([]);
   });
 
-  it.each(GITLAB_ENTRIES)("$name declares no ledger row it does not use", async (entry) => {
-    expect(unusedLedgerPaths(await corpusPathsOf(entry), LEDGER)).toStrictEqual([]);
+  it("declares no ledger row that no entry needs", async () => {
+    const entries = await Promise.all(GITLAB_ENTRIES.map((entry) => corpusPathsOf(entry)));
+
+    expect(unusedLedgerPaths(entries.flat(), LEDGER)).toStrictEqual([]);
   });
 
-  it("leaves eighteen rows, all vocabulary gaps, after the hidden template moved to templates", () => {
-    expect(COVERAGE_DEBT).toHaveLength(18);
+  it("leaves eighty-two rows, all vocabulary gaps, after the hidden template moved to templates", () => {
+    expect(COVERAGE_DEBT).toHaveLength(82);
   });
 });
 
@@ -92,7 +94,7 @@ describe("corpus paths", () => {
 
 describe("gate failure cases", () => {
   it("reports a corpus path outside the inventory and the ledger, naming both remedies", () => {
-    const invented = "$.*.cache";
+    const invented = "$.*.environment";
     const report = gapPaths([...MODELLED, invented], MODELLED, LEDGER);
 
     expect(report).toStrictEqual([invented]);

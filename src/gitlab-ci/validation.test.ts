@@ -92,10 +92,8 @@ describe("stage membership", () => {
     ]);
   });
 
-  it("reports an omitted stage when the default test stage is unavailable", () => {
-    expect(pairsOf(ci([jobOf("lint")], ["build", "deploy"]))).toStrictEqual([
-      { path: "$.jobs[0]", message: 'job "lint" uses stage "test", which is not declared' },
-    ]);
+  it("accepts an omitted stage even when test is not declared, because a merge may supply it", () => {
+    expect(() => render(ci([jobOf("lint")], ["build", "deploy"]))).not.toThrow();
   });
 
   it("accepts an omitted stage when test is a default stage", () => {
@@ -114,6 +112,18 @@ describe("scripts", () => {
     expect(pairsOf(scripted([]))).toStrictEqual([
       { path: "$.jobs[0].script", message: "script must contain at least one command" },
     ]);
+  });
+
+  it("accepts a job that declares no script, as a fragment overriding an included job", () => {
+    const override = pipeline({
+      jobs: [job({ name: "semantic_release", raw: { rules: [{ when: "never" }] } })],
+    });
+
+    expect(() => render(override)).not.toThrow();
+  });
+
+  it("accepts a job with no script and no raw at all", () => {
+    expect(() => render(pipeline({ jobs: [job({ name: "markdownlint" })] }))).not.toThrow();
   });
 });
 

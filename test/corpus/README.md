@@ -10,6 +10,7 @@ test/corpus/<provider>/<name>.yml          the upstream config, vendored verbati
 test/corpus/<provider>/<name>.test.ts      reproduces it and asserts equal data
 test/corpus/<provider>/<name>.fixture.ts   one fixture per file
 test/corpus/<provider>/coverage-debt.ts    the ledger of raw paths the fixtures need, with reasons
+test/corpus/<provider>/<name>-debt.ts      one entry's ledger rows, unioned by coverage-debt.ts
 test/corpus/<provider>/coverage.test.ts    asserts the ledger against the fixtures, both ways
 test/corpus/<provider>/PROVENANCE.md       repo, commit SHA, path, licence for every entry
 test/corpus/paths.ts                       every key path in a parsed document, normalised
@@ -59,6 +60,9 @@ is semantic.
 `coverage-debt.ts` is the ledger: every raw path a fixture needs, plus one line saying why. Every row
 is a vocabulary gap: the key is not modelled. An empty ledger means the vocabulary can express every
 key the corpus uses.
+
+The ledger is one list per entry (`<name>-debt.ts`), because a row names `$.jobs[<index>]` and the
+index belongs to that entry's fixture; `coverage-debt.ts` unions them into the list the gate reads.
 
 `coverage.test.ts` walks the fixtures and asserts set equality in both directions - a fixture that
 starts using `raw` without a row fails, and a row no fixture uses fails. Adding a row is a deliberate

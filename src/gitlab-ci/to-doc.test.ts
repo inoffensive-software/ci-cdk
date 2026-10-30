@@ -44,6 +44,12 @@ describe("toDoc", () => {
     expect(keys(entry(DOC, "alpha"))).toStrictEqual(["script"]);
     expect(keys(entry(DOC, "zulu"))).not.toContain("name");
   });
+
+  it("emits no script key for a job that does not declare one", () => {
+    const doc = toDoc(pipeline({ jobs: [job({ name: "override" })] }));
+
+    expect(keys(entry(doc, "override"))).toStrictEqual([]);
+  });
 });
 
 describe("barrel", () => {
