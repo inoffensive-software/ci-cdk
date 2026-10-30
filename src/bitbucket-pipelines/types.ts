@@ -26,10 +26,23 @@ export interface Condition {
   readonly changesets?: Changesets;
 }
 
-/** One named artifact upload: a name and the paths it captures. */
+/** The kind of artifact an upload publishes. */
+export type ArtifactUploadType = "shared" | "scoped" | "test-reports";
+
+/** When an upload captures its files. */
+export type ArtifactCaptureOn = "success" | "failed" | "always";
+
+/**
+ * One named artifact upload: a name, the paths it captures, and the schema's optional filters.
+ * `depth` bounds the search below each path; zero is refused because the schema's minimum is one.
+ */
 export interface ArtifactUpload {
+  readonly "capture-on"?: ArtifactCaptureOn;
+  readonly depth?: number;
+  readonly "ignore-paths"?: readonly string[];
   readonly name: Text;
   readonly paths: readonly string[];
+  readonly type?: ArtifactUploadType;
 }
 
 /**

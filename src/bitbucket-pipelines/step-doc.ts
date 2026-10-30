@@ -119,11 +119,21 @@ export const conditionDoc = (condition: Condition): Doc =>
 const isArtifactsMap = (artifacts: Artifacts): artifacts is Exclude<Artifacts, readonly string[]> =>
   !Array.isArray(artifacts);
 
-/** An upload entry is `name` then `paths`, in that order. */
+/** An upload entry is `capture-on`, `depth`, `ignore-paths`, `name`, `paths`, `type`; absent keys go. */
 const uploadDoc = (upload: ArtifactUpload): Doc =>
   map([
+    ...entry(
+      "capture-on",
+      upload["capture-on"] === undefined ? undefined : fromValue(upload["capture-on"]),
+    ),
+    ...entry("depth", upload.depth === undefined ? undefined : fromValue(upload.depth)),
+    ...entry(
+      "ignore-paths",
+      upload["ignore-paths"] === undefined ? undefined : fromValue(upload["ignore-paths"]),
+    ),
     { key: "name", value: fromValue(upload.name) },
     { key: "paths", value: fromValue(upload.paths) },
+    ...entry("type", upload.type === undefined ? undefined : fromValue(upload.type)),
   ]);
 
 /** Artifacts: the path list as-is, or `download`, `paths`, `upload` with absent keys omitted. */

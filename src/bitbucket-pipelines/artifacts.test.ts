@@ -5,8 +5,12 @@ import { DiagnosticError, type Diagnostic } from "../core/index.js";
 import { type Artifacts, type PipelineConfig, pipelineConfig, render, step } from "./index.js";
 
 interface ParsedUpload {
+  readonly "capture-on"?: string;
+  readonly depth?: number;
+  readonly "ignore-paths"?: readonly string[];
   readonly name?: string;
   readonly paths?: readonly string[];
+  readonly type?: string;
 }
 
 interface ParsedArtifacts {
@@ -52,6 +56,19 @@ const EXPECTED_MAP = [
   "                - coverage/**",
 ].join("\n");
 
+const EXPECTED_OPTIONS_UPLOAD = [
+  "        artifacts:",
+  "          upload:",
+  "            - capture-on: always",
+  "              depth: 3",
+  "              ignore-paths:",
+  "                - node_modules/**",
+  "              name: build",
+  "              paths:",
+  "                - dist/**",
+  "              type: test-reports",
+].join("\n");
+
 describe("artifacts map form", () => {
   it("emits download, paths and upload, each upload name then paths", () => {
     const config = withArtifacts({
@@ -93,6 +110,71 @@ describe("artifacts map form", () => {
   });
 });
 
+describe("artifacts upload options", () => {
+  it("emits an upload's extra keys in schema order around name and paths", () => {
+    const config = withArtifacts({
+      upload: [
+        {
+          "capture-on": "always",
+          depth: 3,
+          "ignore-paths": ["node_modules/**"],
+          name: "build",
+          paths: ["dist/**"],
+          type: "test-reports",
+        },
+      ],
+    });
+
+    expect(render(config, { header: "" })).toContain(EXPECTED_OPTIONS_UPLOAD);
+    expect(parsed(config).pipelines.default[0]?.step.artifacts).toStrictEqual({
+      upload: [
+        {
+          "capture-on": "always",
+          depth: 3,
+          "ignore-paths": ["node_modules/**"],
+          name: "build",
+          paths: ["dist/**"],
+          type: "test-reports",
+        },
+      ],
+    });
+  });
+
+  it("emits only the extra keys the author set", () => {
+    const config = withArtifacts({
+      upload: [{ depth: 1, name: "build", paths: ["dist/**"] }],
+    });
+
+    expect(render(config, { header: "" })).toContain(
+      [
+        "            - depth: 1",
+        "              name: build",
+        "              paths:",
+        "                - dist/**",
+      ].join("\n"),
+    );
+  });
+});
+
+describe("artifacts upload unions", () => {
+  it("keeps type and capture-on closed", () => {
+    const config = withArtifacts({
+      upload: [
+        {
+          // @ts-expect-error an upload type is one of the three schema values
+          type: "invented",
+          // @ts-expect-error a capture rule is one of the three schema values
+          "capture-on": "sometimes",
+          name: "build",
+          paths: ["dist/**"],
+        },
+      ],
+    });
+
+    expect(render(config, { header: "" })).toContain("name: build");
+  });
+});
+
 describe("artifacts upload validation", () => {
   it("refuses an upload with an empty name at the upload's name", () => {
     const config = withArtifacts({ upload: [{ name: "", paths: ["dist/**"] }] });
@@ -101,6 +183,17 @@ describe("artifacts upload validation", () => {
       {
         path: "$.pipelines.default[0].step.artifacts.upload[0].name",
         message: "an artifact upload needs a non-empty name",
+      },
+    ]);
+  });
+
+  it("refuses an upload search depth below one at the upload's depth", () => {
+    const config = withArtifacts({ upload: [{ depth: 0, name: "build", paths: ["dist/**"] }] });
+
+    expect(diagnosticsOf(config).map(({ path, message }) => ({ path, message }))).toStrictEqual([
+      {
+        path: "$.pipelines.default[0].step.artifacts.upload[0].depth",
+        message: "an artifact upload needs a depth of at least 1",
       },
     ]);
   });

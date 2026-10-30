@@ -128,7 +128,16 @@ const everyExpandedArtifacts = (download: boolean | readonly string[]): StepItem
     artifacts: {
       download,
       paths: ["dist/**"],
-      upload: [{ name: "build", paths: ["dist/**", "coverage/**"] }],
+      upload: [
+        {
+          "capture-on": "always",
+          depth: 2,
+          "ignore-paths": ["**/*.tmp"],
+          name: "build",
+          paths: ["dist/**", "coverage/**"],
+          type: "shared",
+        },
+      ],
     },
     script: ["true"],
   });
@@ -184,7 +193,16 @@ export const everyFinalArtifacts = (download: boolean | readonly string[]): Fina
     artifacts: {
       download,
       paths: ["coverage/**"],
-      upload: [{ name: "coverage", paths: ["coverage/**"] }],
+      upload: [
+        {
+          "capture-on": "failed",
+          depth: 1,
+          "ignore-paths": ["**/*.log"],
+          name: "coverage",
+          paths: ["coverage/**"],
+          type: "test-reports",
+        },
+      ],
     },
     script: ["true"],
   });
