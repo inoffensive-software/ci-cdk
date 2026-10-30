@@ -42,8 +42,10 @@ configurations.
 - Model the keyword groups those entries and a normal pipeline use, in dependency order: global
   configuration, then job fundamentals, then rules and needs, then delivery and scheduling keys, then
   the `!reference` leaf.
+- Model hidden templates as author data (`templates`), not vocabulary. They are how anchors, aliases
+  and `extends` targets are shared, and every pinned entry uses them.
 - Delete ledger rows as fields are modelled; the target is zero vocabulary-gap rows across the three
-  entries.
+  entries, with hidden templates outside the metric.
 
 The result: a consumer can write a realistic GitLab pipeline with typed `variables`, `image`,
 `services`, `cache`, `artifacts`, `rules`, `needs`, `environment`, `parallel` and `include`, and the
@@ -152,6 +154,12 @@ gate fails if the vocabulary and the corpus drift.
 33. As a maintainer, I want ADR 0011 to record the `!reference` leaf as a widening of the provider
     surface, so that the decision is not smuggled in as a field.
 
+34. As a library consumer, I want `templates` to accept an ordered map of `.`-prefixed names to plain
+    data, so that anchor-only entries and `extends` targets are expressible without `raw`.
+
+35. As a maintainer, I want hidden templates excluded from the vocabulary gate and stripped before
+    schema validation, so that author data does not pollute the coverage metric.
+
 ## Implementation Decisions
 
 ### Modules and public surface
@@ -180,7 +188,8 @@ export type When = "on_success" | "on_failure" | "always" | "never" | "manual" |
 
 ### Structs
 
-- `Pipeline` gains `default`, `include`, `variables` and `workflow` beside `stages`, `jobs` and `raw`.
+- `Pipeline` gains `default`, `include`, `variables`, `workflow` and `templates` beside `stages`,
+  `jobs` and `raw`.
 - `Job` gains, in addition to `name`, `stage`, `script`, `raw`: `extends`, `needs`, `rules`, `tags`,
   `image`, `services`, `variables`, `cache`, `artifacts`, `before_script`, `after_script`,
   `environment`, `release`, `parallel`, `retry`, `timeout`, `interruptible`, `allow_failure`, `when`,
@@ -207,6 +216,7 @@ export type When = "on_success" | "on_failure" | "always" | "never" | "manual" |
 | `release`     | `{ tag_name: Text; description: Text; name?: Text; ref?: Text; milestone?: Text; released_at?: Text }`                                                                                                                                                                                |
 | `include`     | one entry or readonly array; each entry is `{ local: Text }`, `{ remote: Text }`, `{ template: Text }`, `{ project: Text; ref?: Text; file: Text \| readonly Text[] }` or `{ component: Text; inputs?: Record<string, Scalar> }`, each optionally with `rules` and `integrity`        |
 | `workflow`    | `{ name?: Text; auto_cancel?: { on_new_commit?: "conservative" \| "interruptible" \| "none"; on_job_failure?: "all" \| "none" }; rules?: readonly Rule[] }`                                                                                                                           |
+| `templates`   | `Record<string, Value>`; every key starts with `.`, values are plain data of any shape, order preserved                                                                                                                                                                               |
 
 `ImagePullPolicy` is the closed union GitLab documents (`always`, `if-not-present`, `never`). `When`
 is the closed union above and is shared by `rules`, `artifacts` and cache where GitLab accepts the
@@ -217,8 +227,8 @@ same values.
 Order is fixed and presentation-only; GitLab gives mapping order no meaning, so one order keeps two
 definitions with the same data byte-identical.
 
-- Pipeline: `default`, `include`, `stages`, `variables`, `workflow`, job entries in array order, then
-  pipeline `raw`.
+- Pipeline: `default`, `include`, `stages`, `variables`, `workflow`, `templates` entries in record
+  order, job entries in array order, then pipeline `raw`.
 - Default: `image`, `services`, `tags`, `before_script`, `after_script`, `cache`, `artifacts`, `retry`,
   `timeout`, `interruptible`.
 - Job: `stage`, `extends`, `needs`, `rules`, `tags`, `image`, `services`, `variables`, `cache`,
@@ -240,6 +250,12 @@ Within author maps (`variables`, `reports`, `matrix` rows), insertion order is p
   as written.
 - `include` entries are never fetched, resolved or verified; their values are typed strings and maps.
 - `default` never merges with a job at build time. GitLab applies the defaults; the DSL only emits them.
+- `templates` are hidden jobs and anchor-only entries: a top-level key starting with `.` and any plain
+  data value. They are author data, not vocabulary: never validated, never resolved, and emitted in
+  record order between `workflow` and the job entries. A `templates` key without the leading `.` is a
+  diagnostic, because it would emit a second runnable key at the document root.
+- A job name starting with `.` stays refused in `jobs`; hidden entries belong in `templates`. That
+  keeps the runnable set and the author's shared data separate.
 - `ref(segments)` emits a sequence with the `!reference` tag. The segments are author-provided strings;
   the referenced path is never resolved or validated. It is usable wherever a `Text` or `Scalar` is
   accepted, and inside script arrays.
@@ -264,6 +280,9 @@ parsed data with the header suppressed (ADR 0005).
   with `variables` and `cache`, and a job with `needs`, `extends`, `script` and `cache`.
 - Each new entry starts with a ledger of every raw path it needs, then tickets delete rows as the
   vocabulary covers them. The target at the end of this slice is an empty ledger.
+- Hidden templates never earn a ledger row: they are authored data, and the gate excludes top-level
+  `.`-prefixed keys on both sides. `.terraform-versions` moves from `raw` to `templates` rather than
+  closing a row.
 - A file that needs `raw` for a key the inventory models is a fixture error, not a ledger row.
 
 ### Schema conformance
@@ -276,8 +295,12 @@ parsed data with the header suppressed (ADR 0005).
   refresh changes the row above and is a deliberate change.
 - `ajv` is already pinned and configured for draft-07 with strict mode off, as for GitHub Actions. The
   conformance test validates every inventory document and every corpus entry's rendered output.
-- The schema is a typo net, not a type source. If the pinned schema rejects a shape GitLab accepts, the
-  ticket stops and reports; there is no exception list in this slice.
+- Hidden templates are stripped from both sides before validation. The schema describes jobs and
+  globals; GitLab accepts anchor-only `.`-prefixed data that the schema does not model, so validating
+  it would report the provider's own parser as the error. The rest of the document is validated
+  unchanged.
+- The schema is a typo net, not a type source. If the pinned schema rejects a modelled shape GitLab
+  accepts, the ticket stops and reports; there is no exception list in this slice.
 
 ## Testing Decisions
 
@@ -292,11 +315,13 @@ parsed data with the header suppressed (ADR 0005).
   between them use every modelled key, and never `raw`. Its rendered key-path union is the modelled
   set.
 - **Gate.** The exhaustiveness gate fails when a corpus key is neither modelled nor declared, when a
-  declared row is unused, and when a modelled key is written through `raw`. Reuse the shared path
-  helper and the `AUTHOR_NAMED` normalisation pattern from GitHub Actions.
+  declared row is unused, and when a modelled key is written through `raw`. Top-level keys starting
+  with `.` are normalised as author data and excluded on both sides. Reuse the shared path helper and
+  the `AUTHOR_NAMED` normalisation pattern from GitHub Actions.
 - **Corpus.** Each entry compares parsed data; the vendored bytes and their hash are tested by the
   shared provenance test.
-- **Schema.** Inventory and corpus output validate against the pinned schema.
+- **Schema.** Inventory and corpus output validate against the pinned schema with hidden templates
+  stripped.
 - **Goldens.** New fields add new goldens only where they are set; existing goldens must not change.
   Regenerating from unchanged source produces no diff.
 - **Prior art.** `test/corpus/github-actions/exhaustiveness.test.ts`, `inventory.ts`,
