@@ -20,8 +20,9 @@ provider-neutral pipeline model.
 
 ```ts
 // ci/github.ts
-import { write } from "@inoffensive/ci-cdk";
-import { render, workflow, job, step } from "@inoffensive/ci-cdk/github-actions";
+import { writeFileSync } from "node:fs";
+
+import { job, render, step, workflow } from "@inoffensive/ci-cdk/github-actions";
 
 const build = job({
   id: "build",
@@ -32,17 +33,24 @@ const build = job({
   ],
 });
 
-write(
+writeFileSync(
   ".github/workflows/ci.yml",
   render(workflow({ name: "CI", on: ["push", "pull_request"], jobs: [build] })),
 );
 ```
 
-Composition is plain JavaScript: a shared job is a function you import and spread.
+`render` returns the file's text; writing it is the caller's job, so where it goes, whether the
+directory exists and whether this was a dry run all stay your call.
+
+Composition is plain TypeScript: a shared job is a function you import and spread.
 
 ```ts
 // ci/jobs.ts
-export const withCache = (j: Job): Job => ({ ...j, steps: [cacheStep, ...j.steps] });
+import { step, type Job } from "@inoffensive/ci-cdk/github-actions";
+
+const checkout = step({ uses: "actions/checkout@v4" });
+
+export const withCheckout = (j: Job): Job => ({ ...j, steps: [checkout, ...(j.steps ?? [])] });
 ```
 
 ```ts
@@ -75,7 +83,8 @@ not find the file, and it does not rewrite `./jobs.js` to `./jobs.ts` either.
 Keeping the file honest in CI:
 
 ```
-node ci/github.ts && git diff --exit-code -- .github/workflows
+node ci/github.mts
+git status --porcelain -- .github/workflows   # edits, and a first commit you forgot
 ```
 
 ## Providers
