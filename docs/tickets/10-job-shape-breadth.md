@@ -8,19 +8,19 @@ reusable workflow is the same `Job` type with `uses`, `with` and `secrets` inste
 
 **Blocked by:** 06 (Render a workflow), 07 (Expressions and typed scalars)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Workflow level accepts `env`, `defaults.run` (`shell`, `working-directory`) and `concurrency`
+- [x] Workflow level accepts `env`, `defaults.run` (`shell`, `working-directory`) and `concurrency`
       as a string or `{ group, "cancel-in-progress" }`.
-- [ ] `permissions` accepts `read-all`, `write-all`, or a map of scope to level, at workflow and job
+- [x] `permissions` accepts `read-all`, `write-all`, or a map of scope to level, at workflow and job
       level.
-- [ ] A job accepts `environment` as a string or `{ name, url }`, `timeout-minutes` and
+- [x] A job accepts `environment` as a string or `{ name, url }`, `timeout-minutes` and
       `continue-on-error`.
-- [ ] A job accepts `container` and `services`, each with `image`, `credentials`, `env`, `ports`,
+- [x] A job accepts `container` and `services`, each with `image`, `credentials`, `env`, `ports`,
       `volumes` and `options`.
-- [ ] A job accepts `uses`, `with` and `secrets` as the reusable-workflow form, on the same `Job`
+- [x] A job accepts `uses`, `with` and `secrets` as the reusable-workflow form, on the same `Job`
       type as the `steps` form.
-- [ ] `env`, `with`, `secrets` and `credentials` preserve author order.
-- [ ] A golden covers a container job with a service, an environment with a URL, and a reusable
+- [x] `env`, `with`, `secrets` and `credentials` preserve author order.
+- [x] A golden covers a container job with a service, an environment with a URL, and a reusable
       workflow job.
-- [ ] `pnpm check` passes.
+- [x] `pnpm check` passes.
