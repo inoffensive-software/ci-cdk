@@ -40,46 +40,6 @@ export const GAPS: readonly Gap[] = [
     category: "unmodelled",
   },
   {
-    path: "$.jobs.*.steps[].background",
-    reason:
-      "a boolean on a `run` or `uses` step that starts it asynchronously and lets the job continue; later `wait` and `cancel` steps reach it by its id",
-    category: "unmodelled",
-  },
-  {
-    path: "$.jobs.*.steps[].cancel",
-    reason:
-      "a step that terminates one named background step, taking that step's id and sending SIGTERM so it can clean up",
-    category: "unmodelled",
-  },
-  {
-    path: "$.jobs.*.steps[].parallel",
-    reason:
-      "a group of steps run at once, each as a background step and all waited for before the job continues; an array of steps",
-    category: "unmodelled",
-  },
-  {
-    path: "$.jobs.*.steps[].parallel[]",
-    reason: "one step inside a parallel group, with the same shape as any other step",
-    category: "unmodelled",
-  },
-  {
-    path: "$.jobs.*.steps[].wait",
-    reason:
-      "a step that pauses the job until named background steps finish, taking one step id as a string or several as an array",
-    category: "unmodelled",
-  },
-  {
-    path: "$.jobs.*.steps[].wait[]",
-    reason: "one background step id that a wait step blocks on",
-    category: "unmodelled",
-  },
-  {
-    path: '$.jobs.*.steps[]["wait-all"]',
-    reason:
-      "a step that pauses the job until every background step finishes; it takes a boolean (or null) and no arguments",
-    category: "unmodelled",
-  },
-  {
     path: "$.jobs.*.strategy.matrix.*[].*.*",
     reason:
       "an object under a key of a matrix cell object; `definitions.configuration` recurses through `additionalProperties`, while GitHub documents cell object keys that hold scalars, one level deep",
@@ -190,4 +150,10 @@ export const GAPS: readonly Gap[] = [
 ];
 
 /** A modelled path the schema does not enumerate; ADR 0011 says when a row is due. */
-export const OVERCLAIMS: readonly Overclaim[] = [];
+export const OVERCLAIMS: readonly Overclaim[] = [
+  {
+    path: "$.jobs.*.steps[].parallel[].run",
+    reason:
+      "a step's keys inside a `parallel` group; the schema's group items reuse `#/definitions/step`, which the walk has already expanded on this path, so it stops at the group and never enumerates the keys below it",
+  },
+];

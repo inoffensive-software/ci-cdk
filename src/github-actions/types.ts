@@ -21,6 +21,16 @@ export interface Step {
   readonly env?: Readonly<Record<string, Scalar>>;
   readonly "continue-on-error"?: boolean | Text;
   readonly "timeout-minutes"?: number;
+  /** Starts the step asynchronously; `wait` and `cancel` reach it by `id`. */
+  readonly background?: boolean;
+  /** One background step id, or several. */
+  readonly wait?: string | readonly string[];
+  /** A bare `wait-all` is `null`, which is what the upstream file parses to. */
+  readonly "wait-all"?: boolean | null;
+  /** The id of the one background step this step terminates. */
+  readonly cancel?: string;
+  /** Steps that run together, each as a background step, with an implicit wait at the end. */
+  readonly parallel?: readonly Step[];
   /** Keys the vocabulary does not model, emitted in this step's body after the modelled keys. */
   readonly raw?: Readonly<Record<string, Value>>;
 }

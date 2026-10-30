@@ -1,5 +1,6 @@
 import type { Workflow } from "../../../src/github-actions/index.js";
 import { ANYHOW } from "./anyhow.fixture.js";
+import { CURL_CHECKSRC } from "./curl-checksrc.fixture.js";
 import { GOT } from "./got.fixture.js";
 import { MINDEE_CRON } from "./mindee-cron.fixture.js";
 import { MISE_PUBLISH_VERSION } from "./mise-publish-version.fixture.js";
@@ -18,6 +19,7 @@ export interface Entry {
 
 export const ENTRIES: readonly Entry[] = [
   { name: "got", file: "got.yml", workflow: GOT },
+  { name: "curl-checksrc", file: "curl-checksrc.yml", workflow: CURL_CHECKSRC },
   { name: "anyhow", file: "anyhow.yml", workflow: ANYHOW },
   { name: "trpc-main", file: "trpc-main.yml", workflow: TRPC_MAIN },
   { name: "trpc-release", file: "trpc-release.yml", workflow: TRPC_RELEASE },
