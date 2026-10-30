@@ -39,6 +39,11 @@ pnpm fmt            # oxfmt, writes
 - **New directories must be zoned.** `coverage.requireAllFiles` fails the build otherwise — add the
   zone and its `allow` list in `.fallowrc.json` in the same change.
 
+- **Errors are exceptions defined in core.** `Diagnostic`, `DiagnosticError`, `fail()` and
+  `formatDiagnostics()` belong in `src/core/errors.ts`; providers add diagnostics, they do not define
+  their own error classes. Throw only from `toDoc`, because it is the only place with the whole
+  document; anywhere else is a bug.
+
 - **Barrels only at package roots.** `src/index.ts` and `src/<provider>/index.ts` re-export and
   contain nothing else. Everything inside a package uses relative deep imports.
 

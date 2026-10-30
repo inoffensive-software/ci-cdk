@@ -24,6 +24,6 @@ test/corpus/<provider>/PROVENANCE.md  repo, commit SHA, path, licence for every 
 
 - **One fixture per shape.** Prefer configs whose features are distinct (matrix, needs graph,
   artifacts, caching, conditionals) over near-duplicates.
-  
+
 - **A config we designed for is not a corpus entry.** The corpus exists to find the keys the types
   do not model; at least one entry per provider should force `raw` until it is modelled.
