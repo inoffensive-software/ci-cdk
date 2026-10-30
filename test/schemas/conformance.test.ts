@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { job, render, step, workflow } from "../../src/github-actions/index.js";
 import { problemsFor, type SchemaProblem } from "./validate.js";
 
-const root = fileURLToPath(new URL("../..", import.meta.url));
+const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 
 interface Fixture {
   /** Repository-relative path, so a failure names the file a reviewer can open. */
@@ -28,18 +28,18 @@ const ymlFiles = (dir: string): readonly string[] =>
  * Providers with a vendored schema. A provider can exist before its schema does, and a golden can
  * only be checked against a schema that exists.
  */
-const schemaProviders = new Set(
-  readdirSync(join(root, "test", "schemas"), { withFileTypes: true })
+const SCHEMA_PROVIDERS = new Set(
+  readdirSync(join(ROOT, "test", "schemas"), { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
     .map((entry) => entry.name.slice(0, -".json".length)),
 );
 
 /** Emitted goldens, one directory per provider under `src/<provider>/__snapshots__`. */
 const snapshotFixtures = (): readonly Fixture[] =>
-  readdirSync(join(root, "src"), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && schemaProviders.has(entry.name))
+  readdirSync(join(ROOT, "src"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && SCHEMA_PROVIDERS.has(entry.name))
     .flatMap((entry) =>
-      ymlFiles(join(root, "src", entry.name, "__snapshots__")).map((file) => ({
+      ymlFiles(join(ROOT, "src", entry.name, "__snapshots__")).map((file) => ({
         path: `src/${entry.name}/__snapshots__/${file}`,
         provider: entry.name,
       })),
@@ -47,10 +47,10 @@ const snapshotFixtures = (): readonly Fixture[] =>
 
 /** Pinned real-world configs, added one provider directory at a time. */
 const corpusFixtures = (): readonly Fixture[] =>
-  readdirSync(join(root, "test", "corpus"), { withFileTypes: true })
+  readdirSync(join(ROOT, "test", "corpus"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .flatMap((entry) =>
-      ymlFiles(join(root, "test", "corpus", entry.name)).map((file) => ({
+      ymlFiles(join(ROOT, "test", "corpus", entry.name)).map((file) => ({
         path: `test/corpus/${entry.name}/${file}`,
         provider: entry.name,
       })),
@@ -58,7 +58,7 @@ const corpusFixtures = (): readonly Fixture[] =>
 
 /** The repository's own pipelines: generated from the DSL, and as much a fixture as the goldens. */
 const pipelineFixtures = (): readonly Fixture[] =>
-  ymlFiles(join(root, ".github", "workflows")).map((file) => ({
+  ymlFiles(join(ROOT, ".github", "workflows")).map((file) => ({
     path: `.github/workflows/${file}`,
     provider: "github-actions",
   }));
@@ -69,7 +69,7 @@ const fixtures = (): readonly Fixture[] =>
   );
 
 const problemsOf = (fixture: Fixture): readonly SchemaProblem[] =>
-  problemsFor(fixture.provider, readFileSync(join(root, fixture.path), "utf8"));
+  problemsFor(fixture.provider, readFileSync(join(ROOT, fixture.path), "utf8"));
 
 const described = (problems: readonly SchemaProblem[]): readonly string[] =>
   problems.map((problem) => `${problem.path} ${problem.message}`);
@@ -79,9 +79,9 @@ const described = (problems: readonly SchemaProblem[]): readonly string[] =>
  * makes this golden the fixture the schema must reject: it carries `custom-key`, which GitHub does
  * not define. Everything else the library emits is expected to conform.
  */
-const rawFixture = "src/github-actions/__snapshots__/raw-shape.yml";
+const RAW_FIXTURE = "src/github-actions/__snapshots__/raw-shape.yml";
 
-const negativeFixtures: readonly string[] = [rawFixture];
+const NEGATIVE_FIXTURES: readonly string[] = [RAW_FIXTURE];
 
 /** A workflow whose only flaw is a `raw` key no schema knows, built through the public API. */
 const unmodelledRaw = (): string =>
@@ -108,27 +108,27 @@ const remoteReferences = (schema: string): readonly string[] =>
     return reference.startsWith("#/") ? [] : [reference];
   });
 
-const all = fixtures();
-const valid = all.filter((fixture) => !negativeFixtures.includes(fixture.path));
+const ALL = fixtures();
+const VALID = ALL.filter((fixture) => !NEGATIVE_FIXTURES.includes(fixture.path));
 
 describe("schema conformance", () => {
   it("checks the provider goldens as well as any corpus config", () => {
     expect(snapshotFixtures().length).toBeGreaterThan(0);
-    expect(valid.length).toBeGreaterThan(0);
+    expect(VALID.length).toBeGreaterThan(0);
   });
 
-  it.each([...valid])("$path", (fixture: Fixture) => {
+  it.each([...VALID])("$path", (fixture: Fixture) => {
     expect(described(problemsOf(fixture))).toStrictEqual([]);
   });
 
   it("declares exactly the fixtures that must fail", () => {
-    const invalid = all.filter((fixture) => problemsOf(fixture).length > 0).map(({ path }) => path);
+    const invalid = ALL.filter((fixture) => problemsOf(fixture).length > 0).map(({ path }) => path);
 
-    expect(invalid).toStrictEqual([...negativeFixtures].toSorted());
+    expect(invalid).toStrictEqual([...NEGATIVE_FIXTURES].toSorted());
   });
 
   it("rejects the fixture carrying an unmodelled key through raw", () => {
-    const problems = described(problemsOf({ path: rawFixture, provider: "github-actions" }));
+    const problems = described(problemsOf({ path: RAW_FIXTURE, provider: "github-actions" }));
 
     expect(problems).toContain(
       '/jobs/build/steps/0 must NOT have additional properties: "custom-key"',
@@ -144,7 +144,7 @@ describe("schema conformance", () => {
   });
 
   it("vendors a self-contained schema with no remote references", () => {
-    const schema = readFileSync(join(root, "test", "schemas", "github-actions.json"), "utf8");
+    const schema = readFileSync(join(ROOT, "test", "schemas", "github-actions.json"), "utf8");
 
     expect(remoteReferences(schema)).toStrictEqual([]);
   });

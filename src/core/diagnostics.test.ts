@@ -13,10 +13,10 @@ import {
   type Diagnostic,
 } from "./index.js";
 
-const coreDir = import.meta.dirname;
+const CORE_DIR = import.meta.dirname;
 
 /** `undefined` as data, rather than as an absent argument. */
-const absent: undefined = undefined;
+const ABSENT: undefined = undefined;
 
 class Job {
   readonly name = "build";
@@ -71,13 +71,13 @@ describe("paths", () => {
   });
 
   it("rejects undefined at the root", () => {
-    const [diagnostic] = diagnosticsOf(() => fromValue(absent));
+    const [diagnostic] = diagnosticsOf(() => fromValue(ABSENT));
 
     expect(diagnostic?.path).toBe("$");
   });
 
   it("uses one path notation for every shape", () => {
-    expect(diagnosticsOf(() => fromValue(absent))[0]?.path).toBe("$");
+    expect(diagnosticsOf(() => fromValue(ABSENT))[0]?.path).toBe("$");
     expect(diagnosticsOf(() => emitted({ a: undefined }))[0]?.path).toBe("$.a");
     expect(diagnosticsOf(() => emitted({ "runs-on": undefined }))[0]?.path).toBe('$["runs-on"]');
     expect(diagnosticsOf(() => emitted([undefined]))[0]?.path).toBe("$[0]");
@@ -235,7 +235,7 @@ describe("header", () => {
 });
 
 const coreSources = async (): Promise<readonly string[]> => {
-  const entries = await readdir(coreDir, { recursive: true, withFileTypes: true });
+  const entries = await readdir(CORE_DIR, { recursive: true, withFileTypes: true });
 
   return entries
     .filter(
@@ -266,7 +266,7 @@ describe("boundary discipline", () => {
 
     const offenders = sources.filter((source) => UNKNOWN.test(withoutComments(source.text)));
 
-    expect(offenders.map((source) => source.file)).toStrictEqual([join(coreDir, "from-value.ts")]);
+    expect(offenders.map((source) => source.file)).toStrictEqual([join(CORE_DIR, "from-value.ts")]);
   });
 
   it("scans the core sources", async () => {
@@ -274,7 +274,7 @@ describe("boundary discipline", () => {
   });
 
   it("narrows unknown with type guards rather than casts", async () => {
-    const source = await readFile(join(coreDir, "from-value.ts"), "utf8");
+    const source = await readFile(join(CORE_DIR, "from-value.ts"), "utf8");
 
     expect([...withoutComments(source).matchAll(CAST)]).toStrictEqual([]);
   });

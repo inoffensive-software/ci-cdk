@@ -1,8 +1,8 @@
 import { type Workflow, job, step, workflow } from "../../../src/github-actions/index.js";
 
-const checkout = step({ uses: "actions/checkout@v7" });
+const CHECKOUT = step({ uses: "actions/checkout@v7" });
 
-export const anyhow: Workflow = workflow({
+export const ANYHOW: Workflow = workflow({
   name: "CI",
   on: {
     push: {},
@@ -23,7 +23,7 @@ export const anyhow: Workflow = workflow({
       strategy: { "fail-fast": false, matrix: { rust: ["nightly", "beta", "stable", "1.88.0"] } },
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({
           uses: "dtolnay/rust-toolchain@master",
           with: { toolchain: "${{matrix.rust}}", components: "rust-src" },
@@ -58,7 +58,7 @@ export const anyhow: Workflow = workflow({
       strategy: { "fail-fast": false, matrix: { rust: ["1.68.0"] } },
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({
           uses: "dtolnay/rust-toolchain@master",
           with: { toolchain: "${{matrix.rust}}", components: "rust-src" },
@@ -75,7 +75,7 @@ export const anyhow: Workflow = workflow({
       "runs-on": "ubuntu-latest",
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({ uses: "dtolnay/rust-toolchain@nightly" }),
         step({ run: "cargo generate-lockfile -Z minimal-versions" }),
         step({ run: "cargo check --locked" }),
@@ -89,7 +89,7 @@ export const anyhow: Workflow = workflow({
       "runs-on": "windows-latest",
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({ uses: "dtolnay/rust-toolchain@stable", with: { components: "rust-src" } }),
         step({ run: "cargo check" }),
       ],
@@ -103,7 +103,7 @@ export const anyhow: Workflow = workflow({
       "timeout-minutes": 45,
       env: { RUSTDOCFLAGS: "-Dwarnings" },
       steps: [
-        checkout,
+        CHECKOUT,
         step({ uses: "dtolnay/rust-toolchain@nightly", with: { components: "rust-src" } }),
         step({ uses: "dtolnay/install@cargo-docs-rs" }),
         step({ run: "cargo docs-rs" }),
@@ -116,7 +116,7 @@ export const anyhow: Workflow = workflow({
       if: "github.event_name != 'pull_request'",
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({ uses: "dtolnay/rust-toolchain@nightly", with: { components: "clippy, rust-src" } }),
         step({ run: "cargo clippy --tests -- -Dclippy::all -Dclippy::pedantic" }),
       ],
@@ -129,7 +129,7 @@ export const anyhow: Workflow = workflow({
       "runs-on": "ubuntu-latest",
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({ uses: "dtolnay/rust-toolchain@miri" }),
         step({ run: "cargo miri setup" }),
         step({ run: "cargo miri test", env: { MIRIFLAGS: "-Zmiri-strict-provenance" } }),
@@ -142,7 +142,7 @@ export const anyhow: Workflow = workflow({
       if: "github.event_name != 'pull_request'",
       "timeout-minutes": 45,
       steps: [
-        checkout,
+        CHECKOUT,
         step({ uses: "dtolnay/rust-toolchain@stable" }),
         step({ uses: "dtolnay/install@cargo-outdated" }),
         step({ run: "cargo outdated --workspace --exit-code 1" }),

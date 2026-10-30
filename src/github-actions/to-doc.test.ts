@@ -41,7 +41,7 @@ const first = (doc: Doc): Doc => {
   return item;
 };
 
-const smallest = toDoc(
+const SMALLEST = toDoc(
   workflow({
     name: "CI",
     on: "push",
@@ -57,11 +57,11 @@ const smallest = toDoc(
 
 describe("toDoc", () => {
   it("emits the workflow entries in declared order", () => {
-    expect(keys(smallest)).toStrictEqual(["name", "on", "jobs"]);
+    expect(keys(SMALLEST)).toStrictEqual(["name", "on", "jobs"]);
   });
 
   it("keys the jobs map by id and strips id from the job body", () => {
-    const jobs = entry(smallest, "jobs");
+    const jobs = entry(SMALLEST, "jobs");
 
     expect(keys(jobs)).toStrictEqual(["build"]);
 
@@ -72,7 +72,7 @@ describe("toDoc", () => {
   });
 
   it("lowers a run string to a literal block scalar", () => {
-    const firstStep = first(entry(entry(entry(smallest, "jobs"), "build"), "steps"));
+    const firstStep = first(entry(entry(entry(SMALLEST, "jobs"), "build"), "steps"));
 
     expect(entry(firstStep, "run")).toStrictEqual({
       kind: "scalar",

@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { type Job, type Workflow, expr, job, render, step, workflow } from "./index.js";
 
-const steps = [step({ run: "npm test" })];
+const STEPS = [step({ run: "npm test" })];
 
 const build = (overrides: Partial<Job> = {}): Job =>
-  job({ id: "build", "runs-on": "ubuntu-latest", steps, ...overrides });
+  job({ id: "build", "runs-on": "ubuntu-latest", steps: STEPS, ...overrides });
 
 const renderWorkflow = (value: Workflow): string => render(value, { header: "" });
 

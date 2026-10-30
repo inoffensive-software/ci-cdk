@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const dir = import.meta.dirname;
+const DIR = import.meta.dirname;
 
 /** `Vendored as: \`<file>\`, SHA-256 \`<hash>\``, which may wrap across lines in the markdown. */
 const RECORDED = /Vendored as: `([^`]+)`, SHA-256\s+`([0-9a-f]{64})`/gu;
@@ -15,7 +15,7 @@ interface Recorded {
 }
 
 const recordedHashes = async (): Promise<readonly Recorded[]> => {
-  const markdown = await readFile(join(dir, "PROVENANCE.md"), "utf8");
+  const markdown = await readFile(join(DIR, "PROVENANCE.md"), "utf8");
 
   return [...markdown.matchAll(RECORDED)].map((match) => ({
     file: match[1] ?? "",
@@ -30,7 +30,7 @@ describe("provenance", () => {
     expect(recorded).not.toHaveLength(0);
 
     for (const entry of recorded) {
-      const bytes = await readFile(join(dir, entry.file));
+      const bytes = await readFile(join(DIR, entry.file));
       const actual = createHash("sha256").update(bytes).digest("hex");
 
       expect([entry.file, actual]).toStrictEqual([entry.file, entry.hash]);
