@@ -84,3 +84,38 @@ as the file (see the corpus README and ADR 0005).
 - Comparison: data
 - Why this entry: a job that runs in a `container` with an image, job-level `permissions` with two
   scopes, `secrets: inherit` on a `uses` job that has no `runs-on`, and a numeric `with` value.
+
+## mlflow-js
+
+- Repo: <https://github.com/mlflow/mlflow>
+- Commit: `343f67625336fa4d4b2b83fd77cbade732e7cf19`
+- Path: `.github/workflows/js.yml`
+- Licence: Apache-2.0, Copyright 2018 Databricks, Inc.
+- Vendored as: `mlflow-js.yml`, SHA-256
+  `9975df602e4c260373d194940f363076d19f6704b3f11c25c1f03bed819b527a`
+- Comparison: data
+- Why this entry: workflow and job `cache-mode` values, a scalar matrix axis, workflow and job
+  `defaults.run`, and `permissions: {}`.
+
+## mindee-cron
+
+- Repo: <https://github.com/mindee/mindee-api-nodejs>
+- Commit: `4f26fe3f99a7d3ad1f9847bc2b2dfcc1332de0f0`
+- Path: `.github/workflows/cron.yml`
+- Licence: MIT, Copyright (c) Mindee
+- Vendored as: `mindee-cron.yml`, SHA-256
+  `aee829c6531d9514ff8719cf499451e62784bc5579f1dae987e769f13b3f9b2c`
+- Comparison: data
+- Why this entry: a schedule entry carrying a `timezone` beside its cron.
+
+## uv-ai-policy
+
+- Repo: <https://github.com/astral-sh/uv>
+- Commit: `85b7a374a2f6bda197915f89d32f746143beb315`
+- Path: `.github/workflows/ai-policy.yml`
+- Licence: MIT OR Apache-2.0, Copyright (c) Astral Software Inc.
+- Vendored as: `uv-ai-policy.yml`, SHA-256
+  `274282a5f38f002ac74c02843e9d59c5134d516a3d3b0a7db482405d6de4db2b`
+- Comparison: data
+- Why this entry: `environment.deployment: false`, `type: number` dispatch inputs, `permissions: {}`,
+  and an expression-bearing `runs-on`.
