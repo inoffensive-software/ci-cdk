@@ -1,9 +1,7 @@
 import { type Gap, type Overclaim, gapCategoryOf } from "../../schemas/gap-debt.js";
 import debt from "./schema-gap-debt.json" with { type: "json" };
 
-export { GAP_CATEGORIES } from "../../schemas/gap-debt.js";
-
-export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
+export type { Gap, Overclaim } from "../../schemas/gap-debt.js";
 
 /**
  * The roadmap of documented grammar this provider cannot emit, one row per missing keyword. Every row
