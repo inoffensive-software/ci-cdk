@@ -1,14 +1,14 @@
 import {
   block,
+  entry,
   fail,
   fromValue,
   map,
+  present,
   seq,
   type Diagnostic,
   type Doc,
-  type DocEntry,
   type Text,
-  type Value,
 } from "../core/index.js";
 import { rawEntries } from "../core/raw.js";
 import { onDoc } from "./on-doc.js";
@@ -19,22 +19,11 @@ import type {
   Environment,
   Job,
   RunDefaults,
-  Scalar,
   Step,
   Strategy,
   Workflow,
 } from "./types.js";
 import { validate } from "./validate.js";
-
-/** Only a declared field with a value is emitted; absent fields are not lowered at all. */
-const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
-  value === undefined ? [] : [{ key, value }];
-
-/** Everything a modelled field can hold without building a `Doc` by hand. */
-type Presentable = Scalar | Value | Readonly<Record<string, Scalar>>;
-
-const present = (value: Presentable | undefined): Doc | undefined =>
-  value === undefined ? undefined : fromValue(value);
 
 /** A plain string is shell text; a leaf carries its own style. */
 const run = (value: Text | undefined): Doc | undefined => {

@@ -1,4 +1,4 @@
-import { fromValue, map, seq, type Diagnostic, type Doc, type DocEntry } from "../core/index.js";
+import { entry, fromValue, map, seq, type Diagnostic, type Doc } from "../core/index.js";
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
 import { conditionDoc, finalDoc, stepDoc } from "./step-doc.js";
@@ -13,10 +13,6 @@ const STAGE_RESERVED: readonly string[] = [
   "steps",
   "trigger",
 ];
-
-/** Only a declared field with a value is emitted; absent fields are not lowered at all. */
-const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
-  value === undefined ? [] : [{ key, value }];
 
 const isParallelMap = (
   value: ParallelItem["parallel"],

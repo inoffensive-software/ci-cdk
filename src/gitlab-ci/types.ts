@@ -1,11 +1,11 @@
-import type { LeafNode, Text, Value } from "../core/index.js";
+import type { Scalar, Text, Value } from "../core/index.js";
 
 /**
- * An arbitrary YAML scalar, for maps whose keys the author chooses. Wider than `Text` because GitLab
- * keeps `FF_NETWORK_PER_BUILD: 1` and `STABLE_VERSION: "1.5"` distinct: a quoted number is a different
- * value to the job that reads it (ADR 0010).
+ * An arbitrary YAML scalar, for maps whose keys the author chooses. The type lives in core because
+ * every provider needs the same alias; this module re-exports it so the provider's other files keep
+ * one import site.
  */
-export type Scalar = string | number | boolean | LeafNode;
+export type { Scalar };
 
 /**
  * A job's commands, in GitLab's own spelling: one string, one leaf that decides its own style, or an

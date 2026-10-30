@@ -1,12 +1,12 @@
-import type { LeafNode, Text, Value } from "../core/index.js";
+import type { Scalar, Text, Value } from "../core/index.js";
 import type { On } from "./trigger.js";
 
 /**
- * An arbitrary YAML scalar, for maps whose keys the author chooses. Wider than `Text` because GitHub
- * keeps `fetch-depth: 0` and `persist-credentials: false` typed: a quoted `"0"` is a different value
- * to the action that reads it.
+ * An arbitrary YAML scalar, for maps whose keys the author chooses. The type lives in core because
+ * every provider needs the same alias; it is re-exported here because this barrel already published
+ * the name.
  */
-export type Scalar = string | number | boolean | LeafNode;
+export type { Scalar };
 
 /** A shell or action step, in GitHub's documented key order. */
 export interface Step {

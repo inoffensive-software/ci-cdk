@@ -113,7 +113,8 @@ Core is a data layer, not a domain layer. The admission test for anything enteri
 describe the thing without naming a provider? If not, it belongs in a provider directory.
 
 ```
-src/core/doc.ts         the Doc union and its constructors (map, seq, scalar, block, tagged)
+src/core/doc.ts         the Doc union, Scalar and its constructors (map, seq, scalar, block, tagged)
+src/core/fields.ts      entry(): the absent-field guard; present(): lower a field or leave it absent
 src/core/from-value.ts  fromValue(unknown) -> Doc: the boundary parser
 src/core/canonical-number.ts  the canonical-number predicate fromValue and the serializer share
 src/core/value.ts       Value: the precise recursive type data has after the boundary

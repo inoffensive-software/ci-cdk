@@ -1,4 +1,5 @@
 import {
+  entry,
   fail,
   fromValue,
   map,
@@ -30,10 +31,6 @@ const DOCUMENT_RESERVED: readonly string[] = [
   "options",
   "pipelines",
 ];
-
-/** Only a declared field with a value is emitted; absent fields are not lowered at all. */
-const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
-  value === undefined ? [] : [{ key, value }];
 
 /** A cache is either its path or the `path`/`key` map; a key names the files it hashes. */
 const isCacheMap = (
