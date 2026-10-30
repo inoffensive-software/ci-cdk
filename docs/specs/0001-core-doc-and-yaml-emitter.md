@@ -256,7 +256,8 @@ contract and an upgrade may change bytes.
 - `erasableSyntaxOnly`: no enums; `kind` and `style` are string-literal unions.
 - `isolatedDeclarations`: explicit return types on every exported function and explicit types on
   every exported constant.
-- `unknown` appears only as the parameter type of `fromValue`. `any` appears nowhere.
+- `unknown` is confined to the boundary parser, `from-value.ts`, and never appears in an exported
+  type. `any` appears nowhere.
 - Core imports nothing from the project; the fallow `core` zone keeps `allow: []`.
 
 ## Testing Decisions

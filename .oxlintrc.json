@@ -76,6 +76,7 @@
     {
       "files": ["src/core/from-value.ts"],
       "rules": {
+        "anti-slop/no-object-parameters": "off",
         "anti-slop/no-unknown-parameters": "off"
       }
     }

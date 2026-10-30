@@ -13,6 +13,14 @@ import { fail, type Diagnostic } from "./errors.js";
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/u;
 
+/** The minimum a node needs before `kind` can be read off it. */
+interface Kinded {
+  readonly kind?: unknown;
+}
+
+const isObjectLike = (value: unknown): value is Kinded =>
+  typeof value === "object" && value !== null;
+
 const isLeafNode = (value: unknown): value is LeafNode => {
   if (typeof value !== "object" && typeof value !== "function") {
     return false;
@@ -62,7 +70,7 @@ const lowerNumber = (value: number, path: string, diagnostics: Diagnostic[]): Do
 const lowerArray = (
   items: readonly unknown[],
   path: string,
-  ancestors: readonly object[],
+  ancestors: readonly unknown[],
   diagnostics: Diagnostic[],
 ): Doc => {
   if (ancestors.includes(items)) {
@@ -79,19 +87,19 @@ const lowerArray = (
 };
 
 const lowerObject = (
-  value: unknown,
+  value: object,
   path: string,
-  ancestors: readonly object[],
+  ancestors: readonly unknown[],
   diagnostics: Diagnostic[],
 ): Doc => {
-  if (ancestors.includes(value as object)) {
+  if (ancestors.includes(value)) {
     return reject(diagnostics, path, {
       message: "circular reference: this object contains itself",
       hint: "remove the cycle, or flatten the data before lowering it",
     });
   }
 
-  const prototype = Object.getPrototypeOf(value);
+  const prototype: unknown = Object.getPrototypeOf(value);
 
   if (prototype !== Object.prototype && prototype !== null) {
     return reject(diagnostics, path, {
@@ -100,17 +108,36 @@ const lowerObject = (
     });
   }
 
-  const chain = [...ancestors, value as object];
+  const chain = [...ancestors, value];
   const entries: DocEntry[] = [];
 
-  for (const [key, child] of Object.entries(value as object)) {
+  for (const [key, child] of Object.entries(value)) {
     entries.push({ key, value: lower(child, childPath(path, key), chain, diagnostics) });
   }
 
   return map(entries);
 };
 
-const describeUnsupported = (value: unknown): string => {
+const constructorName = (value: object): string | undefined => {
+  let current: unknown = value;
+
+  // Walk the chain, own properties only: a `constructor` getter is never invoked, and the name is
+  // found wherever the class put it.
+  while (typeof current === "object" && current !== null) {
+    const descriptor = Object.getOwnPropertyDescriptor(current, "constructor");
+    const constructor: unknown = descriptor?.value;
+
+    if (typeof constructor === "function") {
+      return constructor.name === "" ? undefined : constructor.name;
+    }
+
+    current = Object.getPrototypeOf(current);
+  }
+
+  return undefined;
+};
+
+const describeUnsupported = (value: object): string => {
   if (value instanceof Date) {
     return "a Date";
   }
@@ -123,9 +150,9 @@ const describeUnsupported = (value: unknown): string => {
     return "a Set";
   }
 
-  const name = (value as { readonly constructor?: { readonly name?: string } }).constructor?.name;
+  const name = constructorName(value);
 
-  if (name === undefined || name === "" || name === "Object") {
+  if (name === undefined || name === "Object") {
     return "this object";
   }
 
@@ -162,11 +189,11 @@ const lowerUnsupported = (input: unknown, path: string, diagnostics: Diagnostic[
 };
 
 const isDocNode = (value: unknown): value is Doc => {
-  if (typeof value !== "object" || value === null) {
+  if (!isObjectLike(value)) {
     return false;
   }
 
-  const kind: unknown = (value as { readonly kind?: unknown }).kind;
+  const kind = value.kind;
 
   return kind === "map" || kind === "seq" || kind === "scalar";
 };
@@ -187,7 +214,7 @@ const lowerLeaf = (leaf: LeafNode, path: string, diagnostics: Diagnostic[]): Doc
 const lower = (
   input: unknown,
   path: string,
-  ancestors: readonly object[],
+  ancestors: readonly unknown[],
   diagnostics: Diagnostic[],
 ): Doc => {
   if (isLeafNode(input)) {

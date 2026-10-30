@@ -1,6 +1,22 @@
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
-import { DOC, DiagnosticError, fromValue, renderDoc, scalar, type Diagnostic } from "./index.js";
+import {
+  DOC,
+  DiagnosticError,
+  formatDiagnostics,
+  fromValue,
+  renderDoc,
+  scalar,
+  type Diagnostic,
+} from "./index.js";
+
+const coreDir = import.meta.dirname;
+
+/** `undefined` as data, rather than as an absent argument. */
+const absent: undefined = undefined;
 
 class Job {
   readonly name = "build";
@@ -11,12 +27,12 @@ interface Loop {
   next?: Loop;
 }
 
-const diagnosticsOf = (run: () => void): readonly Diagnostic[] => {
+const errorOf = (run: () => void): DiagnosticError => {
   try {
     run();
   } catch (error) {
     if (error instanceof DiagnosticError) {
-      return error.diagnostics;
+      return error;
     }
 
     throw error;
@@ -24,6 +40,8 @@ const diagnosticsOf = (run: () => void): readonly Diagnostic[] => {
 
   throw new Error("expected a DiagnosticError");
 };
+
+const diagnosticsOf = (run: () => void): readonly Diagnostic[] => errorOf(run).diagnostics;
 
 const emitted = (value: Parameters<typeof fromValue>[0]): string =>
   renderDoc(fromValue(value), { header: "" });
@@ -67,12 +85,67 @@ describe("diagnostics", () => {
     expect(diagnostic?.message).toContain("Job");
   });
 
+  it("names a class found further up the prototype chain", () => {
+    const derived: { readonly name: string } = Object.create(Object.create(Job.prototype));
+
+    const [diagnostic] = diagnosticsOf(() => emitted({ job: derived }));
+
+    expect(diagnostic?.message).toContain("Job");
+  });
+
   it("rejects NaN and Infinity", () => {
     const diagnostics = diagnosticsOf(() =>
       emitted({ a: Number.NaN, b: Number.POSITIVE_INFINITY }),
     );
 
     expect(diagnostics.map((diagnostic) => diagnostic.path)).toStrictEqual(["$.a", "$.b"]);
+  });
+
+  it("rejects negative Infinity", () => {
+    const [diagnostic] = diagnosticsOf(() => emitted({ a: Number.NEGATIVE_INFINITY }));
+
+    expect(diagnostic?.path).toBe("$.a");
+    expect(diagnostic?.message).toContain("-Infinity");
+  });
+
+  it("rejects a symbol", () => {
+    const [diagnostic] = diagnosticsOf(() => emitted({ a: Symbol("s") }));
+
+    expect(diagnostic?.path).toBe("$.a");
+    expect(diagnostic?.message).toContain("symbols");
+  });
+
+  it("rejects a bigint", () => {
+    const [diagnostic] = diagnosticsOf(() => emitted({ a: 1n }));
+
+    expect(diagnostic?.path).toBe("$.a");
+    expect(diagnostic?.message).toContain("bigint");
+  });
+
+  it("rejects a Set", () => {
+    const [diagnostic] = diagnosticsOf(() => emitted({ a: new Set([1]) }));
+
+    expect(diagnostic?.path).toBe("$.a");
+    expect(diagnostic?.message).toContain("Set");
+  });
+
+  it("rejects undefined inside an array by index", () => {
+    const [diagnostic] = diagnosticsOf(() => emitted([undefined]));
+
+    expect(diagnostic?.path).toBe("$[0]");
+  });
+
+  it("rejects undefined at the root", () => {
+    const [diagnostic] = diagnosticsOf(() => fromValue(absent));
+
+    expect(diagnostic?.path).toBe("$");
+  });
+
+  it("uses one path notation for every shape", () => {
+    expect(diagnosticsOf(() => fromValue(absent))[0]?.path).toBe("$");
+    expect(diagnosticsOf(() => emitted({ a: undefined }))[0]?.path).toBe("$.a");
+    expect(diagnosticsOf(() => emitted({ "runs-on": undefined }))[0]?.path).toBe('$["runs-on"]');
+    expect(diagnosticsOf(() => emitted([undefined]))[0]?.path).toBe("$[0]");
   });
 
   it("rejects a cycle and names the repeated path", () => {
@@ -110,6 +183,22 @@ describe("diagnostics", () => {
     expect(emitWithUndefined).toThrow(/hint:/u);
   });
 
+  it("formats one diagnostic per line, with the hint indented under it", () => {
+    expect(
+      formatDiagnostics([
+        { path: "$", message: "boom" },
+        { path: "$.a", message: "bad value", hint: "fix it" },
+      ]),
+    ).toBe("$: boom\n$.a: bad value\n  hint: fix it");
+  });
+
+  it("uses formatDiagnostics for the error message", () => {
+    const error = errorOf(emitWithUndefined);
+
+    expect(error.message).toBe(formatDiagnostics(error.diagnostics));
+    expect(error.name).toBe("DiagnosticError");
+  });
+
   it("rejects a leaf whose DOC method does not return a node", () => {
     const [diagnostic] = diagnosticsOf(() => emitted({ a: { [DOC]: () => 5 } }));
 
@@ -129,5 +218,52 @@ describe("diagnostics", () => {
     const [diagnostic] = diagnosticsOf(() => renderDoc(fromValue({ a: 1 }), { header: "a\nb" }));
 
     expect(diagnostic?.path).toBe("$");
+    expect(diagnostic?.message).toContain("single line");
+  });
+});
+
+const coreSources = async (): Promise<readonly string[]> => {
+  const entries = await readdir(coreDir, { recursive: true, withFileTypes: true });
+
+  return entries
+    .filter(
+      (entry) => entry.isFile() && entry.name.endsWith(".ts") && !entry.name.endsWith(".test.ts"),
+    )
+    .map((entry) => join(entry.parentPath, entry.name))
+    .toSorted((left, right) => left.localeCompare(right));
+};
+
+/** A cast that narrows a value; `as const` is not one. */
+const CAST =
+  /\bas\s+(?:readonly\s+)?(?:[A-Z]|\{|\[|\(|string\b|number\b|boolean\b|object\b|unknown\b|never\b|any\b|null\b)/gu;
+
+/** `unknown` as an annotation, not as prose in a comment. */
+const UNKNOWN = /\bunknown\b/u;
+
+/** Source with comments removed, so a scan only sees code. */
+const withoutComments = (source: string): string =>
+  source.replaceAll(/\/\*[\s\S]*?\*\//gu, "").replaceAll(/\/\/.*$/gmu, "");
+
+describe("boundary discipline", () => {
+  it("keeps unknown annotations inside the boundary parser", async () => {
+    const files = await coreSources();
+
+    const sources = await Promise.all(
+      files.map(async (file) => ({ file, text: await readFile(file, "utf8") })),
+    );
+
+    const offenders = sources.filter((source) => UNKNOWN.test(withoutComments(source.text)));
+
+    expect(offenders.map((source) => source.file)).toStrictEqual([join(coreDir, "from-value.ts")]);
+  });
+
+  it("scans the core sources", async () => {
+    expect(await coreSources()).not.toHaveLength(0);
+  });
+
+  it("narrows unknown with type guards rather than casts", async () => {
+    const source = await readFile(join(coreDir, "from-value.ts"), "utf8");
+
+    expect([...withoutComments(source).matchAll(CAST)]).toStrictEqual([]);
   });
 });
