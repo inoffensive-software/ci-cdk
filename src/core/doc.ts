@@ -60,6 +60,13 @@ export interface LeafNode {
  */
 export type Text = string | LeafNode;
 
+/**
+ * An arbitrary scalar, for author-named maps whose keys the library does not choose. Wider than
+ * `Text` because a tool may keep `0` and `"0"` distinct, and wider than `Value` because a leaf
+ * decides its own style.
+ */
+export type Scalar = string | number | boolean | LeafNode;
+
 export interface ScalarOptions {
   readonly style?: ScalarStyle;
   readonly tag?: string;

@@ -1,11 +1,12 @@
 import {
+  entry,
   fail,
   fromValue,
   map,
+  present,
   type Diagnostic,
   type Doc,
   type DocEntry,
-  type Text,
   type Value,
 } from "../core/index.js";
 import { rawKeyPath } from "../core/paths.js";
@@ -55,13 +56,6 @@ const JOB_RESERVED: readonly string[] = [
   "script",
   "after_script",
 ];
-
-/** Only a declared field with a value is emitted; absent fields are not lowered at all. */
-const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
-  value === undefined ? [] : [{ key, value }];
-
-const present = (value: Text | readonly Text[] | undefined): Doc | undefined =>
-  value === undefined ? undefined : fromValue(value);
 
 /**
  * A job's body in the spec's fixed order. Absent fields emit nothing, so a fragment stays a fragment;

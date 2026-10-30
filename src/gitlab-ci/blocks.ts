@@ -1,13 +1,14 @@
 import {
   DOC,
+  entry,
   fromValue,
   map,
+  present,
   seq,
   type Doc,
   type DocEntry,
   type LeafNode,
   type Text,
-  type Value,
 } from "../core/index.js";
 import type {
   Artifacts,
@@ -28,16 +29,6 @@ import type {
   ServiceOptions,
   Workflow,
 } from "./types.js";
-
-/** Only a declared field with a value is emitted; absent fields are not lowered at all. */
-const entry = (key: string, value: Doc | undefined): readonly DocEntry[] =>
-  value === undefined ? [] : [{ key, value }];
-
-/** Everything a modelled field can hold without building a `Doc` by hand. */
-type Presentable = Scalar | Value | Readonly<Record<string, Scalar>> | readonly Text[];
-
-const present = (value: Presentable | undefined): Doc | undefined =>
-  value === undefined ? undefined : fromValue(value);
 
 /** A leaf decides its own style; every other object here is one of the provider's own shapes. */
 const isLeaf = <T extends object>(value: LeafNode | T): value is LeafNode =>

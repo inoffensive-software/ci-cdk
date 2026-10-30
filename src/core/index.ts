@@ -7,6 +7,7 @@ export type {
   DocScalar,
   DocSeq,
   LeafNode,
+  Scalar,
   ScalarOptions,
   ScalarStyle,
   Text,
@@ -15,6 +16,8 @@ export type {
 export { DiagnosticError, fail, formatDiagnostics } from "./errors.js";
 
 export type { Diagnostic } from "./errors.js";
+
+export { entry, present } from "./fields.js";
 
 export { fromValue } from "./from-value.js";
 
