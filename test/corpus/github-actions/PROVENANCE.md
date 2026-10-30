@@ -119,3 +119,16 @@ as the file (see the corpus README and ADR 0005).
 - Comparison: data
 - Why this entry: `environment.deployment: false`, `type: number` dispatch inputs, `permissions: {}`,
   and an expression-bearing `runs-on`.
+
+## mise-publish-version
+
+- Repo: <https://github.com/jdx/mise>
+- Commit: `ad805190efb10d0467069b8cf1b776ff612f5d24`
+- Path: `.github/workflows/publish-version.yml`
+- Licence: MIT
+- Vendored as: `mise-publish-version.yml`, SHA-256
+  `17a3541d5c5b3397f46647344cfc2db716cc53b2db777135d5afe8b2a3174d15`
+- Comparison: data
+- Why this entry: an `on.release` trigger carrying `types`, a workflow-level concurrency group
+  carrying `queue: max` beside its `group`, a job-level `if` written as a literal block, and two
+  multi-line `run` scripts.

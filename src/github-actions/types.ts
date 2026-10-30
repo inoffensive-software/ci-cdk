@@ -76,6 +76,7 @@ export interface Defaults {
 export interface ConcurrencyGroup {
   readonly group: Text;
   readonly "cancel-in-progress"?: boolean | Text;
+  readonly queue?: "single" | "max";
 }
 
 export type Concurrency = string | ConcurrencyGroup;

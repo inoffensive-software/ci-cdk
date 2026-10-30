@@ -48,6 +48,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
             where: { type: "environment", default: "production" },
           },
         },
+        release: { types: ["published"] },
         merge_group: {},
         workflow_call: {},
       },
@@ -180,6 +181,22 @@ export const INVENTORY: readonly InventoryDocument[] = [
           id: "build",
           "runs-on": "ubuntu-latest",
           concurrency: "build-${{ github.ref }}",
+          steps: [step({ run: "true" })],
+        }),
+      ],
+    }),
+  },
+  {
+    name: "concurrency-queue",
+    workflow: workflow({
+      name: "Inventory: concurrency queue",
+      on: "push",
+      concurrency: { group: "publish-version", queue: "max" },
+      jobs: [
+        job({
+          id: "publish",
+          "runs-on": "ubuntu-latest",
+          concurrency: { group: "publish-version", "cancel-in-progress": false, queue: "max" },
           steps: [step({ run: "true" })],
         }),
       ],

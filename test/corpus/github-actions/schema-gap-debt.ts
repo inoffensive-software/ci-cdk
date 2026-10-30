@@ -10,18 +10,6 @@ export type { Gap, GapCategory, Overclaim } from "../../schemas/gap-debt.js";
  */
 export const GAPS: readonly Gap[] = [
   {
-    path: "$.concurrency.queue",
-    reason:
-      "what happens to runs that wait on a busy concurrency group: `single` drops the older pending run and `max` queues up to 100 in order; the vocabulary emits only `group` and `cancel-in-progress`",
-    category: "unmodelled",
-  },
-  {
-    path: "$.jobs.*.concurrency.queue",
-    reason:
-      "the job-level form of the concurrency queue policy, `single` or `max`; job concurrency today carries only `group` and `cancel-in-progress`",
-    category: "unmodelled",
-  },
-  {
     path: "$.jobs.*.services.*.command",
     reason:
       "a Docker `CMD` override for one service container, passed as arguments after the image name, and combined with `entrypoint` when both are given",
