@@ -104,6 +104,13 @@ const bodyProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
     diagnostics.push(...artifactsProblems(body.artifacts, `${bodyPath}.artifacts`));
   }
 
+  if (body.auth?.system?.scopes?.length === 0) {
+    diagnostics.push({
+      path: `${bodyPath}.auth.system.scopes`,
+      message: "step auth needs at least one scope",
+    });
+  }
+
   diagnostics.push(...conditionProblems(body, bodyPath));
 
   return diagnostics;

@@ -173,6 +173,22 @@ const customProblems = (entries: readonly NamedPipeline[] | undefined): readonly
   return diagnostics;
 };
 
+/** Labels are author data; the one rule is that a name exists. */
+const labelProblems = (config: PipelineConfig): readonly Diagnostic[] => {
+  const diagnostics: Diagnostic[] = [];
+
+  for (const key of Object.keys(config.labels ?? {})) {
+    if (key === "") {
+      diagnostics.push({
+        path: keyPath("$.labels", key),
+        message: "label key must not be empty",
+      });
+    }
+  }
+
+  return diagnostics;
+};
+
 const declaresPipeline = (pipelines: Pipelines): boolean =>
   pipelines.default !== undefined ||
   pipelines.branches !== undefined ||
@@ -193,6 +209,7 @@ export const validate = (config: PipelineConfig): readonly Diagnostic[] => {
 
   return [
     ...diagnostics,
+    ...labelProblems(config),
     ...definitionProblems(config),
     ...defaultProblems(config),
     ...selectorProblems("branches", pipelines.branches),

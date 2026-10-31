@@ -20,6 +20,7 @@ import type {
   Pipe,
   ScriptItem,
   Step,
+  StepAuth,
   StepItem,
 } from "./types.js";
 
@@ -27,6 +28,7 @@ import type {
 const STEP_RESERVED: readonly string[] = [
   "after-script",
   "artifacts",
+  "auth",
   "caches",
   "clone",
   "condition",
@@ -161,6 +163,25 @@ const artifactsDoc = (artifacts: Artifacts | undefined): Doc | undefined => {
   ]);
 };
 
+/** Auth: `system`, then `scopes`; each absent layer is omitted. */
+const authDoc = (auth: StepAuth | undefined): Doc | undefined => {
+  if (auth === undefined) {
+    return undefined;
+  }
+
+  const system =
+    auth.system === undefined
+      ? undefined
+      : map([
+          ...entry(
+            "scopes",
+            auth.system.scopes === undefined ? undefined : fromValue(auth.system.scopes),
+          ),
+        ]);
+
+  return map([...entry("system", system)]);
+};
+
 /** The first half of a step's keys, in the schema's alphabetical order. */
 const headRows = (body: Step): readonly DocEntry[] => [
   ...entry(
@@ -168,6 +189,7 @@ const headRows = (body: Step): readonly DocEntry[] => [
     body["after-script"] === undefined ? undefined : scriptDoc(body["after-script"]),
   ),
   ...entry("artifacts", artifactsDoc(body.artifacts)),
+  ...entry("auth", authDoc(body.auth)),
   ...entry("caches", body.caches === undefined ? undefined : fromValue(body.caches)),
   ...entry("clone", cloneDoc(body.clone)),
   ...entry("condition", body.condition === undefined ? undefined : conditionDoc(body.condition)),

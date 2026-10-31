@@ -60,6 +60,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
         steps: everyDefinedStep(),
       },
       image: { name: "node:24", username: "builder", password: "${REGISTRY_PASSWORD}" },
+      labels: { team: "platform", tier: "backend" },
       options: { docker: true, "max-time": 120, "runs-on": ["self.hosted", "linux"], size: "4x" },
       pipelines: {
         default: everyItems(),

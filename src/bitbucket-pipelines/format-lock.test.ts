@@ -15,8 +15,8 @@ import {
   stage,
   step,
 } from "./index.js";
+import { SCHEMA_KEYS } from "../../test/corpus/bitbucket-pipelines/schema-keys.fixture.js";
 
-/** Header suppressed, the way every golden except the default-header one renders. */
 const bare = (value: PipelineConfig): string => render(value, { header: "" });
 
 /** One step carrying every modelled field, including pipes in both script sequences. */
@@ -122,6 +122,7 @@ const richParsed = (): ReturnType<typeof parse> => parse(bare(richConfig()));
 const GOLDENS = {
   "format-rich.yml": () => bare(richConfig()),
   "format-empty-collections.yml": () => bare(emptyCollections()),
+  "format-step-auth-labels.yml": () => bare(SCHEMA_KEYS),
 } satisfies Record<string, () => string>;
 
 /** Every way `text` breaks the emitted-format contract on bytes; empty when it holds. */

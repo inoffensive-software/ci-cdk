@@ -4,6 +4,10 @@
     "reason": "the schema documents reusable steps only through `definitions.pipelines`, but Bitbucket documents `definitions.steps` and every pipeline references one by name; the vocabulary models it"
   },
   {
+    "path": "$.labels.*",
+    "reason": "the schema types `labels` as an object but names no `additionalProperties`, so it describes no child key; the vocabulary models the author's map"
+  },
+  {
     "path": "$.pipelines.branches.*[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },

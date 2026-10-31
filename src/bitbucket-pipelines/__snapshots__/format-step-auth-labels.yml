@@ -1,0 +1,13 @@
+labels:
+  team: platform
+  tier: backend
+pipelines:
+  default:
+    - step:
+        auth:
+          system:
+            scopes:
+              - repository:write
+              - pullrequest:write
+        script:
+          - "true"
