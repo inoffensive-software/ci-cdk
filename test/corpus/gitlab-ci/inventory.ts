@@ -1,4 +1,5 @@
 import { type Pipeline, job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
+import { MODELLED_JOB, PAGES_JOB, PAGES_TRIGGER } from "./inventory-jobs.js";
 
 /** One inventory document: a definition, plus the name a failure should use for it. */
 export interface InventoryDocument {
@@ -112,119 +113,12 @@ export const INVENTORY: readonly InventoryDocument[] = [
         ],
       },
       templates: { ".setup": { script: ["npm ci"] } },
+      pages: MODELLED_JOB,
       // Both script shapes, because a sequence adds a path of its own to the modelled set.
       jobs: [
         job({
           name: "build",
-          stage: "build",
-          extends: ".go-cache",
-          needs: [
-            "prepare",
-            { job: "lint", optional: true, artifacts: false },
-            {
-              job: "test",
-              artifacts: true,
-              parallel: {
-                matrix: [
-                  { GO_VERSION: "1.26", SHARD: 1 },
-                  { GO_VERSION: "1.27", SHARD: 2 },
-                ],
-              },
-            },
-          ],
-          rules: [
-            { if: "$CI_COMMIT_TAG", when: "never" },
-            {
-              if: "$CI_COMMIT_BRANCH",
-              changes: { paths: ["src/**/*", "go.mod"], compare_to: "main" },
-              exists: ["Dockerfile"],
-              when: "manual",
-              allow_failure: true,
-              variables: { DEPLOY: "true", SHARDS: 4 },
-              needs: ["prepare", "lint"],
-            },
-            { changes: ["docs/**/*"] },
-          ],
-          tags: ["gitlab-org", "docker"],
-          image: { name: "golang:1.26", entrypoint: [""], pull_policy: "never" },
-          services: [
-            "postgres:16",
-            {
-              name: "redis:7",
-              alias: "cache",
-              entrypoint: ["/bin/sh"],
-              command: ["redis-server"],
-              variables: { REDIS_URL: "redis://cache:6379" },
-            },
-          ],
-          variables: { GOFLAGS: "-mod=readonly" },
-          cache: [
-            {
-              key: "go",
-              paths: [".cache/go"],
-              policy: "pull",
-              untracked: true,
-              when: "on_success",
-              fallback_keys: ["go-main"],
-            },
-            {
-              key: { files: ["go.sum", "v2/go.sum"], prefix: "build-" },
-              paths: [".cache/build"],
-              policy: "pull-push",
-            },
-          ],
-          artifacts: {
-            paths: ["dist/"],
-            exclude: ["dist/tmp/"],
-            name: "build-$CI_JOB_NAME",
-            expire_in: "1 week",
-            expose_as: "build",
-            public: true,
-            when: "always",
-            reports: { junit: "report.xml", codequality: "gl-code-quality-report.json" },
-          },
-          before_script: "echo before",
-          script: "npm run build",
-          after_script: ["echo one", "echo two"],
-          environment: {
-            name: "production",
-            url: "https://example.com",
-            action: "start",
-            on_stop: "stop-production",
-            auto_stop_in: "1 week",
-            deployment_tier: "production",
-          },
-          release: {
-            tag_name: "$CI_COMMIT_TAG",
-            description: "Release $CI_COMMIT_TAG",
-            name: "Release $CI_COMMIT_TAG",
-            ref: "main",
-            milestones: ["v1.0"],
-            released_at: "2026-01-01T00:00:00Z",
-          },
-          trigger: {
-            project: "group/downstream",
-            branch: "main",
-            strategy: "depend",
-            inputs: { DEPLOY_ENV: "staging", RETRIES: 2 },
-          },
-          parallel: {
-            matrix: [
-              { GO_VERSION: "1.26", SHARD: 1 },
-              { GO_VERSION: "1.27", SHARD: 2, TAGS: ["a", "b"] },
-            ],
-          },
-          retry: {
-            max: 2,
-            when: ["runner_system_failure", "stuck_or_timeout_failure"],
-            exit_codes: [137],
-          },
-          timeout: "1h 30m",
-          interruptible: true,
-          allow_failure: { exit_codes: [1, 137] },
-          when: "manual",
-          resource_group: "deploy",
-          coverage: "/Coverage: \\d+\\.\\d+/",
+          ...MODELLED_JOB,
         }),
         job({
           name: "test",
@@ -296,5 +190,13 @@ export const INVENTORY: readonly InventoryDocument[] = [
         }),
       ],
     }),
+  },
+  {
+    name: "pages-shapes",
+    pipeline: PAGES_JOB,
+  },
+  {
+    name: "pages-trigger",
+    pipeline: PAGES_TRIGGER,
   },
 ];

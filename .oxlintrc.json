@@ -90,7 +90,10 @@
       }
     },
     {
-      "files": ["test/corpus/gitlab-ci/labkit.fixture.ts"],
+      "files": [
+        "test/corpus/gitlab-ci/labkit.fixture.ts",
+        "test/corpus/gitlab-ci/expected-modelled.ts"
+      ],
       "rules": {
         "max-lines": "off"
       }

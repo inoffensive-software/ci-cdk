@@ -129,6 +129,9 @@ export interface AllowFailureOptions {
 
 export type AllowFailure = boolean | AllowFailureOptions;
 
+/** The deprecated root `pages` job: a job body whose name is its key. */
+export type PagesJob = Omit<Job, "name">;
+
 /** The `paths`/`compare_to` form of `rules:changes`. */
 export interface Changes {
   readonly paths: readonly string[];
@@ -269,9 +272,8 @@ export interface Job {
 }
 
 /**
- * The pipeline-level vocabulary. Emission order is fixed by the spec and independent of the order
- * the struct is written in: `default`, `include`, `stages`, `variables`, `workflow`, the templates,
- * the jobs, then `raw`.
+ * The pipeline-level vocabulary. Emission order is fixed by the spec: `default`, `include`, `stages`,
+ * `variables`, `workflow`, the templates, the `pages` job, the jobs, then `raw`.
  */
 export interface Pipeline {
   readonly default?: Default;
@@ -285,15 +287,14 @@ export interface Pipeline {
    * data of any shape and are never validated or resolved.
    */
   readonly templates?: Readonly<Record<string, Value>>;
+  /** The deprecated Pages job written at the document root: a job body without `name`. */
+  readonly pages?: PagesJob;
   readonly jobs: readonly Job[];
   /** Global keywords the vocabulary does not model, appended last at the document root. */
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
-/**
- * Builders are near-identity inference anchors: they pin the type and return the input itself, so a
- * call can never throw, default, merge or clone.
- */
+/** Near-identity inference anchors: pin the type and return the input itself, never throwing. */
 export const pipeline = (value: Pipeline): Pipeline => value;
 
 export const job = (value: Job): Job => value;

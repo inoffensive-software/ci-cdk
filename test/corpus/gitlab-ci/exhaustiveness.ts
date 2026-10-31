@@ -19,16 +19,24 @@ const ROOT_SEGMENT = /^\$(?:\.([A-Za-z_$][\w$]*)|\[("(?:[^"\\]|\\.)*")\])/u;
 export const AUTHOR_NAMED: readonly string[] = [
   "$.variables",
   "$.*.variables",
+  "$.pages.variables",
   "$.default.services[].variables",
   "$.*.services[].variables",
+  "$.pages.services[].variables",
   "$.include[].inputs",
   "$.*.trigger.inputs",
+  "$.pages.trigger.inputs",
   "$.*.trigger.include[].inputs",
+  "$.pages.trigger.include[].inputs",
   "$.workflow.rules[].variables",
   "$.*.rules[].variables",
+  "$.pages.rules[].variables",
   "$.*.needs[].parallel.matrix[]",
+  "$.pages.needs[].parallel.matrix[]",
   "$.*.parallel.matrix[]",
+  "$.pages.parallel.matrix[]",
   "$.*.artifacts.reports",
+  "$.pages.artifacts.reports",
 ];
 
 /**

@@ -26,6 +26,10 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.workflow"],
   },
   {
+    name: "Pages job",
+    prefixes: ["$.pages"],
+  },
+  {
     name: "Job identity",
     exact: ["$.*", "$.*.stage", "$.*.extends", "$.*.extends[]", "$.*.tags", "$.*.tags[]"],
     prefixes: [],

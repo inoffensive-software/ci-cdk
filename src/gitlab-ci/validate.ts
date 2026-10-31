@@ -13,6 +13,7 @@ export const GLOBAL_KEYWORDS: readonly string[] = [
   "stages",
   "variables",
   "workflow",
+  "pages",
   "spec",
   "image",
   "services",

@@ -45,6 +45,7 @@ const PIPELINE_RESERVED: readonly string[] = [
   "stages",
   "variables",
   "workflow",
+  "pages",
 ];
 
 /**
@@ -86,9 +87,10 @@ const whenPresent = <T>(value: T | undefined, doc: (item: T) => Doc): Doc | unde
 
 /**
  * A job's body in the spec's fixed order. Absent fields emit nothing, so a fragment stays a fragment;
- * a job with none of them lowers to an empty map.
+ * a job with none of them lowers to an empty map. The body is shared by a named job and the root
+ * `pages` entry, which is a job whose name is its key, so `name` is not part of the input.
  */
-const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
+const jobDoc = (item: Omit<Job, "name">, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("stage", item.stage === undefined ? undefined : fromValue(item.stage)),
     ...entry("extends", present(item.extends)),
@@ -171,6 +173,10 @@ export const toDoc = (pipeline: Pipeline): Doc => {
       pipeline.workflow === undefined ? undefined : workflowDoc(pipeline.workflow),
     ),
     ...templateEntries(pipeline.templates, diagnostics),
+    ...entry(
+      "pages",
+      pipeline.pages === undefined ? undefined : jobDoc(pipeline.pages, "$.pages", diagnostics),
+    ),
     ...pipeline.jobs.map((item, index) => ({
       key: item.name,
       value: jobDoc(item, `$.jobs[${index}]`, diagnostics),

@@ -83,9 +83,12 @@ describe("hidden templates", () => {
 });
 
 /**
- * The completion target spec 0009 decision 9 sets: 928 of the 1,061 schema paths are modelled, and
- * `out-of-scope` holds the architectural non-goals alone. The counts derive from the three lists, so
- * a ticket that moves rows from `unmodelled` to modelled keeps the sum without editing this test.
+ * The completion target spec 0009 decision 9 sets: every schema path that is neither `schema-noise`
+ * nor under `spec` is modelled or declared `unmodelled`. Decomposing the deferred `$.pages` row
+ * exposed 27 schema-noise paths inside the Pages job and collapsed its author-named maps, so the
+ * count is 859 of 1,019 rather than the 928 of 1,061 the undecomposed row implied; the invariant the
+ * count protects is unchanged. The counts derive from the three lists, so a ticket that moves rows
+ * from `unmodelled` to modelled keeps the sum without editing this test.
  */
 describe("completion target", () => {
   const modelled = new Set(MODELLED_PATHS);
@@ -102,7 +105,7 @@ describe("completion target", () => {
   it("leaves no schema path outside the target", () => {
     const unmodelled = schemaPathsCoveredBy("unmodelled");
 
-    expect(modelledSchemaPaths.length + unmodelled.length).toBe(928);
+    expect(modelledSchemaPaths.length + unmodelled.length).toBe(859);
   });
 
   it("reserves out-of-scope for the spec header", () => {
