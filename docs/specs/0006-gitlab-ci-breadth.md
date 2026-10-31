@@ -387,10 +387,11 @@ and no provider in this package will resolve them:
 - A CLI or file-writing behaviour; `render` still returns text.
 - Refreshing the vendored schema.
 
-**Deferred keywords.** `pages`, `secrets`, `id_tokens`, `hooks`, `identity`, `manual_confirmation`,
+**Deferred keywords.** `secrets`, `id_tokens`, `hooks`, `identity`, `manual_confirmation`,
 `run`, `start_in`, `dast_configuration`, `inherit`, `dependencies` and `rules:changes:compare_to` are
 not modelled in this slice. They are ordinary fields GitLab documents, deferred to keep this slice
-finite; spec 0008 is the vehicle that promotes them, one pinned corpus entry at a time. `trigger` is
+finite; spec 0009 is the vehicle that promotes them, one pinned corpus entry at a time. `pages` has its
+own spec (0010); `trigger` is
 no longer deferred: ticket 59 models it because the labkit corpus already uses it.
 
 `GAPS` still labels a deferred keyword `out-of-scope` until a corpus entry obliges us to model it. The
