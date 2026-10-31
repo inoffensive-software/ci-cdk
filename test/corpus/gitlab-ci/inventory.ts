@@ -1,4 +1,5 @@
 import { type Pipeline, job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
+import { ALTERNATE_DOCUMENTS } from "./inventory-shapes.js";
 
 /** One inventory document: a definition, plus the name a failure should use for it. */
 export interface InventoryDocument {
@@ -20,6 +21,7 @@ export interface InventoryDocument {
  * at the document root and therefore never enter the modelled set.
  */
 export const INVENTORY: readonly InventoryDocument[] = [
+  ...ALTERNATE_DOCUMENTS,
   {
     name: "main",
     pipeline: pipeline({
@@ -66,6 +68,9 @@ export const INVENTORY: readonly InventoryDocument[] = [
         retry: { max: 2, when: ["runner_system_failure"], exit_codes: [137] },
         timeout: "1h 30m",
         interruptible: true,
+        hooks: {
+          pre_get_sources_script: ['git config --global url."https://".insteadOf "ssh://"'],
+        },
       },
       include: [
         {
@@ -158,6 +163,10 @@ export const INVENTORY: readonly InventoryDocument[] = [
             },
           ],
           variables: { GOFLAGS: "-mod=readonly" },
+          inherit: { default: ["image", "cache"], variables: true },
+          dependencies: ["prepare", "lint"],
+          hooks: { pre_get_sources_script: ["git submodule update --init"] },
+          dast_configuration: { site_profile: "production site", scanner_profile: "full scan" },
           cache: [
             {
               key: "go",
@@ -245,54 +254,6 @@ export const INVENTORY: readonly InventoryDocument[] = [
           before_script: ["npm ci"],
           script: ["npm ci", "npm test"],
           after_script: "echo after",
-        }),
-      ],
-    }),
-  },
-  {
-    name: "shapes",
-    pipeline: pipeline({
-      default: {
-        image: "golang:1.26",
-        services: ["docker:24.0.7-dind"],
-        before_script: ["echo one"],
-        after_script: "echo after",
-        cache: { key: { files: ["go.sum"] }, paths: [".cache/go"] },
-        retry: 2,
-      },
-      include: { local: ".gitlab/ci/test.yml" },
-      jobs: [
-        job({
-          name: "release",
-          stage: "build",
-          script: "make release",
-          environment: "review/prod",
-          trigger: {
-            include: [
-              { local: ".gitlab/ci/child.yml" },
-              { project: "group/child", ref: "main", file: "ci/child.yml" },
-              {
-                component: "gitlab.com/components/child@1.0",
-                inputs: { CHILD_ENV: "staging" },
-              },
-            ],
-            strategy: "mirror",
-          },
-          parallel: 2,
-          retry: 2,
-          timeout: "10 minutes",
-          interruptible: false,
-          allow_failure: true,
-          when: "on_success",
-          resource_group: "releases",
-          coverage: "/total coverage/",
-        }),
-        // `include` takes at most three entries, so the template and remote shapes need a second job.
-        job({
-          name: "child-remote",
-          trigger: {
-            include: [{ template: "Child.yml" }, { remote: "https://example.com/child.yml" }],
-          },
         }),
       ],
     }),

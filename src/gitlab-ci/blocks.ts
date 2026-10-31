@@ -15,11 +15,14 @@ import type {
   AutoCancel,
   Cache,
   CacheKeyFiles,
+  DastConfiguration,
   Default,
+  Hooks,
   Image,
   Include,
   IncludeEntry,
   IncludeOptions,
+  Inherit,
   Need,
   NeedParallel,
   Retry,
@@ -158,6 +161,24 @@ export const includeDoc = (include: Include): Doc =>
     ? seq(include.map((item) => includeEntryDoc(item)))
     : includeEntryDoc(include);
 
+/** `inherit` in GitLab's documented key order; each selector stays what the author wrote. */
+export const inheritDoc = (inherit: Inherit): Doc =>
+  map([
+    ...entry("default", present(inherit.default)),
+    ...entry("variables", present(inherit.variables)),
+  ]);
+
+/** The runner lifecycle hooks GitLab documents; only `pre_get_sources_script` exists today. */
+export const hooksDoc = (hooks: Hooks): Doc =>
+  map([...entry("pre_get_sources_script", present(hooks.pre_get_sources_script))]);
+
+/** The DAST profile pair, in GitLab's documented order. */
+export const dastConfigurationDoc = (dast: DastConfiguration): Doc =>
+  map([
+    { key: "site_profile", value: fromValue(dast.site_profile) },
+    { key: "scanner_profile", value: fromValue(dast.scanner_profile) },
+  ]);
+
 const serviceOptionsDoc = (service: ServiceOptions): Doc =>
   map([
     { key: "name", value: fromValue(service.name) },
@@ -249,6 +270,7 @@ export const defaultDoc = (defaults: Default): Doc =>
     ...entry("tags", present(defaults.tags)),
     ...entry("before_script", present(defaults.before_script)),
     ...entry("after_script", present(defaults.after_script)),
+    ...entry("hooks", defaults.hooks === undefined ? undefined : hooksDoc(defaults.hooks)),
     ...entry("cache", defaults.cache === undefined ? undefined : cacheDoc(defaults.cache)),
     ...entry(
       "artifacts",

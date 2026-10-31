@@ -55,7 +55,7 @@ describe("job raw placement", () => {
             stage: "build",
             script: "npm ci",
             raw: {
-              dast_configuration: { site_profile: "default" },
+              identity: { provider: "example" },
               secrets: { TOKEN: { vault: "secret" } },
               id_tokens: { ID_TOKEN: { aud: "https://example.com" } },
             },
@@ -70,7 +70,7 @@ describe("job raw placement", () => {
     expect(Object.keys(parsed.build)).toStrictEqual([
       "stage",
       "script",
-      "dast_configuration",
+      "identity",
       "secrets",
       "id_tokens",
     ]);

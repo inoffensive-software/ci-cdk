@@ -9,10 +9,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] Each key accepts its documented shape: `inherit` map, `hooks` map, `dependencies` string array,
+- [x] Each key accepts its documented shape: `inherit` map, `hooks` map, `dependencies` string array,
       `start_in` string, `manual_confirmation` string, `dast_configuration` map.
-- [ ] `default` accepts `hooks` as well; job and default raw collide with every modelled key.
-- [ ] The inventory exercises each key without raw; the six gap rows are removed from the report.
-- [ ] Fixtures are pinned where possible, otherwise docs-derived with provenance.
-- [ ] Tests cover each shape, absent values, and ordering.
-- [ ] `pnpm check` passes.
+- [x] `default` accepts `hooks` as well; job and default raw collide with every modelled key.
+- [x] The inventory exercises each key without raw; the six gap rows are removed from the report.
+- [x] Fixtures are pinned where possible, otherwise docs-derived with provenance.
+- [x] Tests cover each shape, absent values, and ordering.
+- [x] `pnpm check` passes.

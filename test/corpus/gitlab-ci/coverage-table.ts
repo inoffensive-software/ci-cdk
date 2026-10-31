@@ -40,7 +40,15 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
   },
   {
     name: "Scripts",
-    prefixes: ["$.*.before_script", "$.*.script", "$.*.after_script"],
+    prefixes: ["$.*.before_script", "$.*.script", "$.*.after_script", "$.*.hooks"],
+  },
+  {
+    name: "Inheritance",
+    prefixes: ["$.*.inherit"],
+  },
+  {
+    name: "Dependencies",
+    prefixes: ["$.*.dependencies"],
   },
   {
     name: "Rules",
@@ -79,6 +87,10 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.*.retry"],
   },
   {
+    name: "DAST",
+    prefixes: ["$.*.dast_configuration"],
+  },
+  {
     name: "Scheduling",
     exact: [
       "$.*.when",
@@ -89,6 +101,8 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
       "$.*.timeout",
       "$.*.resource_group",
       "$.*.coverage",
+      "$.*.start_in",
+      "$.*.manual_confirmation",
     ],
     prefixes: [],
   },

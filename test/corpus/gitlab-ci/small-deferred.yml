@@ -1,0 +1,44 @@
+stages:
+  - build
+  - deploy
+
+default:
+  hooks:
+    pre_get_sources_script:
+      - echo default hook
+
+build:
+  stage: build
+  script: echo build
+  inherit:
+    default:
+      - image
+      - cache
+    variables: true
+  dependencies:
+    - prepare
+  hooks:
+    pre_get_sources_script: echo job hook
+
+deploy:
+  stage: deploy
+  script: echo deploy
+  when: delayed
+  start_in: 1 hour
+  inherit:
+    default: false
+    variables:
+      - DEPLOY
+
+confirm:
+  stage: deploy
+  script: echo confirm
+  when: manual
+  manual_confirmation: Deploy to production?
+
+dast:
+  stage: build
+  script: echo dast
+  dast_configuration:
+    site_profile: production site
+    scanner_profile: full scan
