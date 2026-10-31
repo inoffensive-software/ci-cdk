@@ -71,7 +71,7 @@ not document. The counts are computed from the lists, never written by hand.
 
 <!-- documented-grammar:start -->
 
-1061 documented paths. Gaps: 156 (unmodelled 113, out-of-scope 17, schema-noise 26). Overclaims: 3.
+1061 documented paths. Gaps: 156 (unmodelled 129, out-of-scope 1, schema-noise 26). Overclaims: 3.
 
 ### Unmodelled
 
@@ -86,14 +86,22 @@ not document. The counts are computed from the lists, never written by hand.
 | `$.*.cache.unprotect`                             | whether a single job `cache` map is shared with unprotected branches                                                                                                                   |
 | `$.*.cache[].key.files_commits`                   | how many commits a `files` cache key hashes, for a job `cache` list entry                                                                                                              |
 | `$.*.cache[].unprotect`                           | whether a job `cache` list entry is shared with unprotected branches                                                                                                                   |
+| `$.*.dast_configuration`                          | DAST profile selection on a job; spec 0009 decision 2 defers `dast_configuration` to this slice, so it is `unmodelled` debt rather than a non-goal                                     |
+| `$.*.dependencies`                                | the job list whose artifacts this job downloads; spec 0009 decision 2 defers `dependencies` to this slice, so it is `unmodelled` debt rather than a non-goal                           |
 | `$.*.environment.kubernetes`                      | the Kubernetes deployment options on a job environment: the agent, namespace, Flux resource path, managed resources and dashboard settings                                             |
+| `$.*.hooks`                                       | runner lifecycle hooks such as `pre_get_sources_script`; spec 0009 decision 2 defers `hooks` to this slice, so it is `unmodelled` debt rather than a non-goal                          |
+| `$.*.id_tokens`                                   | OIDC token declarations; spec 0009 decision 2 defers `id_tokens` to this slice, so it is `unmodelled` debt rather than a non-goal                                                      |
+| `$.*.identity`                                    | third-party identity federation; spec 0009 decision 2 defers `identity` to this slice, so it is `unmodelled` debt rather than a non-goal                                               |
 | `$.*.image.docker`                                | Docker-executor options for a job image: the image `platform` to pull and the `user` to run as                                                                                         |
 | `$.*.image.kubernetes`                            | Kubernetes-executor options for a job image, currently the `user` to run as                                                                                                            |
 | `$.*.image.pull_policy[]`                         | the list form of a job's `image:pull_policy`, which tries several policies in order                                                                                                    |
+| `$.*.inherit`                                     | which global defaults a job opts out of; spec 0009 decision 2 defers `inherit` to this slice, so it is `unmodelled` debt rather than a non-goal                                        |
 | `$.*.inputs`                                      | a job-level map of typed, validated inputs (`type`, `options`, `regex`, `description` and a required `default`) that a manual run or retry can override; GitLab 18.10                  |
+| `$.*.manual_confirmation`                         | the confirmation text on a manual job; spec 0009 decision 2 defers `manual_confirmation` to this slice, so it is `unmodelled` debt rather than a non-goal                              |
 | `$.*.needs[].pipeline`                            | the `pipeline` half of a cross-project need map; the vocabulary models only the same-project `job` form                                                                                |
 | `$.*.needs[].project`                             | the `project` half of a cross-project need map; the vocabulary models only the same-project `job` form                                                                                 |
 | `$.*.needs[].ref`                                 | the `ref` a cross-project need reads its artifacts from; the vocabulary models only the same-project `job` form                                                                        |
+| `$.*.pages`                                       | the Pages deployment form of a job; spec 0009 defers `pages` to its own spec (0010), so it is `unmodelled` debt rather than a non-goal                                                 |
 | `$.*.release.assets`                              | the `assets` a release publishes, and the links inside them                                                                                                                            |
 | `$.*.release.tag_message`                         | the message used when the release creates a new annotated tag                                                                                                                          |
 | `$.*.rules[].changes.regexp`                      | the `regexp` that selects changed files inside the map form of a job rule's `changes`                                                                                                  |
@@ -105,11 +113,15 @@ not document. The counts are computed from the lists, never written by hand.
 | `$.*.rules[].needs[].artifacts`                   | whether a rule-level need downloads the target's artifacts; the vocabulary's rule-level `needs` is the plain job-name list only                                                        |
 | `$.*.rules[].needs[].job`                         | the job name in the map form of a rule-level need; the vocabulary's rule-level `needs` is the plain job-name list only                                                                 |
 | `$.*.rules[].needs[].optional`                    | whether a rule-level need may be absent from the pipeline; the vocabulary's rule-level `needs` is the plain job-name list only                                                         |
+| `$.*.rules[].start_in`                            | the delay before a delayed manual job starts from a job rule; spec 0009 decision 2 defers `start_in` to this slice, so it is `unmodelled` debt rather than a non-goal                  |
+| `$.*.run`                                         | the step list that replaces `script` in a GitLab Functions job; spec 0009 decision 2 defers `run` to this slice, so it is `unmodelled` debt rather than a non-goal                     |
+| `$.*.secrets`                                     | external secret providers and the variables they fill; spec 0009 decision 2 defers `secrets` to this slice, so it is `unmodelled` debt rather than a non-goal                          |
 | `$.*.services[].docker`                           | Docker-executor options for a job service entry: the image `platform` to pull and the `user` to run as                                                                                 |
 | `$.*.services[].kubernetes`                       | Kubernetes-executor options for a job service entry, currently the `user` to run as                                                                                                    |
 | `$.*.services[].pull_policy`                      | how a job service entry pulls its image (`always`, `never` or `if-not-present`), as one value or a list                                                                                |
 | `$.*.services[].variables.*.expand`               | the `expand` flag on a variable a job service declares                                                                                                                                 |
 | `$.*.services[].variables.*.value`                | the `value` half of a job service variable written as a map rather than a scalar                                                                                                       |
+| `$.*.start_in`                                    | the delay before a delayed manual job starts; spec 0009 decision 2 defers `start_in` to this slice, so it is `unmodelled` debt rather than a non-goal                                  |
 | `$.*.trigger.forward`                             | `trigger:forward`, which decides whether job and pipeline variables are forwarded to the downstream pipeline; the vocabulary emits the trigger as data and models no forwarding option |
 | `$.*.trigger.include[].artifact`                  | a child pipeline defined by a YAML file extracted from another job's artifacts; the vocabulary's child include models the file-based entries, not the artifact one                     |
 | `$.*.trigger.include[].inputs.*.*`                | an input value on a child include written as a nested map; the vocabulary types include inputs as scalars                                                                              |
@@ -153,6 +165,9 @@ not document. The counts are computed from the lists, never written by hand.
 | `$.default.cache.when`                            | when a single `default:cache` map is saved: `on_success`, `on_failure` or `always`                                                                                                     |
 | `$.default.cache[].key.files_commits`             | how many commits a `files` cache key hashes, for a `default:cache` list entry                                                                                                          |
 | `$.default.cache[].unprotect`                     | whether a `default:cache` list entry is shared with unprotected branches                                                                                                               |
+| `$.default.hooks`                                 | runner lifecycle hooks such as `pre_get_sources_script`, as a global default; spec 0009 decision 2 defers `hooks` to this slice, so it is `unmodelled` debt rather than a non-goal     |
+| `$.default.id_tokens`                             | OIDC token declarations as a global default; spec 0009 decision 2 defers `id_tokens` to this slice, so it is `unmodelled` debt rather than a non-goal                                  |
+| `$.default.identity`                              | third-party identity federation as a global default; spec 0009 decision 2 defers `identity` to this slice, so it is `unmodelled` debt rather than a non-goal                           |
 | `$.default.image.docker`                          | Docker-executor options for `default:image`: the image `platform` to pull and the `user` to run as                                                                                     |
 | `$.default.image.kubernetes`                      | Kubernetes-executor options for `default:image`, currently the `user` to run as                                                                                                        |
 | `$.default.image.pull_policy[]`                   | the list form of `default:image:pull_policy`, which tries several policies in order                                                                                                    |
@@ -180,6 +195,7 @@ not document. The counts are computed from the lists, never written by hand.
 | `$.include[].rules[].exists.project`              | the project an include rule's map-form `exists` looks in                                                                                                                               |
 | `$.include[].rules[].exists.ref`                  | the ref an include rule's map-form `exists` looks at                                                                                                                                   |
 | `$.include[].rules[].exists.regexp`               | the `regexp` an include rule's map-form `exists` matches against paths                                                                                                                 |
+| `$.pages`                                         | pipeline-level Pages settings; spec 0009 defers `pages` to its own spec (0010), so it is `unmodelled` debt rather than a non-goal                                                      |
 | `$.variables.*.description`                       | a `description` for a pipeline-wide variable, shown on the manual Run pipeline page                                                                                                    |
 | `$.variables.*.expand`                            | the `expand` flag on a pipeline-wide variable, which decides whether `$` references inside its value are expanded                                                                      |
 | `$.variables.*.options`                           | the `options` list a pipeline-wide variable offers on the manual Run pipeline page                                                                                                     |
@@ -193,25 +209,9 @@ not document. The counts are computed from the lists, never written by hand.
 
 ### Out of scope
 
-| Path                      | Reason                                                                                                                                 |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `$.*.dast_configuration`  | DAST profile selection on a job; spec 0006 Out of Scope lists `dast_configuration` as a non-goal                                       |
-| `$.*.dependencies`        | the job list whose artifacts this job downloads; spec 0006 Out of Scope lists `dependencies` as a non-goal                             |
-| `$.*.hooks`               | runner lifecycle hooks such as `pre_get_sources_script`; spec 0006 Out of Scope lists `hooks` as a non-goal                            |
-| `$.*.id_tokens`           | OIDC token declarations; spec 0006 Out of Scope lists `id_tokens` as a non-goal                                                        |
-| `$.*.identity`            | third-party identity federation; spec 0006 Out of Scope lists `identity` as a non-goal                                                 |
-| `$.*.inherit`             | which global defaults a job opts out of; spec 0006 Out of Scope lists `inherit` as a non-goal                                          |
-| `$.*.manual_confirmation` | the confirmation text on a manual job; spec 0006 Out of Scope lists `manual_confirmation` as a non-goal                                |
-| `$.*.pages`               | the Pages deployment form of a job; spec 0006 Out of Scope lists `pages` as a non-goal                                                 |
-| `$.*.rules[].start_in`    | the delay before a delayed manual job starts from a job rule; spec 0006 Out of Scope lists `start_in` as a non-goal                    |
-| `$.*.run`                 | the step list that replaces `script` in a GitLab Functions job; spec 0006 Out of Scope lists `run` as a non-goal                       |
-| `$.*.secrets`             | external secret providers and the variables they fill; spec 0006 Out of Scope lists `secrets` as a non-goal                            |
-| `$.*.start_in`            | the delay before a delayed manual job starts; spec 0006 Out of Scope lists `start_in` as a non-goal                                    |
-| `$.default.hooks`         | runner lifecycle hooks such as `pre_get_sources_script`, as a global default; spec 0006 Out of Scope lists `hooks` as a non-goal       |
-| `$.default.id_tokens`     | OIDC token declarations as a global default; spec 0006 Out of Scope lists `id_tokens` as a non-goal                                    |
-| `$.default.identity`      | third-party identity federation as a global default; spec 0006 Out of Scope lists `identity` as a non-goal                             |
-| `$.pages`                 | pipeline-level Pages settings; spec 0006 Out of Scope lists `pages` as a non-goal                                                      |
-| `$.spec`                  | the header that declares inputs and component context; spec 0006 Out of Scope rules out a `spec` header and `$[[ ... ]]` interpolation |
+| Path     | Reason                                                                                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.spec` | the header that declares inputs and component context; spec 0006 Out of Scope rules out a `spec` header and `$[[ ... ]]` interpolation |
 
 ### Schema noise
 
@@ -310,4 +310,5 @@ key that needs `raw` is a ledger row.
 <!-- open-gaps:start -->
 
 None. The coverage ledger is empty: every corpus key is modelled.
+
 <!-- open-gaps:end -->

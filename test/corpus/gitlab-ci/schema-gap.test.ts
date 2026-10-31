@@ -36,6 +36,9 @@ const isHidden = (path: string): boolean => path.startsWith(HIDDEN);
 const subsumes = (row: string, path: string): boolean =>
   path !== row && (path.startsWith(`${row}.`) || path.startsWith(`${row}[`));
 
+/** A row declares its own path and everything below it. */
+const covers = (row: string, path: string): boolean => path === row || subsumes(row, path);
+
 describe("gap row subsumption", () => {
   it("needs no row for a path below a declared gap", () => {
     const keyword: Gap = {
@@ -76,6 +79,39 @@ describe("hidden templates", () => {
 
   it("keeps hidden keys out of the report", () => {
     expect([...GAP_PATHS, ...OVERCLAIM_PATHS].filter((path) => isHidden(path))).toStrictEqual([]);
+  });
+});
+
+/**
+ * The completion target spec 0009 decision 9 sets: 928 of the 1,061 schema paths are modelled, and
+ * `out-of-scope` holds the architectural non-goals alone. The counts derive from the three lists, so
+ * a ticket that moves rows from `unmodelled` to modelled keeps the sum without editing this test.
+ */
+describe("completion target", () => {
+  const modelled = new Set(MODELLED_PATHS);
+
+  const schemaPathsCoveredBy = (category: string): readonly string[] =>
+    SCHEMA_PATHS.filter(
+      (path) =>
+        !modelled.has(path) &&
+        GAPS.some((gap) => gap.category === category && covers(gap.path, path)),
+    );
+
+  const modelledSchemaPaths = SCHEMA_PATHS.filter((path) => modelled.has(path));
+
+  it("leaves no schema path outside the target", () => {
+    const unmodelled = schemaPathsCoveredBy("unmodelled");
+
+    expect(modelledSchemaPaths.length + unmodelled.length).toBe(928);
+  });
+
+  it("reserves out-of-scope for the spec header", () => {
+    const rows = GAPS.filter((gap) => gap.category === "out-of-scope").map((gap) => gap.path);
+
+    expect(rows).toStrictEqual(["$.spec"]);
+    expect(schemaPathsCoveredBy("out-of-scope")).toStrictEqual(
+      SCHEMA_PATHS.filter((path) => covers("$.spec", path)),
+    );
   });
 });
 
