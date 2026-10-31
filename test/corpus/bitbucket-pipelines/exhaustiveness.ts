@@ -34,6 +34,7 @@ const STEP_BODIES: readonly string[] = [
 
 export const AUTHOR_NAMED: readonly string[] = [
   "$.labels",
+  "$.triggers",
   "$.definitions.caches",
   "$.definitions.services",
   "$.definitions.services.*.variables",

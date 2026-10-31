@@ -6,6 +6,8 @@ import { CUSTOM_VARS_NAKAMA } from "./custom-vars-nakama.fixture.js";
 import { OBUSPA } from "./obuspa.fixture.js";
 import { RAIR_DAPP } from "./rair-dapp.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "./systemsdk-symfony.fixture.js";
+import { TRIGGERS_ALIBABA } from "./triggers-alibaba.fixture.js";
+import { TRIGGERS_VARDOT } from "./triggers-vardot.fixture.js";
 
 /** One corpus entry: the name the documents use, the vendored file and the definition it pins. */
 export interface CorpusEntry {
@@ -23,4 +25,6 @@ export const ENTRIES: readonly CorpusEntry[] = [
   { name: "aligent-graphql-mesh", file: "aligent-graphql-mesh.yml", config: ALIGENT_GRAPHQL_MESH },
   { name: "artifacts-expanded", file: "artifacts-expanded.yml", config: ARTIFACTS_EXPANDED },
   { name: "custom-vars-nakama", file: "custom-vars-nakama.yml", config: CUSTOM_VARS_NAKAMA },
+  { name: "triggers-alibaba", file: "triggers-alibaba.yml", config: TRIGGERS_ALIBABA },
+  { name: "triggers-vardot", file: "triggers-vardot.yml", config: TRIGGERS_VARDOT },
 ];

@@ -465,6 +465,5 @@
   {"path":"$.pipelines[\"pull-requests\"].*[].step[\"after-script\"][].prompt","reason":"the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime","category":"out-of-scope"},
   {"path":"$.pipelines[\"pull-requests\"].*[].step[\"after-script\"][].provider","reason":"the agent task form of a script item; the spec's Out of Scope section names Bitbucket's agent runtime","category":"out-of-scope"},
   {"path":"$.pipelines[\"pull-requests\"].*[].step[\"after-script\"][][\"use-legacy-mcp\"]","reason":"the agent task form of a script item; the spec's Out of Scope section names agent runtimes","category":"out-of-scope"},
-  {"path":"$.pipelines[\"pull-requests\"].*[].step[\"input-variables\"]","reason":"typed input variables a manual run can override; the spec's Out of Scope section names input variables","category":"out-of-scope"},
-  {"path":"$.triggers","reason":"trigger contexts that run a pipeline from another pipeline; the spec's Out of Scope section names triggers a non-goal","category":"out-of-scope"}
+  {"path":"$.pipelines[\"pull-requests\"].*[].step[\"input-variables\"]","reason":"typed input variables a manual run can override; the spec's Out of Scope section names input variables","category":"out-of-scope"}
 ]

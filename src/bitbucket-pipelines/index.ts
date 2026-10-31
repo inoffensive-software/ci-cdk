@@ -31,6 +31,8 @@ export type {
   StepAuth,
   StepItem,
   Trigger,
+  TriggerConfig,
+  Triggers,
 } from "./types.js";
 
 export { render } from "./render.js";
