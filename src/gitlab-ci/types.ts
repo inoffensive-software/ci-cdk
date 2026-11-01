@@ -1,6 +1,7 @@
 import type { Scalar, Text, Value } from "../core/index.js";
 import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 import type { Default, Include, Workflow } from "./pipeline-types.js";
+import type { Step } from "./run-types.js";
 import type { Trigger } from "./trigger-types.js";
 import type { Secret } from "./secret-types.js";
 
@@ -28,6 +29,9 @@ export type { Scalar };
  * change the parsed value.
  */
 export type Script = Text | readonly Text[];
+
+/** The `run` step types live in their own module so this one stays within its line budget. */
+export type { FunctionStep, ScriptStep, Step, StepEnv, StepInputs } from "./run-types.js";
 
 /** The closed set GitLab documents for a job's run condition. */
 export type When = "on_success" | "on_failure" | "always" | "never" | "manual" | "delayed";
@@ -220,6 +224,12 @@ export interface Job {
   /** The same shape and lowering as `script`; a `ref` leaf keeps its tag. */
   readonly before_script?: Script;
   readonly script?: Script;
+  /**
+   * The GitLab Functions step list. `run` and `script` are alternatives: GitLab refuses a job that
+   * declares both, and so does `validate`. Emitted immediately after `script`, where both would sit
+   * if a job could carry them together.
+   */
+  readonly run?: readonly Step[];
   readonly after_script?: Script;
   /** A deployment target, as its name or as the map with `url` and lifecycle hooks. */
   readonly environment?: Environment;

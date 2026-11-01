@@ -30,6 +30,8 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.*.needs[].parallel.matrix[]",
   "$.*.parallel.matrix[]",
   "$.*.artifacts.reports",
+  "$.*.run[].inputs",
+  "$.*.run[].env",
 ];
 
 /**

@@ -35,6 +35,7 @@ import {
   triggerDoc,
 } from "./delivery-blocks.js";
 import { secretsDoc } from "./secrets-blocks.js";
+import { stepsDoc } from "./run-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -77,6 +78,7 @@ const JOB_RESERVED: readonly string[] = [
   "dast_configuration",
   "before_script",
   "script",
+  "run",
   "after_script",
   "environment",
   "release",
@@ -118,6 +120,7 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("dast_configuration", whenPresent(item.dast_configuration, dastConfigurationDoc)),
     ...entry("before_script", present(item.before_script)),
     ...entry("script", present(item.script)),
+    ...entry("run", whenPresent(item.run, stepsDoc)),
     ...entry("after_script", present(item.after_script)),
     ...entry("environment", whenPresent(item.environment, environmentDoc)),
     ...entry("release", whenPresent(item.release, releaseDoc)),

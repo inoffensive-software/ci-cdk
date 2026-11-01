@@ -34,6 +34,13 @@ const namePath = (index: number): string => `${jobPath(index)}.name`;
 
 const scriptPath = (index: number): string => `${jobPath(index)}.script`;
 
+const runPath = (index: number): string => `${jobPath(index)}.run`;
+
+const stepPath = (index: number, step: number): string => `${runPath(index)}[${step}]`;
+
+/** GitLab's step-name rule: alphanumeric and underscore, never starting with a number. */
+const STEP_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/u;
+
 const duplicateStages = (stages: readonly string[]): readonly Diagnostic[] => {
   const diagnostics: Diagnostic[] = [];
 
@@ -168,6 +175,63 @@ const scriptProblems = (jobs: readonly Job[]): readonly Diagnostic[] => {
 };
 
 /**
+ * `run` replaces the script trio rather than joining it: GitLab refuses a job that declares both a
+ * step list and `script`, `before_script` or `after_script`. Each diagnostic names both paths,
+ * because either one could be the field the author meant to keep.
+ */
+const runAlternatives = (index: number, item: Job): readonly Diagnostic[] => {
+  if (item.run === undefined) {
+    return [];
+  }
+
+  return (
+    [
+      ["script", item.script],
+      ["before_script", item.before_script],
+      ["after_script", item.after_script],
+    ] as const
+  ).flatMap(([key, value]) =>
+    value === undefined
+      ? []
+      : [
+          {
+            path: runPath(index),
+            message: `job "${item.name}" declares both ${runPath(index)} and ${jobPath(index)}.${key}; GitLab accepts one`,
+          },
+        ],
+  );
+};
+
+/** A step list needs at least one step, and every step needs GitLab's identifier as its name. */
+const runProblems = (jobs: readonly Job[]): readonly Diagnostic[] => {
+  const diagnostics: Diagnostic[] = [];
+
+  for (const [index, item] of jobs.entries()) {
+    if (item.run === undefined) {
+      continue;
+    }
+
+    if (item.run.length === 0) {
+      diagnostics.push({
+        path: runPath(index),
+        message: "run must contain at least one step",
+      });
+    }
+
+    for (const [position, step] of item.run.entries()) {
+      if (!STEP_NAME.test(step.name)) {
+        diagnostics.push({
+          path: stepPath(index, position),
+          message: `step name "${step.name}" must be alphanumeric or underscore, and not start with a number`,
+        });
+      }
+    }
+  }
+
+  return diagnostics;
+};
+
+/**
  * Whole-document checks. It only collects; `toDoc` is the one place that throws. Stage membership is
  * checked only where a job declares `stage`: an omitted stage may be supplied by `extends` or by an
  * included job of the same name, and neither is resolved here.
@@ -178,4 +242,6 @@ export const validate = (pipeline: Pipeline): readonly Diagnostic[] => [
   ...duplicateJobNames(pipeline.jobs),
   ...jobStageProblems(pipeline),
   ...scriptProblems(pipeline.jobs),
+  ...pipeline.jobs.flatMap((item, index) => runAlternatives(index, item)),
+  ...runProblems(pipeline.jobs),
 ];

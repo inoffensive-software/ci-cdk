@@ -61,6 +61,22 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
           when: "manual",
           manual_confirmation: "Deploy $CI_COMMIT_TAG to production?",
         }),
+        // `run` is a job's alternative to `script`: a function step may carry inputs and env, and a
+        // script step is the documented escape hatch. Modelled here without raw.
+        job({
+          name: "functions",
+          stage: "build",
+          run: [
+            { name: "validate", func: "registry.gitlab.com/js/validate:1.0.0" },
+            {
+              name: "release",
+              func: "registry.gitlab.com/js/release:1.0.0",
+              inputs: { environment: "production", retries: 2 },
+              env: { BUILD_TARGET: "release" },
+            },
+            { name: "migrate", script: "npm run migrate", env: { DRY_RUN: "false" } },
+          ],
+        }),
       ],
     }),
   },
