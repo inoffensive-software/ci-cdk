@@ -9,4 +9,4 @@ zulu:
 alpha:
   stage: test
   script: npm test
-  id_tokens: {}
+  pages: {}

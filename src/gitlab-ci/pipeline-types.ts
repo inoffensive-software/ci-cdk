@@ -1,5 +1,6 @@
 import type { Scalar, Text } from "../core/index.js";
 import type { Artifacts, CacheList, Hooks, Image, Retry, Rule, Script, Service } from "./types.js";
+import type { Identity, IdTokens } from "./token-types.js";
 
 /** The fields every include entry may carry; the discriminator decides the source. */
 export interface IncludeOptions {
@@ -52,4 +53,6 @@ export interface Default {
   readonly timeout?: Text;
   readonly interruptible?: boolean;
   readonly hooks?: Hooks;
+  readonly id_tokens?: IdTokens;
+  readonly identity?: Identity;
 }

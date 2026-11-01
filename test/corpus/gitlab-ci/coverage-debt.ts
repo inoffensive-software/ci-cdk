@@ -1,5 +1,6 @@
 import { GITLAB_PAGES_DEBT } from "./gitlab-pages-debt.js";
 import { GITLAB_SECRETS_DEBT } from "./gitlab-secrets-debt.js";
+import { GITLAB_TOKENS_DEBT } from "./gitlab-tokens-debt.js";
 import { LABKIT_DEBT } from "./labkit-debt.js";
 import { TERRAFORM_IMAGES_DEBT } from "./terraform-images-debt.js";
 
@@ -25,4 +26,5 @@ export const COVERAGE_DEBT: readonly CoverageDebt[] = [
   ...LABKIT_DEBT,
   ...GITLAB_PAGES_DEBT,
   ...GITLAB_SECRETS_DEBT,
+  ...GITLAB_TOKENS_DEBT,
 ];

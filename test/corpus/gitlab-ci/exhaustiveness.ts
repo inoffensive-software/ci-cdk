@@ -20,6 +20,8 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.variables",
   "$.*.variables",
   "$.*.secrets",
+  "$.*.id_tokens",
+  "$.default.id_tokens",
   "$.default.services[].variables",
   "$.*.services[].variables",
   "$.include[].inputs",

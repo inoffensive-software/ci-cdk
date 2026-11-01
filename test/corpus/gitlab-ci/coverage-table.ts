@@ -55,6 +55,10 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.*.secrets"],
   },
   {
+    name: "Tokens and identity",
+    prefixes: ["$.*.id_tokens", "$.*.identity"],
+  },
+  {
     name: "Rules",
     prefixes: ["$.*.rules"],
   },

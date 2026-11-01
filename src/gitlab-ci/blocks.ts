@@ -34,6 +34,7 @@ import type {
   ServiceOptions,
   Workflow,
 } from "./types.js";
+import { idTokensDoc } from "./token-blocks.js";
 
 /** A leaf decides its own style; every other object here is one of the provider's own shapes. */
 const isLeaf = <T extends object>(value: LeafNode | T): value is LeafNode =>
@@ -271,6 +272,11 @@ export const defaultDoc = (defaults: Default): Doc =>
     ...entry("before_script", present(defaults.before_script)),
     ...entry("after_script", present(defaults.after_script)),
     ...entry("hooks", defaults.hooks === undefined ? undefined : hooksDoc(defaults.hooks)),
+    ...entry(
+      "id_tokens",
+      defaults.id_tokens === undefined ? undefined : idTokensDoc(defaults.id_tokens),
+    ),
+    ...entry("identity", present(defaults.identity)),
     ...entry("cache", defaults.cache === undefined ? undefined : cacheDoc(defaults.cache)),
     ...entry(
       "artifacts",
