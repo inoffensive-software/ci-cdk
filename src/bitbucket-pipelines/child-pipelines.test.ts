@@ -38,6 +38,7 @@ const FORBIDDEN: readonly (readonly [string, Partial<Step>])[] = [
   ["deployment", { deployment: "staging" }],
   ["image", { image: "node:24" }],
   ["oidc", { oidc: true }],
+  ["output-variables", { "output-variables": ["VERSION"] }],
   ["runs-on", { "runs-on": ["self.hosted"] }],
   ["runtime", { runtime: { cloud: { arch: "arm" } } }],
   ["services", { services: ["database"] }],

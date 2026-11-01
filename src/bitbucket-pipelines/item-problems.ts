@@ -89,6 +89,7 @@ const CHILD_FORBIDDEN = [
   "deployment",
   "image",
   "oidc",
+  "output-variables",
   "runs-on",
   "runtime",
   "services",
