@@ -6,6 +6,7 @@ import {
   pipelineConfig,
   step,
 } from "../../../src/bitbucket-pipelines/index.js";
+import { AGENT_DEFINITIONS } from "./inventory-agents.js";
 import { CHILD_FINAL_DOCUMENTS } from "./inventory-child.js";
 import { everyDefinedStep, everyFinalArtifacts, everyItems } from "./inventory-items.js";
 import { everyFinalRuntime } from "./inventory-runtime.js";
@@ -109,6 +110,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
     config: pipelineConfig({
       clone: { depth: 50, enabled: true, lfs: true, "skip-ssl-verify": true },
       definitions: {
+        agents: AGENT_DEFINITIONS,
         caches: {
           "node-modules": "node_modules",
           "build-output": { path: "dist", key: { files: ["yarn.lock", "package.json"] } },

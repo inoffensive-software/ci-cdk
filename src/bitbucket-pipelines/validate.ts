@@ -3,6 +3,7 @@ import type { Diagnostic } from "../core/index.js";
 import { keyPath } from "../core/paths.js";
 import { pipelineProblems } from "./item-problems.js";
 import type {
+  AgentDefinition,
   CustomVariable,
   NamedPipeline,
   PipelineConfig,
@@ -32,10 +33,32 @@ const blankNameProblems = <T>(
   return diagnostics;
 };
 
+/** An agent definition always runs a prompt, so the one required key must carry text. */
+const agentDefinitionProblems = (
+  agents: Readonly<Record<string, AgentDefinition>> | undefined,
+): readonly Diagnostic[] => {
+  if (agents === undefined) {
+    return [];
+  }
+
+  return Object.entries(agents).flatMap(([name, definition]) =>
+    definition.prompt === ""
+      ? [
+          {
+            path: `${keyPath("$.definitions.agents", name)}.prompt`,
+            message: "an agent definition needs a non-empty prompt",
+          },
+        ]
+      : [],
+  );
+};
+
 const definitionProblems = (config: PipelineConfig): readonly Diagnostic[] => {
   const definitions = config.definitions;
 
   return [
+    ...blankNameProblems(definitions?.agents, "$.definitions.agents"),
+    ...agentDefinitionProblems(definitions?.agents),
     ...blankNameProblems(definitions?.caches, "$.definitions.caches"),
     ...blankNameProblems(definitions?.services, "$.definitions.services"),
     ...pipelineProblems(definitions?.steps ?? [], "$.definitions.steps"),

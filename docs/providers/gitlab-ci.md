@@ -79,7 +79,7 @@ not document. The counts are computed from the lists, never written by hand.
 
 <!-- documented-grammar:start -->
 
-1061 documented paths. Gaps: 137 (unmodelled 107, out-of-scope 1, schema-noise 29). Overclaims: 3.
+687 documented paths. Gaps: 136 (unmodelled 106, out-of-scope 1, schema-noise 29). Overclaims: 3.
 
 ### Unmodelled
 
@@ -181,7 +181,6 @@ not document. The counts are computed from the lists, never written by hand.
 | `$.include[].rules[].exists.project`              | the project an include rule's map-form `exists` looks in                                                                                                                    |
 | `$.include[].rules[].exists.ref`                  | the ref an include rule's map-form `exists` looks at                                                                                                                        |
 | `$.include[].rules[].exists.regexp`               | the `regexp` an include rule's map-form `exists` matches against paths                                                                                                      |
-| `$.pages`                                         | pipeline-level Pages settings; spec 0009 defers `pages` to its own spec (0010), so it is `unmodelled` debt rather than a non-goal                                           |
 | `$.variables.*.description`                       | a `description` for a pipeline-wide variable, shown on the manual Run pipeline page                                                                                         |
 | `$.variables.*.expand`                            | the `expand` flag on a pipeline-wide variable, which decides whether `$` references inside its value are expanded                                                           |
 | `$.variables.*.options`                           | the `options` list a pipeline-wide variable offers on the manual Run pipeline page                                                                                          |

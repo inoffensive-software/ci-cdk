@@ -178,3 +178,10 @@ top-level `labels` map, and no corpus config and no Atlassian page documents eit
 `PipelineConfig.labels` carry both, the inventory exercises them at every step position and at the
 document root, and `src/bitbucket-pipelines/auth-labels.test.ts` covers their emission and
 validation; no file is vendored for them.
+
+The same pinned schema, copied 2026-10-29, is the only description of the agent runtime:
+`definitions.agents` and its `agent_definition`, and the `agent_task` arm of a script item, including
+`agent_config`, `agent_permissions`, `agent_provider` and `agent_setup_script`. No corpus config uses
+the family and no Atlassian page documents its keys, so `agent-runtime.fixture.ts` is synthetic and
+schema-derived, `src/bitbucket-pipelines/agent-runtime-validation.test.ts` covers its diagnostics,
+and no file is vendored for it. This is the only family whose evidence is the schema alone.

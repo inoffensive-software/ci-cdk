@@ -21,6 +21,18 @@ import { CLOUD, everyImageSteps, everySelfHostedSteps } from "./inventory-runtim
 const INCLUDED: Changesets = { includePaths: ["src/**"] };
 const EXCLUDED: Changesets = { excludePaths: ["docs/**"] };
 
+/** A task carrying every optional key, so the script position is complete for the agent form. */
+const AGENT_TASK = {
+  agent: "release-agent",
+  config: { overrides: { mode: "strict" }, path: "agent/task.yml" },
+  permissions: {
+    "on-ask": { allow: ["read:repository"], default: "deny", deny: ["write:repository"] },
+  },
+  prompt: "Review the staged change.",
+  provider: "codex",
+  "use-legacy-mcp": true,
+} as const;
+
 const IMAGE = {
   name: "node:24",
   username: "builder",
@@ -38,6 +50,7 @@ const everyField = (changesets: Changesets = INCLUDED): StepItem =>
     "after-script": [
       "echo teardown",
       pipe({ pipe: "atlassian/teardown:1", variables: { KEEP: "true", FLAGS: ["--quiet"] } }),
+      AGENT_TASK,
     ],
     artifacts: ["dist/**"],
     auth: { system: { scopes: ["repository:write", "pullrequest:write"] } },
@@ -61,6 +74,7 @@ const everyField = (changesets: Changesets = INCLUDED): StepItem =>
         pipe: "atlassian/npm:1",
         variables: { NPM_TOKEN: "${NPM_TOKEN}", FLAGS: ["--quiet", "--no-audit"] },
       }),
+      AGENT_TASK,
     ],
     services: ["database"],
     size: "8x",
@@ -73,6 +87,7 @@ const everyFinal = (): PipelineItem => {
     "after-script": [
       "echo done",
       pipe({ pipe: "atlassian/cleanup:1", variables: { LOG: "true", FLAGS: ["--quiet"] } }),
+      AGENT_TASK,
     ],
     artifacts: ["coverage/**"],
     auth: { system: { scopes: ["repository:read"] } },
@@ -91,6 +106,7 @@ const everyFinal = (): PipelineItem => {
     script: [
       "echo cleanup",
       pipe({ pipe: "atlassian/cleanup:2", variables: { LOG: "true", FLAGS: ["--quiet"] } }),
+      AGENT_TASK,
     ],
     services: ["database"],
     size: "1x",
@@ -109,6 +125,7 @@ const everyStageStep = (): StepItem =>
     "after-script": [
       "echo teardown",
       pipe({ pipe: "atlassian/teardown:1", variables: { KEEP: "true", FLAGS: ["--quiet"] } }),
+      AGENT_TASK,
     ],
     artifacts: ["dist/**"],
     auth: { system: { scopes: ["repository:write", "pullrequest:write"] } },
@@ -131,6 +148,7 @@ const everyStageStep = (): StepItem =>
         pipe: "atlassian/npm:1",
         variables: { NPM_TOKEN: "${NPM_TOKEN}", FLAGS: ["--quiet", "--no-audit"] },
       }),
+      AGENT_TASK,
     ],
     services: ["database"],
     size: "8x",
