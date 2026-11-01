@@ -18,6 +18,21 @@ This project aims to end the tyranny of YAML by allowing for the specification o
 
 - **Sharing is code**: This project does not support YAML anchors or other sharing primitives from upstream providers. If you want to share snippets between definitions, you need to write a function which generates identical YAML. This may be duplicative, but it's also much simpler to reason about
 
+## Install
+
+```sh
+pnpm add @inoffensive/ci-cdk
+# or: npm install @inoffensive/ci-cdk
+# or: yarn add @inoffensive/ci-cdk
+```
+
+The package is ESM-only and requires Node 24 or newer. Each provider is its own subpath, so installing
+this library for one vendor does not pull the others into your type graph:
+
+- `@inoffensive/ci-cdk/github-actions`
+- `@inoffensive/ci-cdk/gitlab-ci`
+- `@inoffensive/ci-cdk/bitbucket-pipelines`
+
 ## Usage
 
 ```ts
