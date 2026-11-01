@@ -7,6 +7,7 @@ The provider behind the `@inoffensive/ci-cdk/bitbucket-pipelines` subpath export
 repository keeps at its root.
 
 It owns `index.ts` (the barrel), `render.ts`, `types.ts`, `to-doc.ts`, `step-doc.ts`, `item-doc.ts`,
+`script-doc.ts`, `runtime-doc.ts`, `runtime-types.ts`, `agent-types.ts`, `pipe-types.ts`,
 `validate.ts`, `item-problems.ts`, their colocated tests and the goldens in
 `src/bitbucket-pipelines/__snapshots__/`. The layers, the public surface and the emitted format are
 described once in [`docs/architecture.md`](../architecture.md); this file does not repeat them.
@@ -18,8 +19,13 @@ The claim is the corpus, and the corpus is asserted by these tests:
 - [`connect-express.test.ts`](../../test/corpus/bitbucket-pipelines/connect-express.test.ts),
   [`systemsdk-symfony.test.ts`](../../test/corpus/bitbucket-pipelines/systemsdk-symfony.test.ts),
   [`obuspa.test.ts`](../../test/corpus/bitbucket-pipelines/obuspa.test.ts),
-  [`rair-dapp.test.ts`](../../test/corpus/bitbucket-pipelines/rair-dapp.test.ts) and
-  [`aligent-graphql-mesh.test.ts`](../../test/corpus/bitbucket-pipelines/aligent-graphql-mesh.test.ts)
+  [`rair-dapp.test.ts`](../../test/corpus/bitbucket-pipelines/rair-dapp.test.ts),
+  [`aligent-graphql-mesh.test.ts`](../../test/corpus/bitbucket-pipelines/aligent-graphql-mesh.test.ts),
+  [`artifacts-expanded.test.ts`](../../test/corpus/bitbucket-pipelines/artifacts-expanded.test.ts),
+  [`custom-vars-nakama.test.ts`](../../test/corpus/bitbucket-pipelines/custom-vars-nakama.test.ts),
+  [`triggers-alibaba.test.ts`](../../test/corpus/bitbucket-pipelines/triggers-alibaba.test.ts),
+  [`triggers-vardot.test.ts`](../../test/corpus/bitbucket-pipelines/triggers-vardot.test.ts) and
+  [`runtime-chaosgroup.test.ts`](../../test/corpus/bitbucket-pipelines/runtime-chaosgroup.test.ts)
   render each entry and compare it with the pinned file as parsed data.
 - [`exhaustiveness.test.ts`](../../test/corpus/bitbucket-pipelines/exhaustiveness.test.ts) holds the
   modelled set to the corpus keys and the ledger in both directions.
@@ -50,10 +56,10 @@ with this file, so editing it by hand fails.
 ## Documented grammar
 
 [`docs/references/upstream-schemas.md`](../references/upstream-schemas.md) pins the schema this section
-reads as a grammar: a gap is a schema path the provider cannot emit, and an overclaim is a modelled
-path the schema rejects. `test/corpus/bitbucket-pipelines/documented-grammar.ts` generates the block
-below from the walker's paths, `GAPS` and `OVERCLAIMS`; `document.test.ts` compares it with this file,
-so editing it by hand fails. The gate and its refresh rule are in
+reads as a grammar: a gap is a schema path the modelled inventory does not reach, and an overclaim is
+a modelled path the schema does not enumerate. `test/corpus/bitbucket-pipelines/documented-grammar.ts`
+generates the block below from the walker's paths, `GAPS` and `OVERCLAIMS`; `document.test.ts`
+compares it with this file, so editing it by hand fails. The gate and its refresh rule are in
 [ADR 0011](../decisions/0011-documented-grammar-gate.md).
 
 Unmodelled and schema-noise gaps are listed one path at a time. Out-of-scope gaps repeat at every
@@ -62,37 +68,41 @@ says how many places the non-goal covers.
 
 <!-- documented-grammar:start -->
 
-3725 documented paths. Gaps: 30 (unmodelled 0, out-of-scope 22, schema-noise 8). Overclaims: 33.
+3725 documented paths. Gaps: 30 (unmodelled 4, out-of-scope 17, schema-noise 9). Overclaims: 33.
 
 ### Unmodelled
 
-| Path | Reason |
-| ---- | ------ |
+| Path                                               | Reason                                                                                                                                                         |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.pipelines.branches.*[].final.image.aws`         | no fixture exercises the `aws` image map on a final step, so the position is not in the modelled set; the type accepts it and the inline positions are covered |
+| `$.pipelines.default[].final.image.aws`            | no fixture exercises the `aws` image map on a final step, so the position is not in the modelled set; the type accepts it and the inline positions are covered |
+| `$.pipelines.tags.*[].final.image.aws`             | no fixture exercises the `aws` image map on a final step, so the position is not in the modelled set; the type accepts it and the inline positions are covered |
+| `$.pipelines["pull-requests"].*[].final.image.aws` | no fixture exercises the `aws` image map on a final step, so the position is not in the modelled set; the type accepts it and the inline positions are covered |
 
 ### Out of scope
 
-| Key                              | Positions | Reason                                                                                                                    |
-| -------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `$.definitions.imports`          | 1         | shared pipeline imports; the spec's Out of Scope section names `definitions.imports` a non-goal                           |
-| `$.definitions.pipelines`        | 1         | definitions shared with other repositories; the spec's Out of Scope section names `definitions.pipelines` a non-goal      |
-| `$.export`                       | 1         | the flag that publishes definitions to other repositories; the spec's Out of Scope section names `export` a non-goal      |
-| `$.pipelines.*.import`           | 5         | an imported pipeline; the spec's Out of Scope section names imports                                                       |
-| `$.pipelines.*.variables`        | 5         | custom-pipeline variable declarations; the spec's Out of Scope section names them                                         |
-| `$.pipelines.*[].item.condition` | 5         | a condition on a step inside a stage; Bitbucket carries the condition on the stage itself, so a stage step cannot set one |
-| `$.pipelines.*[].item.image.aws` | 4         | AWS registry authentication for a step image; the spec's Out of Scope section names AWS image auth                        |
+| Key                              | Positions | Reason                                                                                                                                      |
+| -------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.definitions.imports`          | 1         | shared pipeline imports; the spec's Out of Scope section names `definitions.imports` a non-goal                                             |
+| `$.definitions.pipelines`        | 1         | definitions shared with other repositories; the spec's Out of Scope section names `definitions.pipelines` a non-goal                        |
+| `$.export`                       | 1         | the flag that publishes definitions to other repositories; the spec's Out of Scope section names `export` a non-goal                        |
+| `$.pipelines.*.import`           | 5         | an imported pipeline; the spec's Out of Scope section names imports                                                                         |
+| `$.pipelines.*.variables`        | 4         | `variables` on a non-custom pipeline; Bitbucket prompts for inputs only in a custom pipeline, and the provider models the declaration there |
+| `$.pipelines.*[].item.condition` | 5         | a condition on a step inside a stage; Bitbucket carries the condition on the stage itself, so a stage step cannot set one                   |
 
 ### Schema noise
 
-| Path                                                  | Reason                                                                                                                                                               |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$.pipelines.branches.*[].final.deployment`           | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines.branches.*[].final["fail-fast"]`         | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines.default[].final.deployment`              | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines.default[].final["fail-fast"]`            | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines.tags.*[].final.deployment`               | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines.tags.*[].final["fail-fast"]`             | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines["pull-requests"].*[].final.deployment`   | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
-| `$.pipelines["pull-requests"].*[].final["fail-fast"]` | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it |
+| Path                                                  | Reason                                                                                                                                                                       |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$.pipelines.branches.*[].final.deployment`           | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines.branches.*[].final["fail-fast"]`         | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines.custom.*.variables`                      | the schema spells the declaration as a property of the custom pipeline, while Bitbucket writes it as the pipeline's leading `- variables:` item; the provider emits the item |
+| `$.pipelines.default[].final.deployment`              | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines.default[].final["fail-fast"]`            | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines.tags.*[].final.deployment`               | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines.tags.*[].final["fail-fast"]`             | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines["pull-requests"].*[].final.deployment`   | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
+| `$.pipelines["pull-requests"].*[].final["fail-fast"]` | the schema states only `not: {}` for this key on a final step, and the walk reads `properties` without it; Bitbucket forbids the key, and `FinalStep` cannot emit it         |
 
 ### Overclaims
 
@@ -134,36 +144,71 @@ says how many places the non-goal covers.
 
 <!-- documented-grammar:end -->
 
+## Evidence
+
+Support has three levels, and this page says which one each family rests on.
+
+**Corpus-backed.** A vendored config uses the shape, so the corpus test is the proof: the expanded
+`artifacts` map with `paths` and `download`, custom-pipeline `variables`, `triggers`, the `arch` arm
+of `runtime.cloud`, and the vocabulary the earlier slices pinned. Rendering the entry reproduces it
+as parsed data.
+
+**Documentation-derived.** Bitbucket documents the shape and no redistributable config uses it, so
+the fixture is synthetic: the child-pipeline step (`type: pipeline`, `custom`, `input-variables` and
+the properties it refuses) and an upload's named entries and name-list `download`, both from
+<https://support.atlassian.com/bitbucket-cloud/docs/child-pipeline-step-options/> retrieved
+2026-10-29. A page describes what Bitbucket accepts; it is not a record of anyone writing it.
+
+**Schema-derived.** Neither a config nor an Atlassian page describes the keys; the pinned
+`test/schemas/bitbucket-pipelines.json` is the whole description. That covers the agent runtime
+(`definitions.agents` and the agent task), `step.auth.system.scopes`, the top-level `labels` map, the
+remaining artifact upload keys (`type`, `capture-on`, `depth` and `ignore-paths`), the `image.aws`
+map in both arms — an assumed role and a static key pair — self-hosted runtime `storage`, and the
+cloud runtime keys no vendored config writes (`atlassian-ip-ranges`, `instance-type`, `platform` and
+the string form of `version`).
+
+Only the first level is proven by use. The documentation-derived level has no vendored file, so the
+fixture shows what the page says and nothing about who writes it. The schema-derived level is
+unproven outright: it is modelled because every key the schema describes is modelled, not because
+Bitbucket was observed accepting it, and a schema refresh is the only check that would catch a wrong
+inference.
+
 ## Corpus
 
 Ten vendored configs, pinned by commit. [`PROVENANCE.md`](../../test/corpus/bitbucket-pipelines/PROVENANCE.md)
-is the record for paths, hashes and licences; every entry is compared as data.
+is the record for paths, hashes, licences and example-file markers; every entry is compared as data.
+The two `triggers-*` entries are repository example files rather than live configs, which the Kind
+column marks.
 
-| Entry                  | Repository                                                                 | Commit                                     | Licence      | Comparison | File                                                   |
-| ---------------------- | -------------------------------------------------------------------------- | ------------------------------------------ | ------------ | ---------- | ------------------------------------------------------ |
-| `connect-express`      | <https://bitbucket.org/atlassian/atlassian-connect-express>                | `d00fcf7836356c3156b29cb5710e29d6da4c03c9` | Apache-2.0   | data       | `bitbucket-pipelines.yml`                              |
-| `systemsdk-symfony`    | <https://github.com/systemsdk/docker-nginx-php-symfony>                    | `da31f3c30607a57f394338ce3b31d8bfc06a320a` | MIT          | data       | `bitbucket-pipelines.yml`                              |
-| `obuspa`               | <https://github.com/BroadbandForum/obuspa>                                 | `59028beba21471d19bd3842ef2632ceb6ca8c7fc` | BSD-3-Clause | data       | `bitbucket-pipelines.yml`                              |
-| `rair-dapp`            | <https://github.com/rairprotocol/rair-dapp>                                | `0afccca0bd38a23e8fc2518cd1fb48612675b607` | Apache-2.0   | data       | `bitbucket-pipelines.yml`                              |
-| `aligent-graphql-mesh` | <https://github.com/aligent/aligent-graphql-mesh>                          | `8095504bbdcd878c3e3e7adf6e48ebf953c01c28` | MIT          | data       | `bitbucket-pipelines.yml`                              |
-| `artifacts-expanded`   | <https://github.com/snyk-schmidtty/goof-artifactory>                       | `6838e122fe6f749c7ff183e0fed0ab8dc415276c` | Apache-2.0   | data       | `bitbucket-pipelines.yml`                              |
-| `custom-vars-nakama`   | <https://github.com/Nakama-Partnering-Services/nakama-project-scaffolding> | `fd8bfc6f5b7c9e3ada89c99c8d8aec27d586a6f0` | MIT          | data       | `bitbucket-pipelines.yml`                              |
-| `triggers-alibaba`     | <https://github.com/alibaba/open-code-review>                              | `476f661f26e5576a36003abe7a37d5ff8546b2df` | Apache-2.0   | data       | `examples/bitbucket_pipelines/bitbucket-pipelines.yml` |
-| `triggers-vardot`      | <https://github.com/Vardot/ddev-dev-tools>                                 | `515f6901367458f75ee4956f8172e8566d7879f7` | Apache-2.0   | data       | `examples/bitbucket-pipelines.yml.example`             |
-| `runtime-chaosgroup`   | <https://github.com/ChaosGroup/cg2_2014_demo>                              | `9cb7d426ec3feb9b5ec51ca2aaf9173f203fa921` | MIT          | data       | `bitbucket-pipelines.yml`                              |
-
-The `artifacts-expanded` entry is corpus-backed for the map form with `paths` and `download`. Its
-named `upload` entries and name-list `download` are documentation-derived from
-<https://support.atlassian.com/bitbucket-cloud/docs/child-pipeline-step-options/> retrieved
-2026-10-29, with no vendored file.
+| Entry                  | Repository                                                                 | Commit                                     | Licence      | Kind    | Comparison | File                                                   |
+| ---------------------- | -------------------------------------------------------------------------- | ------------------------------------------ | ------------ | ------- | ---------- | ------------------------------------------------------ |
+| `connect-express`      | <https://bitbucket.org/atlassian/atlassian-connect-express>                | `d00fcf7836356c3156b29cb5710e29d6da4c03c9` | Apache-2.0   | config  | data       | `bitbucket-pipelines.yml`                              |
+| `systemsdk-symfony`    | <https://github.com/systemsdk/docker-nginx-php-symfony>                    | `da31f3c30607a57f394338ce3b31d8bfc06a320a` | MIT          | config  | data       | `bitbucket-pipelines.yml`                              |
+| `obuspa`               | <https://github.com/BroadbandForum/obuspa>                                 | `59028beba21471d19bd3842ef2632ceb6ca8c7fc` | BSD-3-Clause | config  | data       | `bitbucket-pipelines.yml`                              |
+| `rair-dapp`            | <https://github.com/rairprotocol/rair-dapp>                                | `0afccca0bd38a23e8fc2518cd1fb48612675b607` | Apache-2.0   | config  | data       | `bitbucket-pipelines.yml`                              |
+| `aligent-graphql-mesh` | <https://github.com/aligent/aligent-graphql-mesh>                          | `8095504bbdcd878c3e3e7adf6e48ebf953c01c28` | MIT          | config  | data       | `bitbucket-pipelines.yml`                              |
+| `artifacts-expanded`   | <https://github.com/snyk-schmidtty/goof-artifactory>                       | `6838e122fe6f749c7ff183e0fed0ab8dc415276c` | Apache-2.0   | config  | data       | `bitbucket-pipelines.yml`                              |
+| `custom-vars-nakama`   | <https://github.com/Nakama-Partnering-Services/nakama-project-scaffolding> | `fd8bfc6f5b7c9e3ada89c99c8d8aec27d586a6f0` | MIT          | config  | data       | `bitbucket-pipelines.yml`                              |
+| `triggers-alibaba`     | <https://github.com/alibaba/open-code-review>                              | `476f661f26e5576a36003abe7a37d5ff8546b2df` | Apache-2.0   | example | data       | `examples/bitbucket_pipelines/bitbucket-pipelines.yml` |
+| `triggers-vardot`      | <https://github.com/Vardot/ddev-dev-tools>                                 | `515f6901367458f75ee4956f8172e8566d7879f7` | Apache-2.0   | example | data       | `examples/bitbucket-pipelines.yml.example`             |
+| `runtime-chaosgroup`   | <https://github.com/ChaosGroup/cg2_2014_demo>                              | `9cb7d426ec3feb9b5ec51ca2aaf9173f203fa921` | MIT          | config  | data       | `bitbucket-pipelines.yml`                              |
 
 ## Quirks
 
 - **`step:` versus `steps:`.** A pipeline item is a singular `step:`; a stage or a parallel group
   holds a plural `steps:` sequence. The builders make the distinction a type, and `final:` is the
   item form that closes a pipeline in place of a step.
-- **A pipe is a script item.** `script:` and `after-script:` mix command strings with
-  `{ pipe, variables }` maps; a pipe is not a step property and never a step of its own.
+- **A script item is a command, a pipe or an agent task.** `script:` and `after-script:` mix
+  command strings with `{ pipe, variables }` and `{ agent, ... }` maps in the author's order. A pipe
+  and an agent task are sequence items, never step properties and never steps of their own; a
+  `setup-script` item is only a command or a pipe.
+- **A child step is a step with no body.** `type: pipeline` plus a `custom` target and optional
+  `input-variables`. Bitbucket refuses `image`, `services`, `deployment`, `runtime`, `clone`, `oidc`,
+  `caches`, `runs-on`, `size` and `trigger` on a child step, so the type leaves them out rather than
+  filtering them at emit time, and a child step needs no `script`.
+- **`definitions.agents` is schema-only.** No vendored config and no Atlassian page describes it; its
+  keys and the agent task's are the pinned schema's, and the fixture that proves the shape is
+  synthetic.
 - **Quoted `*` and `**` selectors.** A selector pattern is emitted quoted, so it parses back as the
   string `*` or `**` rather than as a YAML alias.
 - **`clone.depth: full`.** The field is a number or the string `full`, and the string stays text.
@@ -176,20 +221,18 @@ named `upload` entries and name-list `download` are documentation-derived from
 
 ## Non-goals
 
-- Child pipelines and imported/shared definitions: `step.type: pipeline`, `step.custom`,
-  `step.config`, `definitions.step-config`, `definitions.imports`, `definitions.pipelines` and
-  `export`.
-- Bitbucket's agent/AI runtime: `definitions.agents` and the `agent_*` grammar the schema carries.
-- Event triggers (`triggers:`), pipeline `labels`, and custom-pipeline variable declarations.
-- `step.auth`, `step.input-variables`, `step.runtime`, `options.runtime`, self-hosted runtime
-  volumes and cloud runtime settings.
-- The expanded artifacts form (`download`/`upload`, named artifacts, capture-on), and AWS or OIDC
-  registry auth for images.
-- Resolving `definitions` names, `include`-like imports or any cross-file reference. They are
-  emitted, never loaded or verified.
+- Imports, shared pipeline definitions and `export`: `definitions.imports`, `definitions.pipelines`,
+  a section's `import`, and the document-level `export` flag. Resolving any of them is cross-file
+  work, which the emitted document cannot do.
+- `definitions.runners`: the pinned schema does not describe it, so there is nothing to type it
+  against.
+- Resolving references at build time. Child pipelines, triggers, agents, caches, services and step
+  definitions are emitted by name; they are never loaded, checked or expanded.
+- `variables` on a non-custom pipeline section. Bitbucket prompts for inputs only on a custom
+  pipeline, and the declaration is modelled there.
+- Refreshing the vendored schema. A refresh is a separate, deliberate change, and every path it adds
+  fails the gate until it is modelled or declared.
 - A CLI or file-writing behaviour; `render` still returns text.
-- Refreshing the vendored schema, and modelling any declared `GAPS` row. Triage classifies; a row
-  becomes vocabulary only when a pinned corpus entry already needs it.
 
 Keys outside the vocabulary can still be written through `raw` where a struct exposes it; a corpus
 key that needs `raw` is a ledger row.

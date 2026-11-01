@@ -6,15 +6,17 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `AgentDefinition` carries `prompt` and optional `config`, `permissions`, `provider`, `setup-script` and `use-legacy-mcp`, mirroring the schema's `agent_definition`; `Definitions` gains `agents`, authored as a record of names.
-- [ ] `ScriptItem` is `Text | Pipe | AgentTask`; `AgentTask` carries `agent` and the schema's optional task keys. A script sequence keeps its order and mixes all three forms.
-- [ ] Emission is alphabetical at each level, `setup-script` and `script` sequences keep their own item shapes (string or pipe, no agent task), and absent keys are not emitted.
-- [ ] Validation refuses an agent definition with an empty prompt or an empty name, and an agent task with an empty agent name, at the author's path.
-- [ ] The shape is validated against the pinned schema: a synthetic definition using every agent key renders, parses, and conforms.
-- [ ] ADR 0015 records the script-item widening and `definitions.agents`, and states that the shape is schema-derived with no corpus or documentation evidence.
-- [ ] PROVENANCE records the synthetic fixture as schema-derived with the schema's copy date; there is no vendored config.
-- [ ] Inventory, exhaustiveness gate and documented-grammar lists are re-derived; the stale-row check is empty; the agent paths leave GAPS and any schema disagreement joins OVERCLAIMS.
-- [ ] Goldens are added; no existing golden changes.
-- [ ] `pnpm check` passes.
+- [x] `AgentDefinition` carries `prompt` and optional `config`, `permissions`, `provider`, `setup-script` and `use-legacy-mcp`, mirroring the schema's `agent_definition`; `Definitions` gains `agents`, authored as a record of names.
+- [x] `ScriptItem` is `Text | Pipe | AgentTask`; `AgentTask` carries `agent` and the schema's optional task keys. A script sequence keeps its order and mixes all three forms.
+- [x] Emission is alphabetical at each level, `setup-script` and `script` sequences keep their own item shapes (string or pipe, no agent task), and absent keys are not emitted.
+- [x] Validation refuses an agent definition with an empty prompt or an empty name, and an agent task with an empty agent name, at the author's path.
+- [x] The shape is validated against the pinned schema: a synthetic definition using every agent key renders, parses, and conforms.
+- [x] ADR 0018 records the script-item widening and `definitions.agents`, and states that the shape
+      is schema-derived with no corpus or documentation evidence. (0015-0017 were taken by other
+      work, so the slice's record is 0018.)
+- [x] PROVENANCE records the synthetic fixture as schema-derived with the schema's copy date; there is no vendored config.
+- [x] Inventory, exhaustiveness gate and documented-grammar lists are re-derived; the stale-row check is empty; the agent paths leave GAPS and any schema disagreement joins OVERCLAIMS.
+- [x] Goldens are added; no existing golden changes.
+- [x] `pnpm check` passes.
