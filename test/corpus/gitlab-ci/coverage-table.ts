@@ -26,10 +26,6 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.workflow"],
   },
   {
-    name: "Pages job",
-    prefixes: ["$.pages"],
-  },
-  {
     name: "Job identity",
     exact: ["$.*", "$.*.stage", "$.*.extends", "$.*.extends[]", "$.*.tags", "$.*.tags[]"],
     prefixes: [],
@@ -44,7 +40,23 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
   },
   {
     name: "Scripts",
-    prefixes: ["$.*.before_script", "$.*.script", "$.*.after_script"],
+    prefixes: ["$.*.before_script", "$.*.script", "$.*.run", "$.*.after_script", "$.*.hooks"],
+  },
+  {
+    name: "Inheritance",
+    prefixes: ["$.*.inherit"],
+  },
+  {
+    name: "Dependencies",
+    prefixes: ["$.*.dependencies"],
+  },
+  {
+    name: "Secrets",
+    prefixes: ["$.*.secrets"],
+  },
+  {
+    name: "Tokens and identity",
+    prefixes: ["$.*.id_tokens", "$.*.identity"],
   },
   {
     name: "Rules",
@@ -83,6 +95,10 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.*.retry"],
   },
   {
+    name: "DAST",
+    prefixes: ["$.*.dast_configuration"],
+  },
+  {
     name: "Scheduling",
     exact: [
       "$.*.when",
@@ -93,6 +109,8 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
       "$.*.timeout",
       "$.*.resource_group",
       "$.*.coverage",
+      "$.*.start_in",
+      "$.*.manual_confirmation",
     ],
     prefixes: [],
   },

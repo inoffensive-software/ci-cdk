@@ -14,9 +14,12 @@ import { lowerRawBlock, rawEntries } from "../core/raw.js";
 import {
   artifactsDoc,
   cacheDoc,
+  dastConfigurationDoc,
   defaultDoc,
+  hooksDoc,
   imageDoc,
   includeDoc,
+  inheritDoc,
   needsDoc,
   retryDoc,
   rulesDoc,
@@ -31,6 +34,9 @@ import {
   releaseDoc,
   triggerDoc,
 } from "./delivery-blocks.js";
+import { secretsDoc } from "./secrets-blocks.js";
+import { stepsDoc } from "./run-blocks.js";
+import { idTokensDoc } from "./token-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -45,7 +51,6 @@ const PIPELINE_RESERVED: readonly string[] = [
   "stages",
   "variables",
   "workflow",
-  "pages",
 ];
 
 /**
@@ -63,10 +68,20 @@ const JOB_RESERVED: readonly string[] = [
   "image",
   "services",
   "variables",
+  "inherit",
+  "secrets",
+  "id_tokens",
+  "identity",
   "cache",
   "artifacts",
+  "dependencies",
+  "hooks",
+  "start_in",
+  "manual_confirmation",
+  "dast_configuration",
   "before_script",
   "script",
+  "run",
   "after_script",
   "environment",
   "release",
@@ -87,10 +102,9 @@ const whenPresent = <T>(value: T | undefined, doc: (item: T) => Doc): Doc | unde
 
 /**
  * A job's body in the spec's fixed order. Absent fields emit nothing, so a fragment stays a fragment;
- * a job with none of them lowers to an empty map. The body is shared by a named job and the root
- * `pages` entry, which is a job whose name is its key, so `name` is not part of the input.
+ * a job with none of them lowers to an empty map.
  */
-const jobDoc = (item: Omit<Job, "name">, path: string, diagnostics: Diagnostic[]): Doc => {
+const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
   const modelled = [
     ...entry("stage", item.stage === undefined ? undefined : fromValue(item.stage)),
     ...entry("extends", present(item.extends)),
@@ -100,10 +114,18 @@ const jobDoc = (item: Omit<Job, "name">, path: string, diagnostics: Diagnostic[]
     ...entry("image", whenPresent(item.image, imageDoc)),
     ...entry("services", whenPresent(item.services, servicesDoc)),
     ...entry("variables", whenPresent(item.variables, variablesDoc)),
+    ...entry("inherit", whenPresent(item.inherit, inheritDoc)),
+    ...entry("secrets", whenPresent(item.secrets, secretsDoc)),
+    ...entry("id_tokens", whenPresent(item.id_tokens, idTokensDoc)),
+    ...entry("identity", present(item.identity)),
     ...entry("cache", whenPresent(item.cache, cacheDoc)),
     ...entry("artifacts", whenPresent(item.artifacts, artifactsDoc)),
+    ...entry("dependencies", present(item.dependencies)),
+    ...entry("hooks", whenPresent(item.hooks, hooksDoc)),
+    ...entry("dast_configuration", whenPresent(item.dast_configuration, dastConfigurationDoc)),
     ...entry("before_script", present(item.before_script)),
     ...entry("script", present(item.script)),
+    ...entry("run", whenPresent(item.run, stepsDoc)),
     ...entry("after_script", present(item.after_script)),
     ...entry("environment", whenPresent(item.environment, environmentDoc)),
     ...entry("release", whenPresent(item.release, releaseDoc)),
@@ -114,6 +136,8 @@ const jobDoc = (item: Omit<Job, "name">, path: string, diagnostics: Diagnostic[]
     ...entry("interruptible", present(item.interruptible)),
     ...entry("allow_failure", whenPresent(item.allow_failure, allowFailureDoc)),
     ...entry("when", present(item.when)),
+    ...entry("start_in", present(item.start_in)),
+    ...entry("manual_confirmation", present(item.manual_confirmation)),
     ...entry("resource_group", present(item.resource_group)),
     ...entry("coverage", present(item.coverage)),
   ];
@@ -173,10 +197,6 @@ export const toDoc = (pipeline: Pipeline): Doc => {
       pipeline.workflow === undefined ? undefined : workflowDoc(pipeline.workflow),
     ),
     ...templateEntries(pipeline.templates, diagnostics),
-    ...entry(
-      "pages",
-      pipeline.pages === undefined ? undefined : jobDoc(pipeline.pages, "$.pages", diagnostics),
-    ),
     ...pipeline.jobs.map((item, index) => ({
       key: item.name,
       value: jobDoc(item, `$.jobs[${index}]`, diagnostics),

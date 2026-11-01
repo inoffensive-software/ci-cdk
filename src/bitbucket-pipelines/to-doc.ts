@@ -12,6 +12,7 @@ import {
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
 import { itemDoc } from "./item-doc.js";
+import { runtimeDoc } from "./runtime-doc.js";
 import { cloneDoc, imageDoc } from "./step-doc.js";
 import type {
   Cache,
@@ -21,6 +22,7 @@ import type {
   Pipelines,
   SelectorPipeline,
   Service,
+  TriggerConfig,
 } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -32,6 +34,7 @@ const DOCUMENT_RESERVED: readonly string[] = [
   "labels",
   "options",
   "pipelines",
+  "triggers",
 ];
 
 /** A cache is either its path or the `path`/`key` map; a key names the files it hashes. */
@@ -56,7 +59,7 @@ const cacheDoc = (cache: Cache): Doc =>
 /** Service keys in the schema's order; variable maps keep the author's insertion order. */
 const serviceDoc = (service: Service): Doc =>
   map([
-    ...entry("image", service.image === undefined ? undefined : fromValue(service.image)),
+    ...entry("image", imageDoc(service.image)),
     ...entry("memory", service.memory === undefined ? undefined : fromValue(service.memory)),
     ...entry("type", service.type === undefined ? undefined : fromValue(service.type)),
     ...entry(
@@ -101,7 +104,7 @@ const definitionsDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc 
   return map(rows);
 };
 
-/** Options: `docker`, `max-time`, `runs-on`, `size`. */
+/** Options: `docker`, `max-time`, `runs-on`, `runtime`, `size`. */
 const optionsDoc = (config: PipelineConfig): Doc | undefined => {
   const options = config.options;
 
@@ -119,6 +122,7 @@ const optionsDoc = (config: PipelineConfig): Doc | undefined => {
       "runs-on",
       options["runs-on"] === undefined ? undefined : fromValue(options["runs-on"]),
     ),
+    ...entry("runtime", runtimeDoc(options.runtime)),
     ...entry("size", options.size === undefined ? undefined : fromValue(options.size)),
   ]);
 };
@@ -225,6 +229,24 @@ const pipelinesDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc =>
   ]);
 };
 
+/** One trigger entry: `condition` then `pipelines`, the schema's order. */
+const triggerDoc = (trigger: TriggerConfig): Doc =>
+  map([
+    { key: "condition", value: fromValue(trigger.condition) },
+    { key: "pipelines", value: fromValue(trigger.pipelines) },
+  ]);
+
+/** Triggers: one author-named key per trigger type, entries in array order. */
+const triggersDoc = (config: PipelineConfig): Doc | undefined => {
+  const triggers = config.triggers;
+
+  if (triggers === undefined) {
+    return undefined;
+  }
+
+  return namedDoc(triggers, (entries) => seq(entries.map((trigger) => triggerDoc(trigger))));
+};
+
 /** Validates the whole document, then lowers it. Raw entries come last at each level. */
 export const toDoc = (config: PipelineConfig): Doc => {
   const diagnostics: Diagnostic[] = [...validate(config)];
@@ -243,6 +265,7 @@ export const toDoc = (config: PipelineConfig): Doc => {
     ),
     ...entry("options", optionsDoc(config)),
     { key: "pipelines", value: pipelinesDoc(config, diagnostics) },
+    ...entry("triggers", triggersDoc(config)),
   ];
 
   const doc = map([

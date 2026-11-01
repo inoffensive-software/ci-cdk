@@ -7,7 +7,10 @@ import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-e
 import { CUSTOM_VARS_NAKAMA } from "../../test/corpus/bitbucket-pipelines/custom-vars-nakama.fixture.js";
 import { OBUSPA } from "../../test/corpus/bitbucket-pipelines/obuspa.fixture.js";
 import { RAIR_DAPP } from "../../test/corpus/bitbucket-pipelines/rair-dapp.fixture.js";
+import { RUNTIME_CHAOSGROUP } from "../../test/corpus/bitbucket-pipelines/runtime-chaosgroup.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "../../test/corpus/bitbucket-pipelines/systemsdk-symfony.fixture.js";
+import { TRIGGERS_ALIBABA } from "../../test/corpus/bitbucket-pipelines/triggers-alibaba.fixture.js";
+import { TRIGGERS_VARDOT } from "../../test/corpus/bitbucket-pipelines/triggers-vardot.fixture.js";
 import * as provider from "./index.js";
 import { type PipelineConfig, pipelineConfig, pipe, render, step } from "./index.js";
 
@@ -56,6 +59,20 @@ describe("custom-variable corpus goldens", () => {
   it("pins the custom-vars-nakama fixture with the header suppressed", async () => {
     await expect(render(CUSTOM_VARS_NAKAMA, { header: "" })).toMatchFileSnapshot(
       "__snapshots__/custom-vars-nakama.yml",
+    );
+  });
+});
+
+describe("trigger corpus goldens", () => {
+  it("pins the triggers-alibaba fixture with the header suppressed", async () => {
+    await expect(render(TRIGGERS_ALIBABA, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/triggers-alibaba.yml",
+    );
+  });
+
+  it("pins the triggers-vardot fixture with the header suppressed", async () => {
+    await expect(render(TRIGGERS_VARDOT, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/triggers-vardot.yml",
     );
   });
 });
@@ -204,6 +221,14 @@ describe("builders", () => {
     expect(step({ script: ["true"] })).toStrictEqual({ step: { script: ["true"] } });
     expect(pipelineConfig(config)).toBe(config);
     expect(pipe(builtPipe)).toBe(builtPipe);
+  });
+});
+
+describe("runtime corpus goldens", () => {
+  it("pins the runtime-chaosgroup fixture with the header suppressed", async () => {
+    await expect(render(RUNTIME_CHAOSGROUP, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/runtime-chaosgroup.yml",
+    );
   });
 });
 

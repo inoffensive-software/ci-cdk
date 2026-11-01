@@ -1,5 +1,23 @@
 import type { Scalar, Text, Value } from "../core/index.js";
+import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+import type { Default, Include, Workflow } from "./pipeline-types.js";
+import type { Step } from "./run-types.js";
 import type { Trigger } from "./trigger-types.js";
+import type { Secret } from "./secret-types.js";
+import type { Identity, IdTokens } from "./token-types.js";
+
+export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+
+export type { Identity, IdTokens } from "./token-types.js";
+
+export type {
+  AutoCancel,
+  Default,
+  Include,
+  IncludeEntry,
+  IncludeOptions,
+  Workflow,
+} from "./pipeline-types.js";
 
 /**
  * An arbitrary YAML scalar, for maps whose keys the author chooses. The type lives in core because
@@ -14,6 +32,9 @@ export type { Scalar };
  * change the parsed value.
  */
 export type Script = Text | readonly Text[];
+
+/** The `run` step types live in their own module so this one stays within its line budget. */
+export type { FunctionStep, ScriptStep, Step, StepEnv, StepInputs } from "./run-types.js";
 
 /** The closed set GitLab documents for a job's run condition. */
 export type When = "on_success" | "on_failure" | "always" | "never" | "manual" | "delayed";
@@ -129,9 +150,6 @@ export interface AllowFailureOptions {
 
 export type AllowFailure = boolean | AllowFailureOptions;
 
-/** The deprecated root `pages` job: a job body whose name is its key. */
-export type PagesJob = Omit<Job, "name">;
-
 /** The `paths`/`compare_to` form of `rules:changes`. */
 export interface Changes {
   readonly paths: readonly string[];
@@ -159,10 +177,7 @@ export interface NeedParallel {
 
 export type Need = string | NeedMap;
 
-/**
- * One ordered condition, shared by `workflow`, `include` and a job. `needs` is a plain job-name
- * list here: GitLab's rule-level `needs` does not take the map form a job's `needs` does.
- */
+/** One ordered condition, shared by `workflow`, `include` and a job. */
 export interface Rule {
   readonly if?: Text;
   readonly changes?: RuleChanges;
@@ -171,58 +186,6 @@ export interface Rule {
   readonly allow_failure?: boolean;
   readonly variables?: Readonly<Record<string, Scalar>>;
   readonly needs?: readonly string[];
-}
-
-/** The fields every include entry may carry; the discriminator decides the source. */
-export interface IncludeOptions {
-  readonly rules?: readonly Rule[];
-  readonly integrity?: Text;
-}
-
-export type IncludeEntry =
-  | (IncludeOptions & { readonly local: Text })
-  | (IncludeOptions & { readonly remote: Text })
-  | (IncludeOptions & { readonly template: Text })
-  | (IncludeOptions & {
-      readonly project: Text;
-      readonly ref?: Text;
-      readonly file: Text | readonly Text[];
-    })
-  | (IncludeOptions & {
-      readonly component: Text;
-      readonly inputs?: Readonly<Record<string, Scalar>>;
-    });
-
-/** One include entry, or several; GitLab accepts either shape. Entries are never resolved. */
-export type Include = IncludeEntry | readonly IncludeEntry[];
-
-export interface AutoCancel {
-  readonly on_new_commit?: "conservative" | "interruptible" | "none";
-  readonly on_job_failure?: "all" | "none";
-}
-
-/** The pipeline gate: a name, auto-cancel policy, and the rules that decide whether it runs. */
-export interface Workflow {
-  readonly name?: Text;
-  readonly auto_cancel?: AutoCancel;
-  readonly rules?: readonly Rule[];
-}
-
-/**
- * The pipeline-wide defaults this slice models. GitLab applies them to a job at pipeline creation;
- * the DSL only emits them, and never merges them into a job.
- */
-export interface Default {
-  readonly image?: Image;
-  readonly services?: readonly Service[];
-  readonly tags?: readonly string[];
-  readonly before_script?: Script;
-  readonly after_script?: Script;
-  readonly cache?: CacheList;
-  readonly artifacts?: Artifacts;
-  readonly retry?: Retry;
-  readonly timeout?: Text;
-  readonly interruptible?: boolean;
 }
 
 /**
@@ -245,11 +208,35 @@ export interface Job {
   readonly image?: Image;
   readonly services?: readonly Service[];
   readonly variables?: Readonly<Record<string, Scalar>>;
+  /** Which global `default:` keys and `variables:` this job inherits. */
+  readonly inherit?: Inherit;
+  /** External secrets, keyed by the environment variable they fill. */
+  readonly secrets?: Readonly<Record<string, Secret>>;
+  /** ID tokens, keyed by the environment variable GitLab injects the JWT as. */
+  readonly id_tokens?: IdTokens;
+  /** Workload identity federation; the provider is a closed set GitLab documents. */
+  readonly identity?: Identity;
   readonly cache?: CacheList;
   readonly artifacts?: Artifacts;
+  /** The earlier jobs whose artifacts this job downloads; an empty list downloads none. */
+  readonly dependencies?: readonly string[];
+  /** Runner lifecycle hooks, such as `pre_get_sources_script`. */
+  readonly hooks?: Hooks;
+  /** The delay before a `when: delayed` job starts, in GitLab's duration spelling. */
+  readonly start_in?: Text;
+  /** The confirmation text GitLab shows for a manual job. */
+  readonly manual_confirmation?: Text;
+  /** The DAST site and scanner profiles this job uses. */
+  readonly dast_configuration?: DastConfiguration;
   /** The same shape and lowering as `script`; a `ref` leaf keeps its tag. */
   readonly before_script?: Script;
   readonly script?: Script;
+  /**
+   * The GitLab Functions step list. `run` and `script` are alternatives: GitLab refuses a job that
+   * declares both, and so does `validate`. Emitted immediately after `script`, where both would sit
+   * if a job could carry them together.
+   */
+  readonly run?: readonly Step[];
   readonly after_script?: Script;
   /** A deployment target, as its name or as the map with `url` and lifecycle hooks. */
   readonly environment?: Environment;
@@ -273,7 +260,7 @@ export interface Job {
 
 /**
  * The pipeline-level vocabulary. Emission order is fixed by the spec: `default`, `include`, `stages`,
- * `variables`, `workflow`, the templates, the `pages` job, the jobs, then `raw`.
+ * `variables`, `workflow`, the templates, the jobs, then `raw`.
  */
 export interface Pipeline {
   readonly default?: Default;
@@ -287,8 +274,6 @@ export interface Pipeline {
    * data of any shape and are never validated or resolved.
    */
   readonly templates?: Readonly<Record<string, Value>>;
-  /** The deprecated Pages job written at the document root: a job body without `name`. */
-  readonly pages?: PagesJob;
   readonly jobs: readonly Job[];
   /** Global keywords the vocabulary does not model, appended last at the document root. */
   readonly raw?: Readonly<Record<string, Value>>;

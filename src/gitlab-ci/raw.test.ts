@@ -55,9 +55,8 @@ describe("job raw placement", () => {
             stage: "build",
             script: "npm ci",
             raw: {
-              dast_configuration: { site_profile: "default" },
-              secrets: { TOKEN: { vault: "secret" } },
-              id_tokens: { ID_TOKEN: { aud: "https://example.com" } },
+              inputs: { DEPLOY_ENV: "staging" },
+              pages: { publish: "public" },
             },
           }),
         ],
@@ -67,21 +66,30 @@ describe("job raw placement", () => {
 
     const parsed = parse(text);
 
-    expect(Object.keys(parsed.build)).toStrictEqual([
-      "stage",
-      "script",
-      "dast_configuration",
-      "secrets",
-      "id_tokens",
-    ]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "inputs", "pages"]);
   });
+});
 
-  it("keeps modelled keys first however the struct is written", () => {
-    const text = render(withRawJob({ secrets: { TOKEN: { vault: "secret" } } }), { header: "" });
+describe("modelled keys stay first", () => {
+  it("writes a typed secrets block before raw keys however the struct is written", () => {
+    const text = render(
+      pipeline({
+        jobs: [
+          job({
+            name: "build",
+            stage: "build",
+            script: "npm ci",
+            secrets: { TOKEN: { vault: "secret" } },
+            raw: { pages: { publish: "public" } },
+          }),
+        ],
+      }),
+      { header: "" },
+    );
+
     const parsed = parse(text);
-
     expect(Object.keys(parsed)).toStrictEqual(["build"]);
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "secrets"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "secrets", "script", "pages"]);
   });
 });
 
@@ -171,6 +179,14 @@ describe("raw collisions", () => {
         message: 'raw key "script" is already emitted at this level',
       },
     ]);
+  });
+});
+
+describe("raw secrets", () => {
+  it("refuses secrets even when the job declares none", () => {
+    const refused = withRawJob({ secrets: { TOKEN: { vault: "secret" } } });
+
+    expect(pathsOf(() => toDoc(refused))).toStrictEqual(['$.jobs[0].raw["secrets"]']);
   });
 });
 

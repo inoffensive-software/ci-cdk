@@ -1,5 +1,6 @@
 import { type Pipeline, job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
-import { MODELLED_JOB, PAGES_JOB, PAGES_TRIGGER } from "./inventory-jobs.js";
+import { ALTERNATE_DOCUMENTS } from "./inventory-shapes.js";
+import { MAIN_SECRETS } from "./inventory-secrets.js";
 
 /** One inventory document: a definition, plus the name a failure should use for it. */
 export interface InventoryDocument {
@@ -8,19 +9,18 @@ export interface InventoryDocument {
 }
 
 /**
- * The definitions that between them exercise every key the vocabulary can emit, and nothing else. The
- * gate renders each one, parses the result and unions the key paths, so this file is the single
- * definition of "modelled". It must not use `raw`: a key it cannot reach through a field is a gap in
- * the vocabulary, not a reason to widen the inventory.
+ * The definitions that between them exercise every key the vocabulary can emit, and nothing else.
+ * The gate renders each one and unions the key paths, so this file is the single definition of
+ * "modelled". It must not use `raw`: a key it cannot reach through a field is a vocabulary gap.
  *
  * The second document exists because several fields accept two shapes, and each shape adds paths of
  * its own: a single `include` entry is a map, a single `cache` is a map, a retry count is a scalar,
- * and an image or service can be a bare string.
- *
- * The hidden template is here to prove the gate's treatment of author data: its keys are `.`-prefixed
- * at the document root and therefore never enter the modelled set.
+ * and an image or service can be a bare string. The hidden template is here to prove the gate's
+ * treatment of author data: its keys are `.`-prefixed at the document root and therefore never enter
+ * the modelled set.
  */
 export const INVENTORY: readonly InventoryDocument[] = [
+  ...ALTERNATE_DOCUMENTS,
   {
     name: "main",
     pipeline: pipeline({
@@ -67,6 +67,13 @@ export const INVENTORY: readonly InventoryDocument[] = [
         retry: { max: 2, when: ["runner_system_failure"], exit_codes: [137] },
         timeout: "1h 30m",
         interruptible: true,
+        hooks: {
+          pre_get_sources_script: ['git config --global url."https://".insteadOf "ssh://"'],
+        },
+        id_tokens: {
+          DEFAULT_ID_TOKEN: { aud: ["https://vault.example.com", "https://gcp.example.com"] },
+        },
+        identity: "google_cloud",
       },
       include: [
         {
@@ -113,12 +120,129 @@ export const INVENTORY: readonly InventoryDocument[] = [
         ],
       },
       templates: { ".setup": { script: ["npm ci"] } },
-      pages: MODELLED_JOB,
       // Both script shapes, because a sequence adds a path of its own to the modelled set.
       jobs: [
         job({
           name: "build",
-          ...MODELLED_JOB,
+          stage: "build",
+          extends: ".go-cache",
+          needs: [
+            "prepare",
+            { job: "lint", optional: true, artifacts: false },
+            {
+              job: "test",
+              artifacts: true,
+              parallel: {
+                matrix: [
+                  { GO_VERSION: "1.26", SHARD: 1 },
+                  { GO_VERSION: "1.27", SHARD: 2 },
+                ],
+              },
+            },
+          ],
+          rules: [
+            { if: "$CI_COMMIT_TAG", when: "never" },
+            {
+              if: "$CI_COMMIT_BRANCH",
+              changes: { paths: ["src/**/*", "go.mod"], compare_to: "main" },
+              exists: ["Dockerfile"],
+              when: "manual",
+              allow_failure: true,
+              variables: { DEPLOY: "true", SHARDS: 4 },
+              needs: ["prepare", "lint"],
+            },
+            { changes: ["docs/**/*"] },
+          ],
+          tags: ["gitlab-org", "docker"],
+          image: { name: "golang:1.26", entrypoint: [""], pull_policy: "never" },
+          services: [
+            "postgres:16",
+            {
+              name: "redis:7",
+              alias: "cache",
+              entrypoint: ["/bin/sh"],
+              command: ["redis-server"],
+              variables: { REDIS_URL: "redis://cache:6379" },
+            },
+          ],
+          variables: { GOFLAGS: "-mod=readonly" },
+          inherit: { default: ["image", "cache"], variables: true },
+          dependencies: ["prepare", "lint"],
+          hooks: { pre_get_sources_script: ["git submodule update --init"] },
+          dast_configuration: { site_profile: "production site", scanner_profile: "full scan" },
+          secrets: MAIN_SECRETS,
+          id_tokens: {
+            VAULT_ID_TOKEN: { aud: "https://vault.example.com" },
+            CLOUD_ID_TOKEN: { aud: ["https://gcp.example.com", "https://aws.example.com"] },
+          },
+          identity: "google_cloud",
+          cache: [
+            {
+              key: "go",
+              paths: [".cache/go"],
+              policy: "pull",
+              untracked: true,
+              when: "on_success",
+              fallback_keys: ["go-main"],
+            },
+            {
+              key: { files: ["go.sum", "v2/go.sum"], prefix: "build-" },
+              paths: [".cache/build"],
+              policy: "pull-push",
+            },
+          ],
+          artifacts: {
+            paths: ["dist/"],
+            exclude: ["dist/tmp/"],
+            name: "build-$CI_JOB_NAME",
+            expire_in: "1 week",
+            expose_as: "build",
+            public: true,
+            when: "always",
+            reports: { junit: "report.xml", codequality: "gl-code-quality-report.json" },
+          },
+          before_script: "echo before",
+          script: "npm run build",
+          after_script: ["echo one", "echo two"],
+          environment: {
+            name: "production",
+            url: "https://example.com",
+            action: "start",
+            on_stop: "stop-production",
+            auto_stop_in: "1 week",
+            deployment_tier: "production",
+          },
+          release: {
+            tag_name: "$CI_COMMIT_TAG",
+            description: "Release $CI_COMMIT_TAG",
+            name: "Release $CI_COMMIT_TAG",
+            ref: "main",
+            milestones: ["v1.0"],
+            released_at: "2026-01-01T00:00:00Z",
+          },
+          trigger: {
+            project: "group/downstream",
+            branch: "main",
+            strategy: "depend",
+            inputs: { DEPLOY_ENV: "staging", RETRIES: 2 },
+          },
+          parallel: {
+            matrix: [
+              { GO_VERSION: "1.26", SHARD: 1 },
+              { GO_VERSION: "1.27", SHARD: 2, TAGS: ["a", "b"] },
+            ],
+          },
+          retry: {
+            max: 2,
+            when: ["runner_system_failure", "stuck_or_timeout_failure"],
+            exit_codes: [137],
+          },
+          timeout: "1h 30m",
+          interruptible: true,
+          allow_failure: { exit_codes: [1, 137] },
+          when: "manual",
+          resource_group: "deploy",
+          coverage: "/Coverage: \\d+\\.\\d+/",
         }),
         job({
           name: "test",
@@ -140,63 +264,16 @@ export const INVENTORY: readonly InventoryDocument[] = [
           script: ["npm ci", "npm test"],
           after_script: "echo after",
         }),
-      ],
-    }),
-  },
-  {
-    name: "shapes",
-    pipeline: pipeline({
-      default: {
-        image: "golang:1.26",
-        services: ["docker:24.0.7-dind"],
-        before_script: ["echo one"],
-        after_script: "echo after",
-        cache: { key: { files: ["go.sum"] }, paths: [".cache/go"] },
-        retry: 2,
-      },
-      include: { local: ".gitlab/ci/test.yml" },
-      jobs: [
+        // `pages` is a job name, not a pipeline keyword: the gate normalises it to `$.*` like any
+        // other name, and the schema's root `pages` property is a job body reached through that name.
+        // The `pages` *keyword* inside a job body is ticket 102 and stays unmodelled here.
         job({
-          name: "release",
+          name: "pages",
           stage: "build",
-          script: "make release",
-          environment: "review/prod",
-          trigger: {
-            include: [
-              { local: ".gitlab/ci/child.yml" },
-              { project: "group/child", ref: "main", file: "ci/child.yml" },
-              {
-                component: "gitlab.com/components/child@1.0",
-                inputs: { CHILD_ENV: "staging" },
-              },
-            ],
-            strategy: "mirror",
-          },
-          parallel: 2,
-          retry: 2,
-          timeout: "10 minutes",
-          interruptible: false,
-          allow_failure: true,
-          when: "on_success",
-          resource_group: "releases",
-          coverage: "/total coverage/",
-        }),
-        // `include` takes at most three entries, so the template and remote shapes need a second job.
-        job({
-          name: "child-remote",
-          trigger: {
-            include: [{ template: "Child.yml" }, { remote: "https://example.com/child.yml" }],
-          },
+          script: ["npm run build"],
+          artifacts: { paths: ["public/"] },
         }),
       ],
     }),
-  },
-  {
-    name: "pages-shapes",
-    pipeline: PAGES_JOB,
-  },
-  {
-    name: "pages-trigger",
-    pipeline: PAGES_TRIGGER,
   },
 ];

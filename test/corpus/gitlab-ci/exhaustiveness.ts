@@ -19,24 +19,21 @@ const ROOT_SEGMENT = /^\$(?:\.([A-Za-z_$][\w$]*)|\[("(?:[^"\\]|\\.)*")\])/u;
 export const AUTHOR_NAMED: readonly string[] = [
   "$.variables",
   "$.*.variables",
-  "$.pages.variables",
+  "$.*.secrets",
+  "$.*.id_tokens",
+  "$.default.id_tokens",
   "$.default.services[].variables",
   "$.*.services[].variables",
-  "$.pages.services[].variables",
   "$.include[].inputs",
   "$.*.trigger.inputs",
-  "$.pages.trigger.inputs",
   "$.*.trigger.include[].inputs",
-  "$.pages.trigger.include[].inputs",
   "$.workflow.rules[].variables",
   "$.*.rules[].variables",
-  "$.pages.rules[].variables",
   "$.*.needs[].parallel.matrix[]",
-  "$.pages.needs[].parallel.matrix[]",
   "$.*.parallel.matrix[]",
-  "$.pages.parallel.matrix[]",
   "$.*.artifacts.reports",
-  "$.pages.artifacts.reports",
+  "$.*.run[].inputs",
+  "$.*.run[].env",
 ];
 
 /**
@@ -89,7 +86,7 @@ const normaliseAuthor = (path: string): string => {
     }
 
     const rest = path.slice(prefix.length);
-    const marker = rest.indexOf("[");
+    const marker = rest.search(/[.[]/u);
 
     return marker === -1 ? `${name}.*` : `${name}.*${rest.slice(marker)}`;
   }

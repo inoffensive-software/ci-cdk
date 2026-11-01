@@ -8,6 +8,7 @@ import {
   type DocEntry,
 } from "../core/index.js";
 import { keyPath, rawKeyPath } from "../core/paths.js";
+import { runtimeDoc } from "./runtime-doc.js";
 import { rawEntries } from "../core/raw.js";
 import type {
   Artifacts,
@@ -17,6 +18,7 @@ import type {
   Condition,
   FinalItem,
   Image,
+  ImageAws,
   Pipe,
   ScriptItem,
   Step,
@@ -33,18 +35,23 @@ const STEP_RESERVED: readonly string[] = [
   "clone",
   "condition",
   "concurrency-group",
+  "custom",
   "deployment",
   "environment",
   "fail-fast",
   "image",
+  "input-variables",
   "max-time",
   "name",
   "oidc",
+  "output-variables",
   "runs-on",
+  "runtime",
   "script",
   "services",
   "size",
   "trigger",
+  "type",
 ];
 
 const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
@@ -77,7 +84,16 @@ export const cloneDoc = (clone: Clone | undefined): Doc | undefined => {
   ]);
 };
 
-/** An image is a scalar, a name map, or a name map with credentials; map keys are alphabetical. */
+/** An image's AWS map: `access-key`/`secret-key`, or `oidc-role`. */
+const imageAwsDoc = (aws: ImageAws): Doc =>
+  "oidc-role" in aws
+    ? map([{ key: "oidc-role", value: fromValue(aws["oidc-role"]) }])
+    : map([
+        { key: "access-key", value: fromValue(aws["access-key"]) },
+        { key: "secret-key", value: fromValue(aws["secret-key"]) },
+      ]);
+
+/** An image is a scalar or a name map; map keys are alphabetical, absent keys omitted. */
 export const imageDoc = (image: Image | undefined): Doc | undefined => {
   if (image === undefined) {
     return undefined;
@@ -88,8 +104,13 @@ export const imageDoc = (image: Image | undefined): Doc | undefined => {
   }
 
   return map([
+    ...entry("aws", "aws" in image ? imageAwsDoc(image.aws) : undefined),
     { key: "name", value: fromValue(image.name) },
     ...entry("password", "password" in image ? fromValue(image.password) : undefined),
+    ...entry(
+      "run-as-user",
+      image["run-as-user"] === undefined ? undefined : fromValue(image["run-as-user"]),
+    ),
     ...entry("username", "username" in image ? fromValue(image.username) : undefined),
   ]);
 };
@@ -197,6 +218,7 @@ const headRows = (body: Step): readonly DocEntry[] => [
     "concurrency-group",
     body["concurrency-group"] === undefined ? undefined : fromValue(body["concurrency-group"]),
   ),
+  ...entry("custom", body.custom === undefined ? undefined : fromValue(body.custom)),
   ...entry("deployment", body.deployment === undefined ? undefined : fromValue(body.deployment)),
 ];
 
@@ -205,18 +227,28 @@ const middleRows = (body: Step): readonly DocEntry[] => [
   ...entry("environment", body.environment === undefined ? undefined : fromValue(body.environment)),
   ...entry("fail-fast", body["fail-fast"] === undefined ? undefined : fromValue(body["fail-fast"])),
   ...entry("image", imageDoc(body.image)),
+  ...entry(
+    "input-variables",
+    body["input-variables"] === undefined ? undefined : fromValue(body["input-variables"]),
+  ),
   ...entry("max-time", body["max-time"] === undefined ? undefined : fromValue(body["max-time"])),
   ...entry("name", body.name === undefined ? undefined : fromValue(body.name)),
 ];
 
-/** The end of a step's keys; `script` is required and always emitted. */
+/** The end of a step's keys; `script` is emitted only when the step carries one. */
 const lastRows = (body: Step): readonly DocEntry[] => [
   ...entry("oidc", body.oidc === undefined ? undefined : fromValue(body.oidc)),
+  ...entry(
+    "output-variables",
+    body["output-variables"] === undefined ? undefined : fromValue(body["output-variables"]),
+  ),
   ...entry("runs-on", body["runs-on"] === undefined ? undefined : fromValue(body["runs-on"])),
-  { key: "script", value: scriptDoc(body.script) },
+  ...entry("runtime", runtimeDoc(body.runtime)),
+  ...entry("script", body.script === undefined ? undefined : scriptDoc(body.script)),
   ...entry("services", body.services === undefined ? undefined : fromValue(body.services)),
   ...entry("size", body.size === undefined ? undefined : fromValue(body.size)),
   ...entry("trigger", body.trigger === undefined ? undefined : fromValue(body.trigger)),
+  ...entry("type", body.type === undefined ? undefined : fromValue(body.type)),
 ];
 
 /** Step keys in Bitbucket's alphabetical schema order, then raw. */

@@ -15,6 +15,7 @@ import {
   undeclaredOverclaimPaths,
   undeclaredSchemaPaths,
   unusedOverclaimPaths,
+  normaliseSchemaPaths,
 } from "./schema-gap.js";
 
 describeSchemaGapGate({
@@ -82,13 +83,35 @@ describe("hidden templates", () => {
   });
 });
 
+describe("root pages job", () => {
+  it("compares the schema's root pages job as a job name", () => {
+    expect(normaliseSchemaPaths(["$.pages", "$.pages.x", "$.pages.y[]", "$.*.x"])).toStrictEqual([
+      "$.*",
+      "$.*.x",
+      "$.*.y[]",
+    ]);
+  });
+
+  it("keeps the pages name and its body out of the documented grammar", () => {
+    const pagesPaths = SCHEMA_PATHS.filter(
+      (path) => path === "$.pages" || path.startsWith("$.pages.") || path.startsWith("$.pages["),
+    );
+
+    expect(pagesPaths).toStrictEqual([]);
+  });
+
+  it("keeps a job-level pages keyword as its own path", () => {
+    expect(SCHEMA_PATHS).toContain("$.*.pages");
+  });
+});
+
 /**
  * The completion target spec 0009 decision 9 sets: every schema path that is neither `schema-noise`
- * nor under `spec` is modelled or declared `unmodelled`. Decomposing the deferred `$.pages` row
- * exposed 27 schema-noise paths inside the Pages job and collapsed its author-named maps, so the
- * count is 859 of 1,019 rather than the 928 of 1,061 the undecomposed row implied; the invariant the
- * count protects is unchanged. The counts derive from the three lists, so a ticket that moves rows
- * from `unmodelled` to modelled keeps the sum without editing this test.
+ * nor under `spec` is modelled or declared `unmodelled`. The root `pages` property is a job body, so
+ * its 374 key paths normalise onto the job-name wildcard's and dedupe away: the documented grammar is
+ * 687 paths, not the 1,061 the raw walk reports, and the target is 552 of them. The counts derive
+ * from the three lists, so a ticket that moves rows from `unmodelled` to modelled keeps the sum
+ * without editing this test.
  */
 describe("completion target", () => {
   const modelled = new Set(MODELLED_PATHS);
@@ -105,7 +128,7 @@ describe("completion target", () => {
   it("leaves no schema path outside the target", () => {
     const unmodelled = schemaPathsCoveredBy("unmodelled");
 
-    expect(modelledSchemaPaths.length + unmodelled.length).toBe(859);
+    expect(modelledSchemaPaths.length + unmodelled.length).toBe(552);
   });
 
   it("reserves out-of-scope for the spec header", () => {

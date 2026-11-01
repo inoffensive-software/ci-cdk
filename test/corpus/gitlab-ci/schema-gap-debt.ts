@@ -41,14 +41,4 @@ export const OVERCLAIMS: readonly Overclaim[] = [
     reason:
       "the schema declares `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; GitLab documents a list of strings, which is what the vocabulary emits",
   },
-  {
-    path: "$.pages.image.entrypoint[]",
-    reason:
-      "the schema declares `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; the pages job shares the job body, and GitLab documents a list of strings",
-  },
-  {
-    path: "$.pages.parallel.matrix[].*[]",
-    reason:
-      "a `parallel:matrix` cell written as a list in the pages job; the schema declares the cell as an array without `items`, so the walk reads the cell but not its item",
-  },
 ];

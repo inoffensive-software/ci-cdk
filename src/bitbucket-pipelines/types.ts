@@ -1,4 +1,19 @@
 import type { Text, Value } from "../core/index.js";
+import type { ImageAws, Runtime } from "./runtime-types.js";
+
+export type {
+  AwsStorage,
+  AwsStorageKeys,
+  AwsStorageRole,
+  CloudRuntime,
+  GcpStorage,
+  ImageAws,
+  ImageAwsKeys,
+  ImageAwsRole,
+  Runtime,
+  RuntimeStorage,
+  SelfHostedRuntime,
+} from "./runtime-types.js";
 
 /** A pipe call inside a script sequence: an id plus optional variables, never a leaf. */
 export interface Pipe {
@@ -9,11 +24,20 @@ export interface Pipe {
 /** One element of a script: a command string, a leaf, or a pipe. */
 export type ScriptItem = Text | Pipe;
 
-/** A step image: a name string, a name map, or a private registry with credentials. */
+/**
+ * A step image: a name string, a name map, an ECR map, or a private registry with credentials.
+ * Credentials always come as a pair; `run-as-user` is available on every map form.
+ */
 export type Image =
   | Text
-  | { readonly name: Text }
-  | { readonly name: Text; readonly username: Text; readonly password: Text };
+  | { readonly name: Text; readonly aws: ImageAws; readonly "run-as-user"?: number }
+  | {
+      readonly name: Text;
+      readonly username: Text;
+      readonly password: Text;
+      readonly "run-as-user"?: number;
+    }
+  | { readonly name: Text; readonly "run-as-user"?: number };
 
 /** Path filters on a changeset condition; exactly one list, never both. */
 export type Changesets =
@@ -65,7 +89,11 @@ export interface StepAuth {
   readonly system?: { readonly scopes?: readonly Text[] };
 }
 
-/** A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. */
+/**
+ * A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. `script` is
+ * absent only on a child pipeline step, which validation enforces: an inline step needs a command
+ * sequence and a `type: pipeline` step needs a `custom` target instead.
+ */
 export interface Step {
   readonly "after-script"?: readonly ScriptItem[];
   readonly artifacts?: Artifacts;
@@ -74,18 +102,23 @@ export interface Step {
   readonly clone?: Clone;
   readonly condition?: Condition;
   readonly "concurrency-group"?: Text;
+  readonly custom?: Text;
   readonly deployment?: Text;
   readonly environment?: Text;
   readonly "fail-fast"?: boolean;
   readonly image?: Image;
+  readonly "input-variables"?: Readonly<Record<string, Text>>;
   readonly "max-time"?: number;
   readonly name?: Text;
   readonly oidc?: boolean;
+  readonly "output-variables"?: readonly Text[];
   readonly "runs-on"?: readonly Text[];
-  readonly script: readonly ScriptItem[];
+  readonly runtime?: Runtime;
+  readonly script?: readonly ScriptItem[];
   readonly services?: readonly Text[];
   readonly size?: Size;
   readonly trigger?: Trigger;
+  readonly type?: "pipeline";
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
@@ -145,8 +178,9 @@ export type Size = "1x" | "2x" | "4x" | "8x" | "16x" | "24x" | "32x";
 export interface Options {
   readonly docker?: boolean;
   readonly "max-time"?: number;
-  readonly size?: Size;
   readonly "runs-on"?: readonly Text[];
+  readonly runtime?: Runtime;
+  readonly size?: Size;
 }
 
 /** Global clone behaviour; `depth` stays a number or the string `full`. */
@@ -164,7 +198,7 @@ export type Cache =
 
 /** A named service container. */
 export interface Service {
-  readonly image?: Text;
+  readonly image?: Image;
   readonly memory?: number;
   readonly type?: "docker";
   readonly variables?: Readonly<Record<string, Text>>;
@@ -207,6 +241,18 @@ export interface Pipelines {
   readonly custom?: readonly NamedPipeline[];
 }
 
+/** One event trigger: the condition that selects the event and the pipelines it starts. */
+export interface TriggerConfig {
+  readonly condition: Text;
+  readonly pipelines: readonly string[];
+}
+
+/**
+ * Event triggers keyed by trigger type. The type names are the author's, because Bitbucket's list is
+ * wider than any one config and grows.
+ */
+export type Triggers = Readonly<Record<string, readonly TriggerConfig[]>>;
+
 /**
  * The document. It is not called `Pipeline` because Bitbucket uses that word for each triggered
  * entry as well as for the file.
@@ -218,6 +264,7 @@ export interface PipelineConfig {
   readonly clone?: Clone;
   readonly definitions?: Definitions;
   readonly pipelines: Pipelines;
+  readonly triggers?: Triggers;
   readonly raw?: Readonly<Record<string, Value>>;
 }
 

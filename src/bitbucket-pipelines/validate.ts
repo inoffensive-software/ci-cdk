@@ -8,6 +8,7 @@ import type {
   PipelineConfig,
   Pipelines,
   SelectorPipeline,
+  Triggers,
 } from "./types.js";
 
 const DEFAULT_PATH = "$.pipelines.default";
@@ -189,6 +190,49 @@ const labelProblems = (config: PipelineConfig): readonly Diagnostic[] => {
   return diagnostics;
 };
 
+/**
+ * Event triggers: every trigger type needs an entry, and every entry a condition and one pipeline
+ * name. The type key is author data, so the path names it rather than a fixed position.
+ */
+const triggerProblems = (triggers: Triggers | undefined): readonly Diagnostic[] => {
+  if (triggers === undefined) {
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+
+  for (const [type, entries] of Object.entries(triggers)) {
+    const typePath = keyPath("$.triggers", type);
+
+    if (entries.length === 0) {
+      diagnostics.push({
+        path: typePath,
+        message: "trigger type must declare at least one entry",
+      });
+    }
+
+    for (const [index, trigger] of entries.entries()) {
+      const entryPath = `${typePath}[${index}]`;
+
+      if (trigger.condition === "") {
+        diagnostics.push({
+          path: `${entryPath}.condition`,
+          message: "a trigger needs a non-empty condition",
+        });
+      }
+
+      if (trigger.pipelines.length === 0) {
+        diagnostics.push({
+          path: `${entryPath}.pipelines`,
+          message: "a trigger needs at least one pipeline name",
+        });
+      }
+    }
+  }
+
+  return diagnostics;
+};
+
 const declaresPipeline = (pipelines: Pipelines): boolean =>
   pipelines.default !== undefined ||
   pipelines.branches !== undefined ||
@@ -216,5 +260,6 @@ export const validate = (config: PipelineConfig): readonly Diagnostic[] => {
     ...selectorProblems("tags", pipelines.tags),
     ...selectorProblems("pull-requests", pipelines["pull-requests"]),
     ...customProblems(pipelines.custom),
+    ...triggerProblems(config.triggers),
   ];
 };

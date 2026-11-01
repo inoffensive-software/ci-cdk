@@ -1,6 +1,15 @@
 export { job, pipeline } from "./types.js";
 
-export type { Job, PagesJob, Pipeline, Script } from "./types.js";
+export type {
+  FunctionStep,
+  Job,
+  Pipeline,
+  Script,
+  ScriptStep,
+  Step,
+  StepEnv,
+  StepInputs,
+} from "./types.js";
 
 export { ref } from "./leaves.js";
 
