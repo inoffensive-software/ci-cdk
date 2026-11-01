@@ -1,0 +1,23 @@
+stages:
+  - deploy
+
+publish_site:
+  stage: deploy
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - public/
+  pages:
+    publish: public/
+    path_prefix: handbook
+    expire_in: 1 month
+
+publish_flag:
+  stage: deploy
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - public/
+  pages: true

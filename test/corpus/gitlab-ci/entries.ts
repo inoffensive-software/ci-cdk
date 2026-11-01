@@ -1,4 +1,5 @@
 import type { Pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
+import { GITLAB_PAGES_JOB } from "./gitlab-pages-job.fixture.js";
 import { GITLAB_PAGES } from "./gitlab-pages.fixture.js";
 import { GITLAB_RUN } from "./gitlab-run.fixture.js";
 import { GITLAB_SECRETS } from "./gitlab-secrets.fixture.js";
@@ -17,6 +18,7 @@ export const GITLAB_ENTRIES: readonly CorpusEntry[] = [
   { name: "terraform-images", file: "terraform-images.yml", pipeline: TERRAFORM_IMAGES },
   { name: "labkit", file: "labkit.yml", pipeline: LABKIT },
   { name: "gitlab-pages", file: "gitlab-pages.yml", pipeline: GITLAB_PAGES },
+  { name: "gitlab-pages-job", file: "gitlab-pages-job.yml", pipeline: GITLAB_PAGES_JOB },
   { name: "small-deferred", file: "small-deferred.yml", pipeline: SMALL_DEFERRED },
   { name: "gitlab-run", file: "gitlab-run.yml", pipeline: GITLAB_RUN },
   { name: "gitlab-secrets", file: "gitlab-secrets.yml", pipeline: GITLAB_SECRETS },

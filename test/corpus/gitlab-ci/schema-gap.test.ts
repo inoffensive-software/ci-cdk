@@ -111,7 +111,9 @@ describe("root pages job", () => {
  * its 374 key paths normalise onto the job-name wildcard's and dedupe away: the documented grammar is
  * 687 paths, not the 1,061 the raw walk reports, and the target is 551 of them. Modelling the map
  * form of `include` closed its unmodelled row but moved `$.include.rules[][]` into `schema-noise`,
- * which the target excludes, so the 552 that #78 set drops by one. The counts derive from the three
+ * which the target excludes, so the 552 that #78 set drops by one. Modelling job `pages` moved its
+ * four schema paths (`pages`, `publish`, `path_prefix`, `expire_in`) from the `$.*.pages` debt row to
+ * the modelled set and deleted the row, so the target stays 551. The counts derive from the three
  * lists, so a ticket that moves rows from `unmodelled` to modelled keeps the sum without editing this
  * test.
  */

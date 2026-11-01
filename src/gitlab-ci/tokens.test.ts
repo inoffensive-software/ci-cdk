@@ -175,12 +175,12 @@ describe("raw tokens", () => {
             name: "deploy",
             script: "true",
             id_tokens: { ID_TOKEN: { aud: "https://vault.example.com" } },
-            raw: { pages: { publish: "public" } },
+            raw: { publish: "public" },
           }),
         ],
       }),
     );
 
-    expect(Object.keys(parse(text).deploy)).toStrictEqual(["id_tokens", "script", "pages"]);
+    expect(Object.keys(parse(text).deploy)).toStrictEqual(["id_tokens", "script", "publish"]);
   });
 });

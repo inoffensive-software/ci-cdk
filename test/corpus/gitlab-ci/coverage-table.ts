@@ -75,6 +75,10 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.*.artifacts"],
   },
   {
+    name: "Pages",
+    prefixes: ["$.*.pages"],
+  },
+  {
     name: "Environment",
     prefixes: ["$.*.environment"],
   },

@@ -6,11 +6,13 @@
 
 **Blocked by:** 101 (Pages at pipeline level).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `Job.pages` accepts the documented map with the same derivation discipline as ticket 101.
-- [ ] Job raw collides with `pages`.
-- [ ] The inventory exercises the job form without raw; `schema-gap-debt.json` drops `$.*.pages`.
-- [ ] A golden pins the job body with `pages` in its fixed position.
-- [ ] Tests cover the full shape, absent pages, and raw collision.
-- [ ] `pnpm check` passes.
+- [x] `Job.pages` accepts the documented map with the same derivation discipline as ticket 101: a
+      boolean flag or `{ publish, path_prefix, expire_in }`, derived from the schema slice and the
+      Pages docs, in that fixed order.
+- [x] Job raw collides with `pages`.
+- [x] The inventory exercises the job form without raw; `schema-gap-debt.json` drops `$.*.pages`.
+- [x] A golden pins the job body with `pages` in its fixed position.
+- [x] Tests cover the full shape, absent pages, and raw collision.
+- [x] `pnpm check` passes.
