@@ -207,6 +207,18 @@ export interface Pipelines {
   readonly custom?: readonly NamedPipeline[];
 }
 
+/** One event trigger: the condition that selects the event and the pipelines it starts. */
+export interface TriggerConfig {
+  readonly condition: Text;
+  readonly pipelines: readonly string[];
+}
+
+/**
+ * Event triggers keyed by trigger type. The type names are the author's, because Bitbucket's list is
+ * wider than any one config and grows.
+ */
+export type Triggers = Readonly<Record<string, readonly TriggerConfig[]>>;
+
 /**
  * The document. It is not called `Pipeline` because Bitbucket uses that word for each triggered
  * entry as well as for the file.
@@ -218,6 +230,7 @@ export interface PipelineConfig {
   readonly clone?: Clone;
   readonly definitions?: Definitions;
   readonly pipelines: Pipelines;
+  readonly triggers?: Triggers;
   readonly raw?: Readonly<Record<string, Value>>;
 }
 

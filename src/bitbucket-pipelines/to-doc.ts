@@ -21,6 +21,7 @@ import type {
   Pipelines,
   SelectorPipeline,
   Service,
+  TriggerConfig,
 } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -32,6 +33,7 @@ const DOCUMENT_RESERVED: readonly string[] = [
   "labels",
   "options",
   "pipelines",
+  "triggers",
 ];
 
 /** A cache is either its path or the `path`/`key` map; a key names the files it hashes. */
@@ -225,6 +227,24 @@ const pipelinesDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc =>
   ]);
 };
 
+/** One trigger entry: `condition` then `pipelines`, the schema's order. */
+const triggerDoc = (trigger: TriggerConfig): Doc =>
+  map([
+    { key: "condition", value: fromValue(trigger.condition) },
+    { key: "pipelines", value: fromValue(trigger.pipelines) },
+  ]);
+
+/** Triggers: one author-named key per trigger type, entries in array order. */
+const triggersDoc = (config: PipelineConfig): Doc | undefined => {
+  const triggers = config.triggers;
+
+  if (triggers === undefined) {
+    return undefined;
+  }
+
+  return namedDoc(triggers, (entries) => seq(entries.map((trigger) => triggerDoc(trigger))));
+};
+
 /** Validates the whole document, then lowers it. Raw entries come last at each level. */
 export const toDoc = (config: PipelineConfig): Doc => {
   const diagnostics: Diagnostic[] = [...validate(config)];
@@ -243,6 +263,7 @@ export const toDoc = (config: PipelineConfig): Doc => {
     ),
     ...entry("options", optionsDoc(config)),
     { key: "pipelines", value: pipelinesDoc(config, diagnostics) },
+    ...entry("triggers", triggersDoc(config)),
   ];
 
   const doc = map([

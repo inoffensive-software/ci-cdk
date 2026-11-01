@@ -164,7 +164,7 @@ describe("reference and raw", () => {
             name: "build",
             stage: "build",
             script: [ref([".setup", "script"]), "npm run build"],
-            raw: { secrets: {} },
+            raw: { id_tokens: {} },
           }),
         ],
       }),
@@ -173,7 +173,7 @@ describe("reference and raw", () => {
     expect(Object.keys(parse(text, { logLevel: "silent" }).build)).toStrictEqual([
       "stage",
       "script",
-      "secrets",
+      "id_tokens",
     ]);
     expect(parsedReference(text).tag).toBe("!reference");
     expect(text).toContain("  script:\n    - !reference\n      - .setup\n      - script\n");

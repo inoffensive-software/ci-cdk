@@ -1,8 +1,9 @@
 # Provenance
 
-Every config in this directory is vendored byte for byte from the commit named below. Refreshing an
-entry means changing the SHA here and re-running its corpus test; the vendored file itself is never
-edited, because a config we had to change is not evidence that we support the original.
+Every config in this directory is vendored byte for byte from the commit named below, except the one
+entry marked documentation-derived. Refreshing an entry means changing the SHA here and re-running its
+corpus test; the vendored file itself is never edited, because a config we had to change is not
+evidence that we support the original.
 
 The comparison level is recorded per entry: `data` means the rendered output parses to the same value
 as the file (see the corpus README and ADR 0005).
@@ -71,3 +72,22 @@ a tag-aware assertion is ticket 43. Nothing else about the entry depends on it.
   component include carrying its own `rules`, `workflow` rules, `default` image and tags, a hidden
   `.common` template with `variables` and a pull-only `cache`, and one job whose `needs: []`,
   `extends`, `script` and push-policy `cache` override that template.
+
+## gitlab-secrets
+
+- Source: documentation-derived, not vendored from a repository
+- Pages: <https://docs.gitlab.com/ci/secrets/>, <https://docs.gitlab.com/ci/secrets/hashicorp_vault/>,
+  <https://docs.gitlab.com/ci/secrets/aws_secrets_manager/>,
+  <https://docs.gitlab.com/ci/secrets/gcp_secret_manager/>,
+  <https://docs.gitlab.com/ci/secrets/azure_key_vault/> and
+  <https://docs.gitlab.com/ci/secrets/secrets_manager/>
+- Read on: 2026-10-31
+- Licence: n/a
+- Vendored as: `gitlab-secrets.yml`, SHA-256
+  `cdb777eeb536a4ed58318656f8ff7257e80bd02b8f81d24c0eb76862aa9f6312`
+- Comparison: data
+- Why this entry: no public config was found that uses every `secrets` provider in one file. Each
+  shape is copied from the provider page named above: Vault shorthand and engine, GCP Secret Manager
+  with a numeric `version`, Azure Key Vault with a version, AWS Secrets Manager shorthand and its
+  full map, GitLab Secrets Manager with a group `source`, plus `file: false` and `token`. The entry
+  pins the shapes only; it is not evidence that a real pipeline uses them.

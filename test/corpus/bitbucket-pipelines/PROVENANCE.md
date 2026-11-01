@@ -106,6 +106,33 @@ as the file (see the corpus README and ADR 0005).
   `variables`. Its values are quoted strings, so it compares under the default schema.
 - Vendored as: `custom-vars-nakama.yml`, SHA-256 `ca31bd3371cc55bc4ef1ce51a251f65a754e7cdd346eeb916645997da3b40af5`
 
+## triggers-alibaba
+
+- Repo: <https://github.com/alibaba/open-code-review>
+- Commit: `476f661f26e5576a36003abe7a37d5ff8546b2df`
+- Path: `examples/bitbucket_pipelines/bitbucket-pipelines.yml`
+- Licence: Apache-2.0
+- Bytes: 10666
+- Lines: 264
+- Comparison: data
+- Why this entry: a `pullrequest-push` trigger that starts a custom pipeline, whose step is shared
+  through a YAML anchor in `definitions.steps`. This is a repository example file, not a live config.
+- Vendored as: `triggers-alibaba.yml`, SHA-256 `a86615388514cb55322d530fe1553b0f108a8317e4611a52ec568966a4fba032`
+
+## triggers-vardot
+
+- Repo: <https://github.com/Vardot/ddev-dev-tools>
+- Commit: `515f6901367458f75ee4956f8172e8566d7879f7`
+- Path: `examples/bitbucket-pipelines.yml.example`
+- Licence: Apache-2.0
+- Bytes: 8216
+- Lines: 163
+- Comparison: data
+- Why this entry: a second trigger shape - one `pullrequest-push` entry whose condition filters the
+  destination branch across many environments, starting a custom pipeline built from one sequential
+  step and a three-way parallel group. This is a repository example file, not a live config.
+- Vendored as: `triggers-vardot.yml`, SHA-256 `f0ca7e778d8dc647a6b72d8eac626a4909258f680ecfe5c01be3d77713a94f8e`
+
 ## Documentation-derived fixtures
 
 Bitbucket documents the named `upload` entry and the name-list `download`, and no redistributable

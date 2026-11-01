@@ -69,6 +69,17 @@ export const INVENTORY: readonly InventoryDocument[] = [
         "pull-requests": [selector("**")],
         custom: [named("cleanup")],
       },
+      triggers: {
+        "pullrequest-push": [
+          {
+            condition: 'BITBUCKET_PR_DESTINATION_BRANCH == "main"',
+            pipelines: ["cleanup", "build"],
+          },
+        ],
+        "pipeline-completed": [
+          { condition: 'BITBUCKET_TRIGGER_PIPELINE_STATUS == "FAILED"', pipelines: ["cleanup"] },
+        ],
+      },
     }),
   },
   {

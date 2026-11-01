@@ -252,10 +252,10 @@ definitions with the same data byte-identical.
   order, job entries in array order, then pipeline `raw`.
 - Default: `image`, `services`, `tags`, `before_script`, `after_script`, `cache`, `artifacts`, `retry`,
   `timeout`, `interruptible`.
-- Job: `stage`, `extends`, `needs`, `rules`, `tags`, `image`, `services`, `variables`, `cache`,
-  `artifacts`, `before_script`, `script`, `after_script`, `environment`, `release`, `trigger`,
-  `parallel`, `retry`, `timeout`, `interruptible`, `allow_failure`, `when`, `resource_group`,
-  `coverage`, then job `raw`.
+- Job: `stage`, `extends`, `needs`, `rules`, `tags`, `image`, `services`, `variables`, `secrets`,
+  `cache`, `artifacts`, `before_script`, `script`, `after_script`, `environment`, `release`,
+  `trigger`, `parallel`, `retry`, `timeout`, `interruptible`, `allow_failure`, `when`,
+  `resource_group`, `coverage`, then job `raw`.
 
 Within author maps (`variables`, `reports`, `matrix` rows), insertion order is preserved.
 

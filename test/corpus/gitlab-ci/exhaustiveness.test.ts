@@ -95,7 +95,7 @@ describe("corpus paths", () => {
 
 describe("gate failure cases", () => {
   it("reports a corpus path outside the inventory and the ledger, naming both remedies", () => {
-    const invented = "$.*.secrets";
+    const invented = "$.*.identity";
     const report = gapPaths([...MODELLED, invented], MODELLED, LEDGER, LEDGER_RULES);
 
     expect(report).toStrictEqual([invented]);

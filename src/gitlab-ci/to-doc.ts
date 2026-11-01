@@ -34,6 +34,7 @@ import {
   releaseDoc,
   triggerDoc,
 } from "./delivery-blocks.js";
+import { secretsDoc } from "./secrets-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -66,6 +67,7 @@ const JOB_RESERVED: readonly string[] = [
   "services",
   "variables",
   "inherit",
+  "secrets",
   "cache",
   "artifacts",
   "dependencies",
@@ -108,6 +110,7 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("services", whenPresent(item.services, servicesDoc)),
     ...entry("variables", whenPresent(item.variables, variablesDoc)),
     ...entry("inherit", whenPresent(item.inherit, inheritDoc)),
+    ...entry("secrets", whenPresent(item.secrets, secretsDoc)),
     ...entry("cache", whenPresent(item.cache, cacheDoc)),
     ...entry("artifacts", whenPresent(item.artifacts, artifactsDoc)),
     ...entry("dependencies", present(item.dependencies)),

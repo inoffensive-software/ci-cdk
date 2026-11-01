@@ -2,6 +2,7 @@ import type { Scalar, Text, Value } from "../core/index.js";
 import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 import type { Default, Include, Workflow } from "./pipeline-types.js";
 import type { Trigger } from "./trigger-types.js";
+import type { Secret } from "./secret-types.js";
 
 export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 
@@ -169,10 +170,7 @@ export interface NeedParallel {
 
 export type Need = string | NeedMap;
 
-/**
- * One ordered condition, shared by `workflow`, `include` and a job. `needs` is a plain job-name
- * list here: GitLab's rule-level `needs` does not take the map form a job's `needs` does.
- */
+/** One ordered condition, shared by `workflow`, `include` and a job. */
 export interface Rule {
   readonly if?: Text;
   readonly changes?: RuleChanges;
@@ -205,6 +203,8 @@ export interface Job {
   readonly variables?: Readonly<Record<string, Scalar>>;
   /** Which global `default:` keys and `variables:` this job inherits. */
   readonly inherit?: Inherit;
+  /** External secrets, keyed by the environment variable they fill. */
+  readonly secrets?: Readonly<Record<string, Secret>>;
   readonly cache?: CacheList;
   readonly artifacts?: Artifacts;
   /** The earlier jobs whose artifacts this job downloads; an empty list downloads none. */

@@ -1,5 +1,6 @@
 import { type Pipeline, job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
 import { ALTERNATE_DOCUMENTS } from "./inventory-shapes.js";
+import { MAIN_SECRETS } from "./inventory-secrets.js";
 
 /** One inventory document: a definition, plus the name a failure should use for it. */
 export interface InventoryDocument {
@@ -8,17 +9,15 @@ export interface InventoryDocument {
 }
 
 /**
- * The definitions that between them exercise every key the vocabulary can emit, and nothing else. The
- * gate renders each one, parses the result and unions the key paths, so this file is the single
- * definition of "modelled". It must not use `raw`: a key it cannot reach through a field is a gap in
- * the vocabulary, not a reason to widen the inventory.
+ * The definitions that between them exercise every key the vocabulary can emit, and nothing else.
+ * The gate renders each one and unions the key paths, so this file is the single definition of
+ * "modelled". It must not use `raw`: a key it cannot reach through a field is a vocabulary gap.
  *
  * The second document exists because several fields accept two shapes, and each shape adds paths of
  * its own: a single `include` entry is a map, a single `cache` is a map, a retry count is a scalar,
- * and an image or service can be a bare string.
- *
- * The hidden template is here to prove the gate's treatment of author data: its keys are `.`-prefixed
- * at the document root and therefore never enter the modelled set.
+ * and an image or service can be a bare string. The hidden template is here to prove the gate's
+ * treatment of author data: its keys are `.`-prefixed at the document root and therefore never enter
+ * the modelled set.
  */
 export const INVENTORY: readonly InventoryDocument[] = [
   ...ALTERNATE_DOCUMENTS,
@@ -167,6 +166,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
           dependencies: ["prepare", "lint"],
           hooks: { pre_get_sources_script: ["git submodule update --init"] },
           dast_configuration: { site_profile: "production site", scanner_profile: "full scan" },
+          secrets: MAIN_SECRETS,
           cache: [
             {
               key: "go",
