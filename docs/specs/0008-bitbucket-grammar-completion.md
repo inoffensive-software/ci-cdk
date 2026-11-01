@@ -3,9 +3,10 @@
 Status: ready-for-agent
 Covers: the six grammar families the documented-grammar report leaves open and that have evidence:
 expanded artifacts, custom-pipeline variables, event triggers, runtimes and registry auth, child
-pipelines, and the agent runtime. Step auth and `labels` have no evidence and stay out.
+pipelines, and the agent runtime. Step auth and `labels` have no evidence; they are modelled from the
+pinned schema and marked unproven, as are the remaining schema-only keys.
 Respects: ADR 0001, ADR 0002, ADR 0003, ADR 0005, ADR 0008, ADR 0010, ADR 0011, ADR 0013; specs 0005, 0007.
-Adds: ADR 0015 (a script item may carry an agent task, and definitions may carry agents).
+Adds: ADR 0018 (a script item may carry an agent task, and definitions may carry agents).
 
 ## Problem Statement
 
@@ -14,11 +15,13 @@ the 2,516 paths declared out of scope, seven families are real Bitbucket feature
 need. Six of them have usable evidence today. Leaving them out means a consumer falls back to `raw`,
 which validates nothing, or writes the file by hand.
 
-The evidence is uneven, and that shapes the slice. Expanded artifacts, custom-pipeline variables,
-event triggers and runtimes have licence-clean real configs. Child pipelines have a clean documented
-snippet but no redistributable config. The agent runtime has neither a real config nor an Atlassian
-page that documents its keys; only the pinned schema describes it. Step auth and `labels` have no
-real config and no documentation, so they stay out rather than being invented.
+The evidence is uneven, and that shapes the slice. Expanded artifacts, custom-pipeline variables and
+event triggers have licence-clean real configs. The runtime family lost its two configs to schema
+disagreement and keeps one, for the `arch` arm. Child pipelines have a clean documented snippet but
+no redistributable config. The agent runtime has neither a real config nor an Atlassian page that
+documents its keys; only the pinned schema describes it. Step auth and `labels` have no real config
+and no documentation either, so they are modelled from the schema and marked unproven rather than
+left untyped.
 
 ## Solution
 
@@ -120,7 +123,7 @@ The provider page is regenerated once at the end, not per slice.
   `schema-gap-overclaims.json`; a modelled keyword's rows are deleted or narrowed. The stale-row
   check proves none survive.
 - No new leaf constructors. The agent task is a struct inside a script sequence, like a pipe.
-- ADR 0015 records the two surface widenings: a script item becomes `Text | Pipe | AgentTask`, and
+- ADR 0018 records the two surface widenings: a script item becomes `Text | Pipe | AgentTask`, and
   `Definitions` gains `agents`.
 
 ### Expanded artifacts
@@ -145,7 +148,8 @@ export interface ArtifactUpload {
 - Corpus: `snyk-schmidtty/goof-artifactory` at `6838e122fe6f749c7ff183e0fed0ab8dc415276c`
   (Apache-2.0, 1481 bytes, SHA-256 `043f661c...ca2da6`) evidences the map form with `paths` and
   `download`. The named `upload` shape is documentation-derived, from the child-pipeline page.
-- `capture-on`, `depth`, `ignore-paths` and the `type` of an upload stay out: no evidence.
+- `capture-on`, `depth`, `ignore-paths` and the `type` of an upload are schema-derived: the pinned
+  schema types them, no config and no page documents them, and the provider page marks them unproven.
 
 ### Custom-pipeline variables
 
@@ -162,11 +166,12 @@ export interface CustomVariable {
   `- variables:` item before the pipeline's items. Each variable emits `allowed-values`, `default`,
   `description`, `name`.
 - Validation: a variable needs a non-empty name; `allowed-values` needs at least one value.
-- Corpus: `dawiddiwad/salesforce-e2e-test-automation` at
-  `df236454fd51129cbeb118c4339a8b6908e21740` (MIT, 4647 bytes, SHA-256 `d5c30a96...`) exercises all
-  four keys; `Nakama-Partnering-Services/nakama-project-scaffolding` at
-  `fd8bfc6f5b7c9e3ada89c99c8d8aec27d586a6f0` (MIT, 7188 bytes, SHA-256 `ca31bd33...`) is the
-  second shape.
+- Corpus: `Nakama-Partnering-Services/nakama-project-scaffolding` at
+  `fd8bfc6f5b7c9e3ada89c99c8d8aec27d586a6f0` (MIT, 7188 bytes, SHA-256 `ca31bd33...`) exercises the
+  leading item with quoted values and is the family's only vendored entry. `description` has no
+  corpus use and is schema-derived. `dawiddiwad/salesforce-e2e-test-automation` at
+  `df236454fd51129cbeb118c4339a8b6908e21740` was dropped rather than forcing a conformance
+  exception: its `default` is a boolean, while the pinned schema types `default` as a string.
 
 ### Event triggers
 
@@ -217,15 +222,17 @@ export interface Runtime {
 - Emission: a runtime emits `cloud` then `self-hosted`; a cloud runtime emits `arch`,
   `atlassian-ip-ranges`, `instance-type`, `platform`, `version`; self-hosted emits `cpu`, `memory`,
   `volumes`.
-- Corpus: `rapidcloud-framework/rapidcloud-core` at
-  `1b2e17692a8309161d44ff274daf6d11361f0d4d` (MIT, 4914 bytes, SHA-256 `c4467a0b...`) evidences
-  `image.aws.oidc-role`; `mathieu-lemay/pipeline-runner` at
-  `bd89e4e6e64cab3c230da0c4c2a5402f72f1be67` (MIT, 16397 bytes, SHA-256 `463b53a4...`) evidences
-  step-level cloud runtime with an integer version; `ChaosGroup/cg2_2014_demo` at
-  `9cb7d426ec3feb9b5ec51ca2aaf9173f203fa921` (MIT, 587 bytes, SHA-256 `53f05b79...`) evidences the
-  arch arm.
-- `image.aws.access-key`/`secret-key`, self-hosted storage auth, and `definitions.runners` (the
-  webitel shape, which the schema does not describe) stay out.
+- Corpus: `ChaosGroup/cg2_2014_demo` at `9cb7d426ec3feb9b5ec51ca2aaf9173f203fa921` (MIT, 587
+  bytes, SHA-256 `53f05b79...`) evidences the arch arm. `rapidcloud-framework/rapidcloud-core` at
+  `1b2e17692a8309161d44ff274daf6d11361f0d4d` was dropped because its empty `definitions` parses as
+  null, which the document does not accept; `mathieu-lemay/pipeline-runner` at
+  `bd89e4e6e64cab3c230da0c4c2a5402f72f1be67` was dropped because its step runtime `version` is an
+  integer while the pinned schema types it as a string. Both were dropped rather than forcing a
+  conformance exception.
+- Evidence after the drops: the arch arm is corpus-backed; `image.aws` in both arms, self-hosted
+  `cpu`, `memory`, `volumes` and `storage`, and the string form of `version` are schema-derived and
+  marked unproven. `atlassian-ip-ranges`, `instance-type` and `platform` likewise have no vendored
+  use.
 
 ### Child pipelines
 
@@ -249,13 +256,14 @@ export interface Runtime {
 - Evidence: none. No real config and no Atlassian page documents the keys; the shape is inferred from
   `test/schemas/bitbucket-pipelines.json`. The provider page marks the family unproven, and the
   fixture is synthetic, schema-derived, and validated against the pinned schema.
-- ADR 0015 records the widening and states the evidence level.
+- ADR 0018 records the widening and states the evidence level.
 
 ### Documentation
 
 - One final docs slice regenerates the provider page: coverage, open gaps and documented grammar,
-  Non-goals (six families removed, step auth and `labels` retained), and an explicit "unproven"
-  marker on child pipelines and agents.
+  Non-goals (every modelled family removed; imports, shared definitions, `definitions.runners` and
+  the schema refresh retained), and an evidence paragraph that separates corpus-backed support from
+  documentation-derived and schema-derived shapes and names the latter two unproven.
 - The README status stays In Progress; no status change per family.
 
 ## Testing Decisions
@@ -266,8 +274,10 @@ export interface Runtime {
   variables item, the agent task inside a script sequence, and the runtime map.
 - **A good test** asserts emitted bytes, parsed data, a thrown diagnostic, the gate's verdict, or the
   schema's verdict. It does not assert private node shapes.
-- **Corpus.** Each evidenced family adds a pinned vendored file and a parsed-data test; provenance is
-  recorded in the existing form. Example files are labelled as examples in `PROVENANCE.md`.
+- **Corpus.** Each family with a redistributable config adds a pinned vendored file and a
+  parsed-data test; provenance is recorded in the existing form. Example files are labelled as
+  examples in `PROVENANCE.md`. A candidate entry that disagrees with the pinned schema is dropped
+  rather than excused from the conformance check, and the family's evidence level drops with it.
 - **Synthetic fixtures.** Child pipelines and agents have no vendored file. Their tests build the
   definition through the public API and assert the rendered bytes and their parse, and
   `PROVENANCE.md` records the source as documentation or schema with a retrieval date.

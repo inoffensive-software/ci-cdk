@@ -111,7 +111,9 @@ describe("root pages job", () => {
  * its 374 key paths normalise onto the job-name wildcard's and dedupe away: the documented grammar is
  * 687 paths, not the 1,061 the raw walk reports, and the target is 551 of them. Modelling the map
  * form of `include` closed its unmodelled row but moved `$.include.rules[][]` into `schema-noise`,
- * which the target excludes, so the 552 that #78 set drops by one. Modelling the artifact reports
+ * which the target excludes, so the 552 that #78 set drops by one. Modelling job `pages` moved its
+ * four schema paths (`pages`, `publish`, `path_prefix`, `expire_in`) from the `$.*.pages` debt row to
+ * the modelled set and deleted the row, so the target stays 551. Modelling the artifact reports
  * turns the job report map from one author-named wildcard into 24 named keys with their list items,
  * so the documented grammar grows by 42 paths to 729 and all 42 are modelled: 551 + 42 = 593. The
  * `access`, `untracked` and report rows were already inside the target as `unmodelled`, so deleting

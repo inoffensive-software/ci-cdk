@@ -23,6 +23,7 @@ import type {
   IncludeEntry,
   IncludeOptions,
   Inherit,
+  JobPages,
   Need,
   NeedParallel,
   Retry,
@@ -237,6 +238,17 @@ export const artifactsDoc = (artifacts: Artifacts): Doc =>
     ...entry("when", present(artifacts.when)),
     ...entry("reports", artifacts.reports === undefined ? undefined : fromValue(artifacts.reports)),
   ]);
+
+/** `pages` is a flag or a map, in documented key order; an absent key emits nothing, so a map with
+ * only `publish` reads as a map rather than gaining empty siblings. */
+export const pagesDoc = (pages: JobPages): Doc =>
+  typeof pages === "boolean"
+    ? fromValue(pages)
+    : map([
+        ...entry("publish", present(pages.publish)),
+        ...entry("path_prefix", present(pages.path_prefix)),
+        ...entry("expire_in", present(pages.expire_in)),
+      ]);
 
 const retryOptionsDoc = (retry: RetryOptions): Doc =>
   map([

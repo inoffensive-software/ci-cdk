@@ -1,0 +1,13 @@
+stages:
+  - deploy
+deploy:
+  stage: deploy
+  artifacts:
+    paths:
+      - public/
+  pages:
+    publish: public
+    path_prefix: site
+    expire_in: 1 month
+  script:
+    - npm run build

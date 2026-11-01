@@ -85,7 +85,7 @@ const ordering = (): Pipeline =>
     stages: ["build", "test"],
     jobs: [
       job({ name: "zulu", stage: "build", script: ["npm ci", "npm run build"] }),
-      job({ name: "alpha", stage: "test", script: "npm test", raw: { pages: {} } }),
+      job({ name: "alpha", stage: "test", script: "npm test", raw: { publish: "public" } }),
     ],
   });
 
@@ -235,7 +235,7 @@ describe("ordering", () => {
     const parsed = parse(bare(ordering()));
 
     expect(Object.keys(parsed.zulu)).toStrictEqual(["stage", "script"]);
-    expect(Object.keys(parsed.alpha)).toStrictEqual(["stage", "script", "pages"]);
+    expect(Object.keys(parsed.alpha)).toStrictEqual(["stage", "script", "publish"]);
   });
 
   it("emits templates after stages and before the jobs, in record order", () => {

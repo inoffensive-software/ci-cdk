@@ -3,6 +3,8 @@ export { job, pipeline } from "./types.js";
 export type {
   FunctionStep,
   Job,
+  JobPages,
+  Pages,
   Pipeline,
   Script,
   ScriptStep,

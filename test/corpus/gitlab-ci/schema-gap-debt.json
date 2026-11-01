@@ -18,7 +18,6 @@
   {"path":"$.*.needs[].ref","reason":"the `ref` a cross-project need reads its artifacts from; the vocabulary models only the same-project `job` form","category":"unmodelled"},
   {"path":"$.*.needs[][]","reason":"nested arrays in job `needs`: the schema lets one item be a literal array, which is how it represents a `!reference` tag inside a list; GitLab accepts a flat list here","category":"schema-noise"},
   {"path":"$.*.only","reason":"the schema still carries the deprecated `only` filter; GitLab replaced `only`/`except` with `rules`, which is the shape the vocabulary models","category":"schema-noise"},
-  {"path":"$.*.pages","reason":"the Pages deployment form of a job; spec 0009 defers `pages` to its own spec (0010), so it is `unmodelled` debt rather than a non-goal","category":"unmodelled"},
   {"path":"$.*.publish","reason":"the schema keeps the deprecated job-level `publish` path for Pages; GitLab replaced it with `pages:publish`, and Pages is a non-goal, so neither spelling belongs in the vocabulary","category":"schema-noise"},
   {"path":"$.*.release.assets","reason":"the `assets` a release publishes, and the links inside them","category":"unmodelled"},
   {"path":"$.*.release.tag_message","reason":"the message used when the release creates a new annotated tag","category":"unmodelled"},

@@ -211,6 +211,8 @@ export const INVENTORY: readonly InventoryDocument[] = [
             when: "always",
             reports: ARTIFACT_REPORTS,
           },
+          // The map form of `pages`; the `test` job carries the boolean form.
+          pages: { publish: "public/", path_prefix: "docs", expire_in: "1 month" },
           before_script: "echo before",
           script: "npm run build",
           after_script: ["echo one", "echo two"],
@@ -281,10 +283,11 @@ export const INVENTORY: readonly InventoryDocument[] = [
           before_script: ["npm ci"],
           script: ["npm ci", "npm test"],
           after_script: "echo after",
+          pages: true,
         }),
         // `pages` is a job name, not a pipeline keyword: the gate normalises it to `$.*` like any
         // other name, and the schema's root `pages` property is a job body reached through that name.
-        // The `pages` *keyword* inside a job body is ticket 102 and stays unmodelled here.
+        // The `pages` keyword inside a job body is modelled on the `build` and `test` jobs above.
         job({
           name: "pages",
           stage: "build",
