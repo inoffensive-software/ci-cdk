@@ -1,6 +1,7 @@
 import type { Diagnostic } from "../core/index.js";
 import { keyPath } from "../core/paths.js";
 import type {
+  AgentTask,
   Artifacts,
   FinalItem,
   ParallelItem,
@@ -12,6 +13,9 @@ import type {
 } from "./types.js";
 
 const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
+
+const isAgentTask = (item: ScriptItem): item is AgentTask =>
+  typeof item !== "string" && "agent" in item;
 
 const isArtifactsMap = (artifacts: Artifacts): artifacts is Exclude<Artifacts, readonly string[]> =>
   !Array.isArray(artifacts);
@@ -127,10 +131,36 @@ const childProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
   return diagnostics;
 };
 
+/** A pipe or an agent task names its target, so neither may be blank at its own path. */
+const scriptItemProblems = (
+  items: readonly ScriptItem[] | undefined,
+  scriptPath: string,
+): readonly Diagnostic[] => {
+  const diagnostics: Diagnostic[] = [];
+
+  for (const [scriptIndex, scriptItem] of (items ?? []).entries()) {
+    if (isPipe(scriptItem) && scriptItem.pipe === "") {
+      diagnostics.push({
+        path: `${scriptPath}[${scriptIndex}].pipe`,
+        message: "pipe must not be empty",
+      });
+    }
+
+    if (isAgentTask(scriptItem) && scriptItem.agent === "") {
+      diagnostics.push({
+        path: `${scriptPath}[${scriptIndex}].agent`,
+        message: "an agent task needs a non-empty agent name",
+      });
+    }
+  }
+
+  return diagnostics;
+};
+
 /** A script sequence: required on an inline step, optional on a child pipeline step. */
 const scriptProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
   const scriptPath = `${bodyPath}.script`;
-  const diagnostics: Diagnostic[] = [];
+  const diagnostics: Diagnostic[] = [...scriptItemProblems(body.script, scriptPath)];
 
   if (body.type !== "pipeline" && (body.script === undefined || body.script.length === 0)) {
     diagnostics.push({
@@ -139,14 +169,7 @@ const scriptProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => 
     });
   }
 
-  for (const [scriptIndex, scriptItem] of (body.script ?? []).entries()) {
-    if (isPipe(scriptItem) && scriptItem.pipe === "") {
-      diagnostics.push({
-        path: `${scriptPath}[${scriptIndex}].pipe`,
-        message: "pipe must not be empty",
-      });
-    }
-  }
+  diagnostics.push(...scriptItemProblems(body["after-script"], `${bodyPath}["after-script"]`));
 
   return diagnostics;
 };

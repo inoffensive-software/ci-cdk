@@ -13,6 +13,7 @@ import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
 import { itemDoc } from "./item-doc.js";
 import { runtimeDoc } from "./runtime-doc.js";
+import { agentDefinitionDoc } from "./script-doc.js";
 import { cloneDoc, imageDoc } from "./step-doc.js";
 import type {
   Cache,
@@ -72,7 +73,7 @@ const serviceDoc = (service: Service): Doc =>
 const namedDoc = <T>(record: Readonly<Record<string, T>>, lower: (value: T) => Doc): Doc =>
   map(Object.entries(record).map(([key, value]) => ({ key, value: lower(value) })));
 
-/** Definitions: `caches`, `services`, `steps`, then nothing else. */
+/** Definitions: `agents`, `caches`, `services`, `steps`, the schema's alphabetical order. */
 const definitionsDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc | undefined => {
   const definitions = config.definitions;
 
@@ -81,6 +82,12 @@ const definitionsDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc 
   }
 
   const rows = [
+    ...entry(
+      "agents",
+      definitions.agents === undefined
+        ? undefined
+        : namedDoc(definitions.agents, agentDefinitionDoc),
+    ),
     ...entry(
       "caches",
       definitions.caches === undefined ? undefined : namedDoc(definitions.caches, cacheDoc),

@@ -1,5 +1,21 @@
 import type { Text, Value } from "../core/index.js";
+import type { AgentDefinition, AgentTask } from "./agent-types.js";
+import type { Pipe } from "./pipe-types.js";
 import type { ImageAws, Runtime } from "./runtime-types.js";
+
+export type {
+  AgentConfig,
+  AgentDefinition,
+  AgentPermissionMode,
+  AgentPermissions,
+  AgentPermissionsOnAsk,
+  AgentPermissionsOnAskRules,
+  AgentProvider,
+  AgentSetupItem,
+  AgentTask,
+} from "./agent-types.js";
+
+export type { Pipe } from "./pipe-types.js";
 
 export type {
   AwsStorage,
@@ -15,14 +31,8 @@ export type {
   SelfHostedRuntime,
 } from "./runtime-types.js";
 
-/** A pipe call inside a script sequence: an id plus optional variables, never a leaf. */
-export interface Pipe {
-  readonly pipe: Text;
-  readonly variables?: Readonly<Record<string, Text | readonly Text[]>>;
-}
-
-/** One element of a script: a command string, a leaf, or a pipe. */
-export type ScriptItem = Text | Pipe;
+/** One element of a script: a command string, a pipe, or an agent task. */
+export type ScriptItem = Text | Pipe | AgentTask;
 
 /**
  * A step image: a name string, a name map, an ECR map, or a private registry with credentials.
@@ -204,8 +214,9 @@ export interface Service {
   readonly variables?: Readonly<Record<string, Text>>;
 }
 
-/** Reusable caches, services and step groups, declared once and referenced by name. */
+/** Reusable agents, caches, services and step groups, declared once and referenced by name. */
 export interface Definitions {
+  readonly agents?: Readonly<Record<string, AgentDefinition>>;
   readonly caches?: Readonly<Record<string, Cache>>;
   readonly services?: Readonly<Record<string, Service>>;
   readonly steps?: readonly StepItem[];

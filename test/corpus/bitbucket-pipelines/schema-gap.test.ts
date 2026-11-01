@@ -41,7 +41,7 @@ describe("gap row subsumption", () => {
   });
 
   it("fails on the whole subtree when a top-level row is removed", () => {
-    const removed = "$.definitions.agents";
+    const removed = "$.definitions.imports";
     const withoutRow = GAPS.filter((gap) => gap.path !== removed);
     const undeclared = undeclaredSchemaPaths(SCHEMA_PATHS, MODELLED_PATHS, withoutRow);
 

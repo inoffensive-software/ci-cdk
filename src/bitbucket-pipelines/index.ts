@@ -1,6 +1,15 @@
 export { finalStep, parallel, pipe, pipelineConfig, stage, step } from "./types.js";
 
 export type {
+  AgentConfig,
+  AgentDefinition,
+  AgentPermissionMode,
+  AgentPermissions,
+  AgentPermissionsOnAsk,
+  AgentPermissionsOnAskRules,
+  AgentProvider,
+  AgentSetupItem,
+  AgentTask,
   ArtifactCaptureOn,
   Artifacts,
   ArtifactUpload,

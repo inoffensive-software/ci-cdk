@@ -9,6 +9,7 @@ import {
 } from "../core/index.js";
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { runtimeDoc } from "./runtime-doc.js";
+import { scriptSeq } from "./script-doc.js";
 import { rawEntries } from "../core/raw.js";
 import type {
   Artifacts,
@@ -19,8 +20,6 @@ import type {
   FinalItem,
   Image,
   ImageAws,
-  Pipe,
-  ScriptItem,
   Step,
   StepAuth,
   StepItem,
@@ -53,19 +52,6 @@ const STEP_RESERVED: readonly string[] = [
   "trigger",
   "type",
 ];
-
-const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
-
-/** Pipe keys in schema order; variable maps keep the author's insertion order. */
-const pipeDoc = (item: Pipe): Doc =>
-  map([
-    { key: "pipe", value: fromValue(item.pipe) },
-    ...entry("variables", item.variables === undefined ? undefined : fromValue(item.variables)),
-  ]);
-
-/** A script is always a sequence: commands and pipe maps are the same list. */
-const scriptDoc = (script: readonly ScriptItem[]): Doc =>
-  seq(script.map((item) => (isPipe(item) ? pipeDoc(item) : fromValue(item))));
 
 /** Clone: `depth`, `enabled`, `lfs`, `skip-ssl-verify`. Depth is never coerced. */
 export const cloneDoc = (clone: Clone | undefined): Doc | undefined => {
@@ -207,7 +193,7 @@ const authDoc = (auth: StepAuth | undefined): Doc | undefined => {
 const headRows = (body: Step): readonly DocEntry[] => [
   ...entry(
     "after-script",
-    body["after-script"] === undefined ? undefined : scriptDoc(body["after-script"]),
+    body["after-script"] === undefined ? undefined : scriptSeq(body["after-script"]),
   ),
   ...entry("artifacts", artifactsDoc(body.artifacts)),
   ...entry("auth", authDoc(body.auth)),
@@ -244,7 +230,7 @@ const lastRows = (body: Step): readonly DocEntry[] => [
   ),
   ...entry("runs-on", body["runs-on"] === undefined ? undefined : fromValue(body["runs-on"])),
   ...entry("runtime", runtimeDoc(body.runtime)),
-  ...entry("script", body.script === undefined ? undefined : scriptDoc(body.script)),
+  ...entry("script", body.script === undefined ? undefined : scriptSeq(body.script)),
   ...entry("services", body.services === undefined ? undefined : fromValue(body.services)),
   ...entry("size", body.size === undefined ? undefined : fromValue(body.size)),
   ...entry("trigger", body.trigger === undefined ? undefined : fromValue(body.trigger)),
