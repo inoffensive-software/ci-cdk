@@ -94,7 +94,7 @@ git status --porcelain -- .github/workflows   # edits, and a first commit you fo
 | Subpath                                   | Provider                                                                        | Modelled     | Unmodelled | Out of scope | Schema noise |
 | ----------------------------------------- | ------------------------------------------------------------------------------- | ------------ | ---------- | ------------ | ------------ |
 | `@inoffensive/ci-cdk/github-actions`      | [GitHub Actions](docs/providers/github-actions.md#documented-grammar)           | 82.8% (149)  | 1.1% (2)   | 10.0% (18)   | 6.1% (11)    |
-| `@inoffensive/ci-cdk/gitlab-ci`           | [GitLab CI](docs/providers/gitlab-ci.md#documented-grammar)                     | 85.6% (624)  | 10.3% (75) | 0.1% (1)     | 4.0% (29)    |
+| `@inoffensive/ci-cdk/gitlab-ci`           | [GitLab CI](docs/providers/gitlab-ci.md#documented-grammar)                     | 87.7% (639)  | 8.2% (60)  | 0.1% (1)     | 4.0% (29)    |
 | `@inoffensive/ci-cdk/bitbucket-pipelines` | [Bitbucket Pipelines](docs/providers/bitbucket-pipelines.md#documented-grammar) | 99.3% (3699) | 0.0% (0)   | 0.5% (17)    | 0.2% (9)     |
 
 Each provider is measured against the grammar in its pinned upstream schema. `Modelled` is the

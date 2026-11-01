@@ -17,14 +17,12 @@ import {
   dastConfigurationDoc,
   defaultDoc,
   hooksDoc,
-  imageDoc,
   includeDoc,
   inheritDoc,
   needsDoc,
   pagesDoc,
   retryDoc,
   rulesDoc,
-  servicesDoc,
   variablesDoc,
   workflowDoc,
 } from "./blocks.js";
@@ -37,6 +35,7 @@ import {
 } from "./delivery-blocks.js";
 import { secretsDoc } from "./secrets-blocks.js";
 import { stepsDoc } from "./run-blocks.js";
+import { imageDoc, servicesDoc } from "./runtime-blocks.js";
 import { idTokensDoc } from "./token-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";

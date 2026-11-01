@@ -146,7 +146,9 @@ src/gitlab-ci/
   index.ts            barrel; re-exports render, toDoc and the vocabulary
   render.ts           render(pipeline) = renderDoc(toDoc(pipeline)), the call users make
   types.ts            the structs `Pipeline` and `Job`, and the `Script` union
+  runtime-types.ts    the image, service, environment and release structs
   blocks.ts           the global and job blocks lowered, reused at every default and job position
+  runtime-blocks.ts   the image and service maps lowered, at both positions
   delivery-blocks.ts  the delivery and scheduling keys lowered
   trigger-types.ts    the `trigger:` vocabulary and its closed strategy union
   leaves.ts           ref, the `!reference` leaf

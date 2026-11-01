@@ -10,6 +10,7 @@ import {
   type LeafNode,
   type Text,
 } from "../core/index.js";
+import { imageDoc, servicesDoc } from "./runtime-blocks.js";
 import type {
   Artifacts,
   AutoCancel,
@@ -18,7 +19,6 @@ import type {
   DastConfiguration,
   Default,
   Hooks,
-  Image,
   Include,
   IncludeEntry,
   IncludeOptions,
@@ -31,8 +31,6 @@ import type {
   Rule,
   RuleChanges,
   Scalar,
-  Service,
-  ServiceOptions,
   Workflow,
 } from "./types.js";
 import { idTokensDoc } from "./token-blocks.js";
@@ -178,24 +176,6 @@ export const dastConfigurationDoc = (dast: DastConfiguration): Doc =>
     { key: "scanner_profile", value: fromValue(dast.scanner_profile) },
   ]);
 
-const serviceOptionsDoc = (service: ServiceOptions): Doc =>
-  map([
-    { key: "name", value: fromValue(service.name) },
-    ...entry("alias", present(service.alias)),
-    ...entry("entrypoint", present(service.entrypoint)),
-    ...entry("command", present(service.command)),
-    ...entry(
-      "variables",
-      service.variables === undefined ? undefined : variablesDoc(service.variables),
-    ),
-  ]);
-
-const serviceDoc = (service: Service): Doc =>
-  typeof service === "string" || isLeaf(service) ? fromValue(service) : serviceOptionsDoc(service);
-
-export const servicesDoc = (services: readonly Service[]): Doc =>
-  seq(services.map((item) => serviceDoc(item)));
-
 const cacheKeyDoc = (key: CacheKeyFiles): Doc =>
   map([{ key: "files", value: fromValue(key.files) }, ...entry("prefix", present(key.prefix))]);
 
@@ -260,16 +240,6 @@ const retryOptionsDoc = (retry: RetryOptions): Doc =>
 /** A retry count stays a scalar; the map form keeps `max`, `when` and `exit_codes` in order. */
 export const retryDoc = (retry: Retry): Doc =>
   typeof retry === "number" ? fromValue(retry) : retryOptionsDoc(retry);
-
-/** An image keeps its string form; the map form carries `name` first, then the overrides. */
-export const imageDoc = (image: Image): Doc =>
-  typeof image === "string" || isLeaf(image)
-    ? fromValue(image)
-    : map([
-        { key: "name", value: fromValue(image.name) },
-        ...entry("entrypoint", present(image.entrypoint)),
-        ...entry("pull_policy", present(image.pull_policy)),
-      ]);
 
 /** The `default` body, in the spec's fixed order; an absent key emits nothing. */
 export const defaultDoc = (defaults: Default): Doc =>

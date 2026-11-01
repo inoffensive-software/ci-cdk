@@ -10,7 +10,17 @@ import {
   type Text,
 } from "../core/index.js";
 import { type Forward, type Trigger, type TriggerIncludeEntry } from "./trigger-types.js";
-import { type AllowFailure, type Environment, type Parallel, type Release } from "./types.js";
+import {
+  type AllowFailure,
+  type Environment,
+  type EnvironmentDashboard,
+  type EnvironmentKubernetes,
+  type EnvironmentManagedResources,
+  type Parallel,
+  type Release,
+  type ReleaseAssets,
+  type ReleaseLink,
+} from "./types.js";
 
 /** A leaf decides its own style; every other object here is one of the provider's own shapes. */
 const isLeaf = (value: Environment | Trigger): value is LeafNode =>
@@ -25,6 +35,38 @@ const isIncludeList = (
   value: Text | TriggerIncludeEntry | readonly TriggerIncludeEntry[],
 ): value is readonly TriggerIncludeEntry[] => Array.isArray(value);
 
+/** Whether GitLab manages the environment's Kubernetes resources. */
+const managedResourcesDoc = (resources: EnvironmentManagedResources): Doc =>
+  map([...entry("enabled", present(resources.enabled))]);
+
+/** The Kubernetes dashboard GitLab deploys for the environment. */
+const dashboardDoc = (dashboard: EnvironmentDashboard): Doc =>
+  map([
+    ...entry("namespace", present(dashboard.namespace)),
+    ...entry("flux_resource_path", present(dashboard.flux_resource_path)),
+  ]);
+
+/**
+ * The environment's Kubernetes settings, in the docs' order. `namespace` and `flux_resource_path` are
+ * deprecated in favour of the dashboard's copies, but GitLab still reads them, so both emit.
+ */
+const environmentKubernetesDoc = (kubernetes: EnvironmentKubernetes): Doc =>
+  map([
+    ...entry("agent", present(kubernetes.agent)),
+    ...entry("namespace", present(kubernetes.namespace)),
+    ...entry("flux_resource_path", present(kubernetes.flux_resource_path)),
+    ...entry(
+      "managed_resources",
+      kubernetes.managed_resources === undefined
+        ? undefined
+        : managedResourcesDoc(kubernetes.managed_resources),
+    ),
+    ...entry(
+      "dashboard",
+      kubernetes.dashboard === undefined ? undefined : dashboardDoc(kubernetes.dashboard),
+    ),
+  ]);
+
 const environmentOptionsDoc = (environment: Exclude<Environment, string | LeafNode>): Doc =>
   map([
     { key: "name", value: fromValue(environment.name) },
@@ -32,6 +74,12 @@ const environmentOptionsDoc = (environment: Exclude<Environment, string | LeafNo
     ...entry("action", present(environment.action)),
     ...entry("on_stop", present(environment.on_stop)),
     ...entry("auto_stop_in", present(environment.auto_stop_in)),
+    ...entry(
+      "kubernetes",
+      environment.kubernetes === undefined
+        ? undefined
+        : environmentKubernetesDoc(environment.kubernetes),
+    ),
     ...entry("deployment_tier", present(environment.deployment_tier)),
   ]);
 
@@ -41,15 +89,30 @@ export const environmentDoc = (environment: Environment): Doc =>
     ? fromValue(environment)
     : environmentOptionsDoc(environment);
 
+/** One asset link, in the docs' order; `filepath` and `link_type` are optional. */
+const releaseLinkDoc = (link: ReleaseLink): Doc =>
+  map([
+    { key: "name", value: fromValue(link.name) },
+    { key: "url", value: fromValue(link.url) },
+    ...entry("filepath", present(link.filepath)),
+    ...entry("link_type", present(link.link_type)),
+  ]);
+
+/** The release's assets; the `links` list is the only key GitLab documents under it. */
+const releaseAssetsDoc = (assets: ReleaseAssets): Doc =>
+  map([{ key: "links", value: seq(assets.links.map((link) => releaseLinkDoc(link))) }]);
+
 /** Release metadata, in GitLab's documented key order. */
 export const releaseDoc = (release: Release): Doc =>
   map([
     { key: "tag_name", value: fromValue(release.tag_name) },
+    ...entry("tag_message", present(release.tag_message)),
     { key: "description", value: fromValue(release.description) },
     ...entry("name", present(release.name)),
     ...entry("ref", present(release.ref)),
     ...entry("milestones", present(release.milestones)),
     ...entry("released_at", present(release.released_at)),
+    ...entry("assets", release.assets === undefined ? undefined : releaseAssetsDoc(release.assets)),
   ]);
 
 /** `trigger:forward`, in the schema's key order; an absent key keeps GitLab's default. */
