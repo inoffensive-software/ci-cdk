@@ -65,3 +65,26 @@ describe("workflow order", () => {
     expect(parse(text).workflow.rules).toStrictEqual([{ when: "never" }, { if: "$CI_COMMIT_TAG" }]);
   });
 });
+
+describe("workflow rule auto_cancel", () => {
+  it("writes a workflow rule's auto_cancel, in the documented key order", () => {
+    const text = workflowText({
+      rules: [
+        {
+          changes: { paths: ["docs/**/*"] },
+          auto_cancel: { on_new_commit: "conservative", on_job_failure: "none" },
+        },
+      ],
+    });
+
+    expect(parse(text).workflow).toStrictEqual({
+      rules: [
+        {
+          changes: { paths: ["docs/**/*"] },
+          auto_cancel: { on_new_commit: "conservative", on_job_failure: "none" },
+        },
+      ],
+    });
+    expect(text.indexOf("auto_cancel:")).toBeGreaterThan(text.indexOf("changes:"));
+  });
+});

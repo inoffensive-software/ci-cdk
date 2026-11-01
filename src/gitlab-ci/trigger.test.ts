@@ -79,7 +79,11 @@ describe("job trigger: child pipeline", () => {
     const include = [
       { local: "ci/local.yml", inputs: { env: "a" } },
       { template: "Child.yml", inputs: { env: { value: "b", expand: false } } },
-      { artifact: "child.yml", job: "generate", inputs: { env: ["c", "d"] } },
+      {
+        artifact: "child.yml",
+        job: "generate",
+        inputs: { env: ["c", "d"], rows: [{ value: "c" }, [1, 2]] },
+      },
       { project: "group/project", ref: "main", file: "ci.yml", inputs: { env: 1 } },
       { component: "gitlab.com/components/child@1.0", inputs: { zulu: "z", alpha: "a" } },
       { remote: "https://example.com/child.yml", inputs: { env: true } },

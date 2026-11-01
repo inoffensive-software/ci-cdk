@@ -1,12 +1,20 @@
 export { job, pipeline } from "./types.js";
 
 export type {
+  FunctionReference,
   FunctionStep,
+  GitFunction,
   Job,
+  JobInput,
+  JobInputs,
+  JobInputType,
   JobPages,
+  OciFunction,
   Pages,
   Pipeline,
   RuleExists,
+  RuleNeed,
+  RuleNeedMap,
   Script,
   ScriptStep,
   Step,

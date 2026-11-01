@@ -1,6 +1,7 @@
 import { job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
 
 import type { InventoryDocument } from "./inventory.js";
+import { LEFTOVER_DOCUMENTS } from "./inventory-leftovers.js";
 
 /**
  * The second inventory document: the other shape each field accepts. A single `include` entry is a
@@ -9,6 +10,7 @@ import type { InventoryDocument } from "./inventory.js";
  * release nesting, whose nested maps exist only in their map form.
  */
 export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
+  ...LEFTOVER_DOCUMENTS,
   {
     name: "shapes",
     pipeline: pipeline({
@@ -20,7 +22,11 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
         cache: {
           key: { files: ["go.sum"], files_commits: ["go.sum"], prefix: "go-" },
           paths: [".cache/go"],
+          policy: "pull",
           unprotect: true,
+          untracked: false,
+          when: "on_success",
+          fallback_keys: ["go-main"],
         },
         retry: 2,
       },
@@ -76,7 +82,14 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
           trigger: {
             include: [
               { template: "Child.yml", inputs: { CHILD_ENV: "staging" } },
-              { remote: "https://example.com/child.yml", inputs: { CHILD_ENV: "staging" } },
+              {
+                remote: "https://example.com/child.yml",
+                inputs: {
+                  CHILD_ENV: "staging",
+                  MATRIX: [{ value: "a" }, { value: "b" }],
+                  GRID: [[{ value: "g" }]],
+                },
+              },
               {
                 artifact: "generated/child.yml",
                 job: "generate",
@@ -121,10 +134,12 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
     pipeline: pipeline({
       include: {
         remote: "https://example.com/nested.yml",
+        cache: "30 minutes",
         integrity: `sha256-${"A".repeat(43)}=`,
         rules: [
           { if: "$CI_COMMIT_BRANCH", exists: ["nested.yml"] },
           { changes: ["nested.yml"], when: "always" },
+          { changes: { regexp: "^nested/.*\\.yml$" }, when: "never" },
         ],
         inputs: { target: "release" },
       },

@@ -147,7 +147,9 @@ src/gitlab-ci/
   render.ts           render(pipeline) = renderDoc(toDoc(pipeline)), the call users make
   types.ts            the structs `Pipeline` and `Job`, and the `Script` union
   runtime-types.ts    the image, service, environment and release structs
+  input-types.ts      the typed job-input map and its closed value literals
   blocks.ts           the global and job blocks lowered, reused at every default and job position
+  input-blocks.ts     the job-input map lowered, one declaration per name
   runtime-blocks.ts   the image and service maps lowered, at both positions
   delivery-blocks.ts  the delivery and scheduling keys lowered
   trigger-types.ts    the `trigger:` vocabulary and its closed strategy union

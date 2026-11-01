@@ -85,6 +85,22 @@ describe("default cache", () => {
     expect(parsed).toStrictEqual(cache);
     expect(Array.isArray(parsed)).toBe(false);
   });
+
+  it("carries the full key set on a single cache map, not only on a list entry", () => {
+    const cache: Cache = {
+      key: "go",
+      paths: [".cache/go"],
+      policy: "pull-push",
+      untracked: true,
+      when: "on_failure",
+      fallback_keys: ["go-main", "go-release"],
+    };
+
+    const parsed = parse(defaultText({ cache })).default.cache;
+
+    expect(parsed).toStrictEqual(cache);
+    expect(Array.isArray(parsed)).toBe(false);
+  });
 });
 
 describe("default artifacts and retry", () => {

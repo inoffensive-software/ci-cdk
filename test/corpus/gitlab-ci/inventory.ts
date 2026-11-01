@@ -84,8 +84,9 @@ export const INVENTORY: readonly InventoryDocument[] = [
         },
         {
           remote: "https://example.com/ci.yml",
+          cache: true,
           integrity: "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-          rules: [{ exists: ["ci.yml"] }],
+          rules: [{ exists: ["ci.yml"] }, { changes: ["ci/**/*"] }],
         },
         { template: "Nodejs.gitlab-ci.yml" },
         { project: "group/project", ref: "main", file: "templates/one.yml" },
@@ -129,7 +130,6 @@ export const INVENTORY: readonly InventoryDocument[] = [
         ],
       },
       templates: { ".setup": { script: ["npm ci"] } },
-      // Both script shapes, because a sequence adds a path of its own to the modelled set.
       jobs: [
         job({
           name: "build",

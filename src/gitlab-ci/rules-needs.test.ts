@@ -134,6 +134,36 @@ describe("rule forms", () => {
   });
 });
 
+describe("rule leftovers", () => {
+  it("writes the regexp form of changes without inventing a paths key", () => {
+    const text = deployText({ rules: [{ changes: { regexp: "^src/.*\\.ts$" } }] });
+
+    expect(parse(text).deploy.rules).toStrictEqual([{ changes: { regexp: "^src/.*\\.ts$" } }]);
+    expect(text).not.toContain("paths:");
+  });
+
+  it("writes start_in, interruptible and the map form of rule-level needs", () => {
+    const rule = {
+      when: "manual",
+      start_in: "5 minutes",
+      needs: ["prepare", { job: "lint", artifacts: false, optional: true }],
+      interruptible: true,
+    } as const;
+
+    expect(parse(deployText({ rules: [rule] })).deploy.rules).toStrictEqual([rule]);
+  });
+
+  it("keeps the new rule keys in documented order after needs", () => {
+    const text = deployText({
+      rules: [{ start_in: "5 minutes", needs: ["build"], interruptible: true }],
+    });
+
+    const indexes = ["needs:", "start_in:", "interruptible:"].map((key) => text.indexOf(key));
+
+    expect(indexes).toStrictEqual([...indexes].toSorted((left, right) => left - right));
+  });
+});
+
 describe("cross-project needs", () => {
   it("writes the project, ref and pipeline forms in documented order", () => {
     const needs = [
