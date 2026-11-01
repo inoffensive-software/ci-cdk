@@ -231,7 +231,9 @@ export const artifactsDoc = (artifacts: Artifacts): Doc =>
     ...entry("name", present(artifacts.name)),
     ...entry("expire_in", present(artifacts.expire_in)),
     ...entry("expose_as", present(artifacts.expose_as)),
+    ...entry("untracked", present(artifacts.untracked)),
     ...entry("public", present(artifacts.public)),
+    ...entry("access", present(artifacts.access)),
     ...entry("when", present(artifacts.when)),
     ...entry("reports", artifacts.reports === undefined ? undefined : fromValue(artifacts.reports)),
   ]);

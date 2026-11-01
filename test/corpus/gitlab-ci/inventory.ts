@@ -1,4 +1,5 @@
 import { type Pipeline, job, pipeline } from "@inoffensive/ci-cdk/gitlab-ci";
+import { ARTIFACT_REPORTS } from "./inventory-artifacts.js";
 import { ALTERNATE_DOCUMENTS } from "./inventory-shapes.js";
 import { MAIN_SECRETS } from "./inventory-secrets.js";
 
@@ -60,9 +61,10 @@ export const INVENTORY: readonly InventoryDocument[] = [
           name: "build-$CI_JOB_NAME",
           expire_in: "1 week",
           expose_as: "build",
+          untracked: false,
           public: true,
           when: "always",
-          reports: { junit: ["report.xml"] },
+          reports: ARTIFACT_REPORTS,
         },
         retry: { max: 2, when: ["runner_system_failure"], exit_codes: [137] },
         timeout: "1h 30m",
@@ -204,9 +206,10 @@ export const INVENTORY: readonly InventoryDocument[] = [
             name: "build-$CI_JOB_NAME",
             expire_in: "1 week",
             expose_as: "build",
-            public: true,
+            untracked: true,
+            public: false,
             when: "always",
-            reports: { junit: "report.xml", codequality: "gl-code-quality-report.json" },
+            reports: ARTIFACT_REPORTS,
           },
           before_script: "echo before",
           script: "npm run build",

@@ -1,10 +1,13 @@
 import type { Scalar, Text, Value } from "../core/index.js";
+import type { ArtifactAccess, ArtifactReports } from "./artifact-types.js";
 import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 import type { Default, Include, Workflow } from "./pipeline-types.js";
 import type { Step } from "./run-types.js";
 import type { Trigger } from "./trigger-types.js";
 import type { Secret } from "./secret-types.js";
 import type { Identity, IdTokens } from "./token-types.js";
+
+export type { ArtifactAccess, ArtifactReports } from "./artifact-types.js";
 
 export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 
@@ -90,14 +93,16 @@ export interface Artifacts {
   readonly name?: Text;
   readonly expire_in?: Text;
   readonly expose_as?: Text;
+  readonly untracked?: boolean;
+  readonly access?: ArtifactAccess;
   readonly public?: boolean;
   readonly when?: OnStatus;
   /**
-   * Report names are the author's, so the map keeps insertion order. GitLab accepts one path or a
-   * list of them, so both stay expressible; flattening a single path into a list would change the
-   * value the provider reads.
+   * A closed map of GitLab's documented report keys. Lowering keeps the author's key order, so the
+   * struct's insertion order is the emitted order; a report value keeps its scalar, list or map
+   * shape because flattening one path into a list would change the value the provider reads.
    */
-  readonly reports?: Readonly<Record<string, Text | readonly Text[]>>;
+  readonly reports?: ArtifactReports;
 }
 
 export interface RetryOptions {

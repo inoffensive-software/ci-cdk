@@ -165,4 +165,11 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
       jobs: [],
     }),
   },
+  {
+    name: "artifacts-access",
+    pipeline: pipeline({
+      default: { artifacts: { access: "developer" } },
+      jobs: [job({ name: "access", artifacts: { access: "all", untracked: true } })],
+    }),
+  },
 ];
