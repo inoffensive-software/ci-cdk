@@ -102,7 +102,7 @@ My motivations for creating this repo are three-fold:
 
 1. I feel like CDK is the correct pattern for most configuration and never understood why it wasn't a supported way of authoring CI pipelines.
 
-2. I was curious about how well and how cost effective Chinese coding models are - the answer is very well and very cheaply
+2. I was curious about the cost effectiveness and quality of Chinese coding models - the answer is excellent quality and cheap
 
 3. I wanted to try my hand at harness-engineering a repo and have it produce a useful tool semi-autonomously
 
