@@ -5,7 +5,8 @@ import type { InventoryDocument } from "./inventory.js";
 /**
  * The second inventory document: the other shape each field accepts. A single `include` entry is a
  * map, a single `cache` is a map, a retry count is a scalar, and an image or service can be a bare
- * string; each shape adds paths of its own to the modelled set.
+ * string; each shape adds paths of its own to the modelled set. The last document is the runtime and
+ * release nesting, whose nested maps exist only in their map form.
  */
 export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
   {
@@ -176,6 +177,90 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
     pipeline: pipeline({
       default: { artifacts: { access: "developer" } },
       jobs: [job({ name: "access", artifacts: { access: "all", untracked: true } })],
+    }),
+  },
+  // The runtime and release nesting: executor options under an image and a service, the pull policy
+  // as a single value and as a list, the Kubernetes half of an environment, and a release's assets
+  // and tag message. Every shape is reachable through a field, so no `raw` is needed.
+  {
+    name: "runtime",
+    pipeline: pipeline({
+      default: {
+        image: {
+          name: "golang:1.26",
+          entrypoint: [""],
+          docker: { platform: "arm64/v8", user: "dave" },
+          kubernetes: { user: "1001:1001" },
+          pull_policy: ["always", "if-not-present"],
+        },
+        services: [
+          "postgres:16",
+          {
+            name: "super/sql:experimental",
+            docker: { platform: "arm64/v8", user: "dave" },
+            kubernetes: { user: 1001 },
+            pull_policy: ["always", "never"],
+          },
+        ],
+      },
+      jobs: [
+        job({
+          name: "runtime",
+          image: {
+            name: "super/sql:experimental",
+            docker: { platform: "arm64/v8", user: "dave" },
+            kubernetes: { user: 1001 },
+            pull_policy: ["always", "never"],
+          },
+          services: [
+            "postgres:16",
+            {
+              name: "redis:7",
+              docker: { platform: "arm64/v8", user: "dave" },
+              kubernetes: { user: "1001:1001" },
+              pull_policy: ["always", "if-not-present"],
+            },
+          ],
+          environment: {
+            name: "production",
+            kubernetes: {
+              agent: "path/to/agent/project:agent-name",
+              namespace: "production",
+              flux_resource_path:
+                "helm.toolkit.fluxcd.io/v2/namespaces/gitlab-agent/helmreleases/gitlab-agent",
+              managed_resources: { enabled: true },
+              dashboard: {
+                namespace: "production-dashboard",
+                flux_resource_path: "flux-system/gitops-toolkit",
+              },
+            },
+          },
+          release: {
+            tag_name: "$CI_COMMIT_TAG",
+            tag_message: "Annotated tag message",
+            description: "Release $CI_COMMIT_TAG",
+            assets: {
+              links: [
+                {
+                  name: "asset1",
+                  url: "https://example.com/assets/1",
+                  filepath: "/pretty/url/1",
+                  link_type: "other",
+                },
+                { name: "asset2", url: "https://example.com/assets/2" },
+              ],
+            },
+          },
+        }),
+        // The scalar pull policy and an image with no executor options still emit on their own.
+        job({
+          name: "runtime-minimal",
+          image: { name: "alpine:3.20", pull_policy: "always" },
+          services: [{ name: "postgres:16" }],
+          environment: "production",
+          release: { tag_name: "v1", description: "Release v1" },
+        }),
+      ],
     }),
   },
 ];

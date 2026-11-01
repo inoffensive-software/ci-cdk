@@ -6,6 +6,7 @@ import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 import type { JobPages } from "./pages-types.js";
 import type { Default, Include, Workflow } from "./pipeline-types.js";
 import type { Step } from "./run-types.js";
+import type { Environment, Image, Release, Service } from "./runtime-types.js";
 import type { Trigger } from "./trigger-types.js";
 import type { Secret } from "./secret-types.js";
 import type { Identity, IdTokens } from "./token-types.js";
@@ -38,6 +39,22 @@ export type {
  */
 export type { Scalar };
 
+/** The runtime and release shapes live in their own module so this one stays within its line budget. */
+export type {
+  DockerOptions,
+  Environment,
+  EnvironmentDashboard,
+  EnvironmentKubernetes,
+  EnvironmentManagedResources,
+  Image,
+  KubernetesOptions,
+  Release,
+  ReleaseAssets,
+  ReleaseLink,
+  Service,
+  ServiceOptions,
+} from "./runtime-types.js";
+
 /**
  * A job's commands, in GitLab's own spelling: one string, one leaf that decides its own style, or an
  * ordered list of them. No literal block is produced; a block scalar would add a trailing newline and
@@ -53,30 +70,6 @@ export type When = "on_success" | "on_failure" | "always" | "never" | "manual" |
 
 /** The three statuses `cache:when` and `artifacts:when` accept; narrower than `When`. */
 export type OnStatus = "on_success" | "on_failure" | "always";
-
-/** The closed set GitLab documents for `image:pull_policy`. */
-export type ImagePullPolicy = "always" | "if-not-present" | "never";
-
-/** An image with a cleared entrypoint, a pull policy, or both. */
-export interface ImageOptions {
-  readonly name: Text;
-  readonly entrypoint?: readonly Text[];
-  readonly pull_policy?: ImagePullPolicy;
-}
-
-/** A Docker image, as its name or as the map GitLab also accepts. */
-export type Image = Text | ImageOptions;
-
-/** A linked service container, as its name or as the map GitLab also accepts. */
-export interface ServiceOptions {
-  readonly name: Text;
-  readonly alias?: Text;
-  readonly entrypoint?: readonly Text[];
-  readonly command?: readonly Text[];
-  readonly variables?: Variables;
-}
-
-export type Service = Text | ServiceOptions;
 
 export interface Artifacts {
   readonly paths?: readonly string[];
@@ -104,29 +97,6 @@ export interface RetryOptions {
 
 /** A retry count, or the map with `when` conditions and `exit_codes`. */
 export type Retry = number | RetryOptions;
-
-/** The map form of `environment`: a deployment target with its URL and lifecycle hooks. */
-export interface EnvironmentOptions {
-  readonly name: Text;
-  readonly url?: Text;
-  readonly action?: "start" | "prepare" | "stop" | "verify" | "access";
-  readonly on_stop?: Text;
-  readonly auto_stop_in?: Text;
-  readonly deployment_tier?: Text;
-}
-
-/** A deployment environment, as its name or as the map GitLab also accepts. */
-export type Environment = Text | EnvironmentOptions;
-
-/** The metadata a job hands to GitLab's release API. */
-export interface Release {
-  readonly tag_name: Text;
-  readonly description: Text;
-  readonly name?: Text;
-  readonly ref?: Text;
-  readonly milestones?: readonly Text[];
-  readonly released_at?: Text;
-}
 
 /** One `parallel:matrix` row: the author's key order, and a scalar or a list of scalars per cell. */
 export type MatrixRow = Readonly<Record<string, Scalar | readonly Scalar[]>>;
