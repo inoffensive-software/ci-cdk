@@ -1,5 +1,6 @@
 import type { Scalar, Text, Value } from "../core/index.js";
 import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+import type { JobPages } from "./pages-types.js";
 import type { Default, Include, Workflow } from "./pipeline-types.js";
 import type { Step } from "./run-types.js";
 import type { Trigger } from "./trigger-types.js";
@@ -9,6 +10,8 @@ import type { Identity, IdTokens } from "./token-types.js";
 export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 
 export type { Identity, IdTokens } from "./token-types.js";
+
+export type { JobPages, Pages } from "./pages-types.js";
 
 export type {
   AutoCancel,
@@ -218,6 +221,11 @@ export interface Job {
   readonly identity?: Identity;
   readonly cache?: CacheList;
   readonly artifacts?: Artifacts;
+  /**
+   * The Pages deployment this job triggers: `true` publishes the job's artifacts, the map names the
+   * directory and its lifetime. Emitted after `artifacts`, whose `paths` it usually publishes.
+   */
+  readonly pages?: JobPages;
   /** The earlier jobs whose artifacts this job downloads; an empty list downloads none. */
   readonly dependencies?: readonly string[];
   /** Runner lifecycle hooks, such as `pre_get_sources_script`. */

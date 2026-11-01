@@ -88,6 +88,22 @@ a tag-aware assertion is ticket 43. Nothing else about the entry depends on it.
   `.common` template with `variables` and a pull-only `cache`, and one job whose `needs: []`,
   `extends`, `script` and push-policy `cache` override that template.
 
+## gitlab-pages-job (documentation-derived)
+
+- Source: <https://docs.gitlab.com/ci/yaml/#pages>, read 2026-11-01
+- Not a vendored third-party config: no pinned repository config used the job-level `pages`
+  keyword, so the file pins the documented shapes. Spec 0010 allows a documentation-derived fixture
+  where no real config uses the key, marked as such here; it is shape evidence only, not proof that a
+  real pipeline uses `pages`.
+- Licence: n/a
+- Vendored as: `gitlab-pages-job.yml`, SHA-256
+  `f5e268c8b1df198faef35b8968a05181f01b09b3880c399c7c7b829f4fabcdd6`
+- Comparison: data
+- Why this entry: both documented forms of the job keyword - `pages.publish` with `path_prefix` and
+  `expire_in`, and the bare `pages: true` flag that publishes the default `public` directory. Each
+  job also carries the `artifacts:paths` the deployment publishes, so the keyword reads in its real
+  context. The deprecated root `pages` job and the deprecated top-level `publish` stay out.
+
 ## gitlab-secrets
 
 - Source: documentation-derived, not vendored from a repository

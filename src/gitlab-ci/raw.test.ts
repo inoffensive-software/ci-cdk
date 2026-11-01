@@ -56,7 +56,7 @@ describe("job raw placement", () => {
             script: "npm ci",
             raw: {
               inputs: { DEPLOY_ENV: "staging" },
-              pages: { publish: "public" },
+              publish: "public",
             },
           }),
         ],
@@ -66,7 +66,7 @@ describe("job raw placement", () => {
 
     const parsed = parse(text);
 
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "inputs", "pages"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "inputs", "publish"]);
   });
 });
 
@@ -80,7 +80,7 @@ describe("modelled keys stay first", () => {
             stage: "build",
             script: "npm ci",
             secrets: { TOKEN: { vault: "secret" } },
-            raw: { pages: { publish: "public" } },
+            raw: { publish: "public" },
           }),
         ],
       }),
@@ -89,7 +89,7 @@ describe("modelled keys stay first", () => {
 
     const parsed = parse(text);
     expect(Object.keys(parsed)).toStrictEqual(["build"]);
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "secrets", "script", "pages"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "secrets", "script", "publish"]);
   });
 });
 
