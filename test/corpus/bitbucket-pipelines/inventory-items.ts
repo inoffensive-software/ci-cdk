@@ -274,7 +274,10 @@ export const everyChildFinal = (): FinalItem =>
  * The final step's artifacts map, one download form per document because a pipeline allows a single
  * final step and a step holds one artifacts shape.
  */
-export const everyFinalArtifacts = (download: boolean | readonly string[]): FinalItem =>
+export const everyFinalArtifacts = (
+  download: boolean | readonly string[],
+  arm: "oidc" | "keys" = "oidc",
+): FinalItem =>
   finalStep({
     artifacts: {
       download,
@@ -289,6 +292,14 @@ export const everyFinalArtifacts = (download: boolean | readonly string[]): Fina
           type: "test-reports",
         },
       ],
+    },
+    image: {
+      aws:
+        arm === "oidc"
+          ? { "oidc-role": "${AWS_BB_PULL_ROLE}" }
+          : { "access-key": "${AWS_ACCESS_KEY_ID}", "secret-key": "${AWS_SECRET_ACCESS_KEY}" },
+      name: "123.dkr.ecr.us-east-1.amazonaws.com/cleanup:1",
+      "run-as-user": 0,
     },
     script: ["true"],
   });

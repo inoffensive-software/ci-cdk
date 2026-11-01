@@ -91,6 +91,7 @@
     },
     {
       "files": [
+        "test/corpus/bitbucket-pipelines/inventory-items.ts",
         "test/corpus/gitlab-ci/labkit.fixture.ts",
         "test/corpus/gitlab-ci/expected-modelled.ts"
       ],
