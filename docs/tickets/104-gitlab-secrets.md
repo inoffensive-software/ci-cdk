@@ -6,14 +6,14 @@
 
 **Blocked by:** 100 (Re-triage and target).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `Job.secrets` accepts the documented provider map, with provider names and their fields derived
+- [x] `Job.secrets` accepts the documented provider map, with provider names and their fields derived
       from the schema and docs; absent keys are not emitted.
-- [ ] Job raw collides with `secrets`.
-- [ ] The inventory exercises the shape without raw; `$.*.secrets` and its 27 paths are removed from the
+- [x] Job raw collides with `secrets`.
+- [x] The inventory exercises the shape without raw; `$.*.secrets` and its 27 paths are removed from the
       gap report.
-- [ ] A fixture pins the shape (pinned real config where one exists, otherwise docs-derived with
+- [x] A fixture pins the shape (pinned real config where one exists, otherwise docs-derived with
       provenance).
-- [ ] Tests cover provider variants, absent secrets, and ordering.
-- [ ] `pnpm check` passes.
+- [x] Tests cover provider variants, absent secrets, and ordering.
+- [x] `pnpm check` passes.

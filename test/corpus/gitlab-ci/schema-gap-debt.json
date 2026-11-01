@@ -46,7 +46,6 @@
   {"path":"$.*.rules[][]","reason":"nested arrays in a job's `rules`: the schema lets one item be a literal array, which is how it represents a `!reference` tag inside a list; GitLab accepts a flat list here","category":"schema-noise"},
   {"path":"$.*.run","reason":"the step list that replaces `script` in a GitLab Functions job; spec 0009 decision 2 defers `run` to this slice, so it is `unmodelled` debt rather than a non-goal","category":"unmodelled"},
   {"path":"$.*.script[][]","reason":"the schema lets one `script` item be a literal array of strings, which is how it represents a `!reference` tag inside the list; GitLab accepts a flat list of strings and rejects a nested array","category":"schema-noise"},
-  {"path":"$.*.secrets","reason":"external secret providers and the variables they fill; spec 0009 decision 2 defers `secrets` to this slice, so it is `unmodelled` debt rather than a non-goal","category":"unmodelled"},
   {"path":"$.*.services[].command[][]","reason":"nested arrays in a job service's `command`: the schema lets one item be a literal array of strings, which is how it represents a `!reference` tag inside a list; GitLab accepts a flat list here and rejects a nested array","category":"schema-noise"},
   {"path":"$.*.services[].docker","reason":"Docker-executor options for a job service entry: the image `platform` to pull and the `user` to run as","category":"unmodelled"},
   {"path":"$.*.services[].kubernetes","reason":"Kubernetes-executor options for a job service entry, currently the `user` to run as","category":"unmodelled"},

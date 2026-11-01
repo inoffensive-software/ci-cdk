@@ -19,6 +19,7 @@ const ROOT_SEGMENT = /^\$(?:\.([A-Za-z_$][\w$]*)|\[("(?:[^"\\]|\\.)*")\])/u;
 export const AUTHOR_NAMED: readonly string[] = [
   "$.variables",
   "$.*.variables",
+  "$.*.secrets",
   "$.default.services[].variables",
   "$.*.services[].variables",
   "$.include[].inputs",
@@ -81,7 +82,7 @@ const normaliseAuthor = (path: string): string => {
     }
 
     const rest = path.slice(prefix.length);
-    const marker = rest.indexOf("[");
+    const marker = rest.search(/[.[]/u);
 
     return marker === -1 ? `${name}.*` : `${name}.*${rest.slice(marker)}`;
   }

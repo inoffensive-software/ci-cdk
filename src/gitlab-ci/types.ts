@@ -1,5 +1,6 @@
 import type { Scalar, Text, Value } from "../core/index.js";
 import type { Trigger } from "./trigger-types.js";
+import type { Secret } from "./secret-types.js";
 
 /**
  * An arbitrary YAML scalar, for maps whose keys the author chooses. The type lives in core because
@@ -156,10 +157,7 @@ export interface NeedParallel {
 
 export type Need = string | NeedMap;
 
-/**
- * One ordered condition, shared by `workflow`, `include` and a job. `needs` is a plain job-name
- * list here: GitLab's rule-level `needs` does not take the map form a job's `needs` does.
- */
+/** One ordered condition, shared by `workflow`, `include` and a job. */
 export interface Rule {
   readonly if?: Text;
   readonly changes?: RuleChanges;
@@ -207,7 +205,7 @@ export interface Workflow {
 
 /**
  * The pipeline-wide defaults this slice models. GitLab applies them to a job at pipeline creation;
- * the DSL only emits them, and never merges them into a job.
+ * the DSL only emits them, never merging them into a job.
  */
 export interface Default {
   readonly image?: Image;
@@ -242,6 +240,8 @@ export interface Job {
   readonly image?: Image;
   readonly services?: readonly Service[];
   readonly variables?: Readonly<Record<string, Scalar>>;
+  /** External secrets, keyed by the environment variable they fill. */
+  readonly secrets?: Readonly<Record<string, Secret>>;
   readonly cache?: CacheList;
   readonly artifacts?: Artifacts;
   /** The same shape and lowering as `script`; a `ref` leaf keeps its tag. */
