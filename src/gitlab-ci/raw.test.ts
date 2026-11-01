@@ -55,7 +55,7 @@ describe("job raw placement", () => {
             stage: "build",
             script: "npm ci",
             raw: {
-              hooks: { pre_get_sources_script: ["echo hi"] },
+              identity: { provider: "example" },
               id_tokens: { ID_TOKEN: { aud: "https://example.com" } },
             },
           }),
@@ -66,7 +66,7 @@ describe("job raw placement", () => {
 
     const parsed = parse(text);
 
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "hooks", "id_tokens"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "identity", "id_tokens"]);
   });
 });
 

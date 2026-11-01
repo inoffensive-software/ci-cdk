@@ -1,6 +1,19 @@
 import type { Scalar, Text, Value } from "../core/index.js";
+import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+import type { Default, Include, Workflow } from "./pipeline-types.js";
 import type { Trigger } from "./trigger-types.js";
 import type { Secret } from "./secret-types.js";
+
+export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+
+export type {
+  AutoCancel,
+  Default,
+  Include,
+  IncludeEntry,
+  IncludeOptions,
+  Workflow,
+} from "./pipeline-types.js";
 
 /**
  * An arbitrary YAML scalar, for maps whose keys the author chooses. The type lives in core because
@@ -168,58 +181,6 @@ export interface Rule {
   readonly needs?: readonly string[];
 }
 
-/** The fields every include entry may carry; the discriminator decides the source. */
-export interface IncludeOptions {
-  readonly rules?: readonly Rule[];
-  readonly integrity?: Text;
-}
-
-export type IncludeEntry =
-  | (IncludeOptions & { readonly local: Text })
-  | (IncludeOptions & { readonly remote: Text })
-  | (IncludeOptions & { readonly template: Text })
-  | (IncludeOptions & {
-      readonly project: Text;
-      readonly ref?: Text;
-      readonly file: Text | readonly Text[];
-    })
-  | (IncludeOptions & {
-      readonly component: Text;
-      readonly inputs?: Readonly<Record<string, Scalar>>;
-    });
-
-/** One include entry, or several; GitLab accepts either shape. Entries are never resolved. */
-export type Include = IncludeEntry | readonly IncludeEntry[];
-
-export interface AutoCancel {
-  readonly on_new_commit?: "conservative" | "interruptible" | "none";
-  readonly on_job_failure?: "all" | "none";
-}
-
-/** The pipeline gate: a name, auto-cancel policy, and the rules that decide whether it runs. */
-export interface Workflow {
-  readonly name?: Text;
-  readonly auto_cancel?: AutoCancel;
-  readonly rules?: readonly Rule[];
-}
-
-/**
- * The pipeline-wide defaults this slice models. GitLab applies them to a job at pipeline creation;
- * the DSL only emits them, never merging them into a job.
- */
-export interface Default {
-  readonly image?: Image;
-  readonly services?: readonly Service[];
-  readonly tags?: readonly string[];
-  readonly before_script?: Script;
-  readonly after_script?: Script;
-  readonly cache?: CacheList;
-  readonly artifacts?: Artifacts;
-  readonly retry?: Retry;
-  readonly timeout?: Text;
-  readonly interruptible?: boolean;
-}
-
 /**
  * A named job. `name` is the map key in the output and never appears in the job body.
  *
@@ -240,10 +201,22 @@ export interface Job {
   readonly image?: Image;
   readonly services?: readonly Service[];
   readonly variables?: Readonly<Record<string, Scalar>>;
+  /** Which global `default:` keys and `variables:` this job inherits. */
+  readonly inherit?: Inherit;
   /** External secrets, keyed by the environment variable they fill. */
   readonly secrets?: Readonly<Record<string, Secret>>;
   readonly cache?: CacheList;
   readonly artifacts?: Artifacts;
+  /** The earlier jobs whose artifacts this job downloads; an empty list downloads none. */
+  readonly dependencies?: readonly string[];
+  /** Runner lifecycle hooks, such as `pre_get_sources_script`. */
+  readonly hooks?: Hooks;
+  /** The delay before a `when: delayed` job starts, in GitLab's duration spelling. */
+  readonly start_in?: Text;
+  /** The confirmation text GitLab shows for a manual job. */
+  readonly manual_confirmation?: Text;
+  /** The DAST site and scanner profiles this job uses. */
+  readonly dast_configuration?: DastConfiguration;
   /** The same shape and lowering as `script`; a `ref` leaf keeps its tag. */
   readonly before_script?: Script;
   readonly script?: Script;

@@ -45,6 +45,20 @@ package has no schema entry for the tag, so it drops the tag and keeps the tag's
 a reference from a literal two-element list. The tag is invisible to this comparison by construction;
 a tag-aware assertion is ticket 43. Nothing else about the entry depends on it.
 
+## small-deferred (documentation-derived)
+
+- Source: <https://docs.gitlab.com/ci/yaml/> (CI/CD YAML syntax reference), read 2026-10-31
+- Not a vendored third-party config: the file pins the documented shapes of `inherit`, `hooks`,
+  `dependencies`, `start_in`, `manual_confirmation` and `dast_configuration`, which no single pinned
+  repository config exercised. Spec 0009 decision 5 allows a documentation-derived fixture for a
+  shape with no real entry, marked as such here.
+- Vendored as: `small-deferred.yml`, SHA-256
+  `9a10af75338df37a422d9996ccd69e4845ed8fdb6d93351ab67b1a26a92b9052`
+- Comparison: data
+- Why this entry: both `inherit` selector forms (list and boolean), `hooks` and `default:hooks`,
+  `dependencies` including a one-item list, `start_in` with `when: delayed`, `manual_confirmation`
+  with `when: manual`, and the `dast_configuration` profile pair.
+
 ## gitlab-pages
 
 - Repo: <https://gitlab.com/gitlab-org/gitlab-pages>
