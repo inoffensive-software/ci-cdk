@@ -89,7 +89,11 @@ export interface StepAuth {
   readonly system?: { readonly scopes?: readonly Text[] };
 }
 
-/** A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. */
+/**
+ * A step body. Keys keep Bitbucket's own spelling; emission order is the schema's. `script` is
+ * absent only on a child pipeline step, which validation enforces: an inline step needs a command
+ * sequence and a `type: pipeline` step needs a `custom` target instead.
+ */
 export interface Step {
   readonly "after-script"?: readonly ScriptItem[];
   readonly artifacts?: Artifacts;
@@ -98,20 +102,23 @@ export interface Step {
   readonly clone?: Clone;
   readonly condition?: Condition;
   readonly "concurrency-group"?: Text;
+  readonly custom?: Text;
   readonly deployment?: Text;
   readonly environment?: Text;
   readonly "fail-fast"?: boolean;
   readonly image?: Image;
+  readonly "input-variables"?: Readonly<Record<string, Text>>;
   readonly "max-time"?: number;
   readonly name?: Text;
   readonly oidc?: boolean;
   readonly "output-variables"?: readonly Text[];
   readonly "runs-on"?: readonly Text[];
   readonly runtime?: Runtime;
-  readonly script: readonly ScriptItem[];
+  readonly script?: readonly ScriptItem[];
   readonly services?: readonly Text[];
   readonly size?: Size;
   readonly trigger?: Trigger;
+  readonly type?: "pipeline";
   readonly raw?: Readonly<Record<string, Value>>;
 }
 

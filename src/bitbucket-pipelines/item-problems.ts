@@ -79,19 +79,66 @@ const artifactsProblems = (artifacts: Artifacts, artifactsPath: string): readonl
   return diagnostics;
 };
 
-/** A step body, wherever it sits: `...step`, `...final`, a stage or a parallel group. */
-const bodyProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
-  const diagnostics: Diagnostic[] = [];
-  const scriptPath = `${bodyPath}.script`;
+/**
+ * The properties Bitbucket rejects on a child pipeline step. `script` is not one of them: a child
+ * step may omit it, and validation only asks an inline step for one.
+ */
+const CHILD_FORBIDDEN = [
+  "caches",
+  "clone",
+  "deployment",
+  "image",
+  "oidc",
+  "runs-on",
+  "runtime",
+  "services",
+  "size",
+  "trigger",
+] as const;
 
-  if (body.script.length === 0) {
+/**
+ * A child pipeline step: a `custom` target and nothing Bitbucket refuses beside it. The custom
+ * target is required because a `type: pipeline` step without one names no pipeline to run.
+ */
+const childProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
+  if (body.type !== "pipeline") {
+    return [];
+  }
+
+  const diagnostics: Diagnostic[] = [];
+
+  if (body.custom === undefined || body.custom === "") {
+    diagnostics.push({
+      path: `${bodyPath}.custom`,
+      message: "a child pipeline step needs a non-empty custom pipeline name",
+    });
+  }
+
+  for (const property of CHILD_FORBIDDEN) {
+    if (body[property] !== undefined) {
+      diagnostics.push({
+        path: bodyPath,
+        message: `a child pipeline step cannot set "${property}"`,
+      });
+    }
+  }
+
+  return diagnostics;
+};
+
+/** A script sequence: required on an inline step, optional on a child pipeline step. */
+const scriptProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
+  const scriptPath = `${bodyPath}.script`;
+  const diagnostics: Diagnostic[] = [];
+
+  if (body.type !== "pipeline" && (body.script === undefined || body.script.length === 0)) {
     diagnostics.push({
       path: scriptPath,
       message: "script must contain at least one command",
     });
   }
 
-  for (const [scriptIndex, scriptItem] of body.script.entries()) {
+  for (const [scriptIndex, scriptItem] of (body.script ?? []).entries()) {
     if (isPipe(scriptItem) && scriptItem.pipe === "") {
       diagnostics.push({
         path: `${scriptPath}[${scriptIndex}].pipe`,
@@ -99,6 +146,16 @@ const bodyProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
       });
     }
   }
+
+  return diagnostics;
+};
+
+/** A step body, wherever it sits: `...step`, `...final`, a stage or a parallel group. */
+const bodyProblems = (body: Step, bodyPath: string): readonly Diagnostic[] => {
+  const diagnostics: Diagnostic[] = [
+    ...scriptProblems(body, bodyPath),
+    ...childProblems(body, bodyPath),
+  ];
 
   if (body.artifacts !== undefined) {
     diagnostics.push(...artifactsProblems(body.artifacts, `${bodyPath}.artifacts`));

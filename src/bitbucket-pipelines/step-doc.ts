@@ -35,10 +35,12 @@ const STEP_RESERVED: readonly string[] = [
   "clone",
   "condition",
   "concurrency-group",
+  "custom",
   "deployment",
   "environment",
   "fail-fast",
   "image",
+  "input-variables",
   "max-time",
   "name",
   "oidc",
@@ -49,6 +51,7 @@ const STEP_RESERVED: readonly string[] = [
   "services",
   "size",
   "trigger",
+  "type",
 ];
 
 const isPipe = (item: ScriptItem): item is Pipe => typeof item !== "string" && "pipe" in item;
@@ -215,6 +218,7 @@ const headRows = (body: Step): readonly DocEntry[] => [
     "concurrency-group",
     body["concurrency-group"] === undefined ? undefined : fromValue(body["concurrency-group"]),
   ),
+  ...entry("custom", body.custom === undefined ? undefined : fromValue(body.custom)),
   ...entry("deployment", body.deployment === undefined ? undefined : fromValue(body.deployment)),
 ];
 
@@ -223,11 +227,15 @@ const middleRows = (body: Step): readonly DocEntry[] => [
   ...entry("environment", body.environment === undefined ? undefined : fromValue(body.environment)),
   ...entry("fail-fast", body["fail-fast"] === undefined ? undefined : fromValue(body["fail-fast"])),
   ...entry("image", imageDoc(body.image)),
+  ...entry(
+    "input-variables",
+    body["input-variables"] === undefined ? undefined : fromValue(body["input-variables"]),
+  ),
   ...entry("max-time", body["max-time"] === undefined ? undefined : fromValue(body["max-time"])),
   ...entry("name", body.name === undefined ? undefined : fromValue(body.name)),
 ];
 
-/** The end of a step's keys; `script` is required and always emitted. */
+/** The end of a step's keys; `script` is emitted only when the step carries one. */
 const lastRows = (body: Step): readonly DocEntry[] => [
   ...entry("oidc", body.oidc === undefined ? undefined : fromValue(body.oidc)),
   ...entry(
@@ -236,10 +244,11 @@ const lastRows = (body: Step): readonly DocEntry[] => [
   ),
   ...entry("runs-on", body["runs-on"] === undefined ? undefined : fromValue(body["runs-on"])),
   ...entry("runtime", runtimeDoc(body.runtime)),
-  { key: "script", value: scriptDoc(body.script) },
+  ...entry("script", body.script === undefined ? undefined : scriptDoc(body.script)),
   ...entry("services", body.services === undefined ? undefined : fromValue(body.services)),
   ...entry("size", body.size === undefined ? undefined : fromValue(body.size)),
   ...entry("trigger", body.trigger === undefined ? undefined : fromValue(body.trigger)),
+  ...entry("type", body.type === undefined ? undefined : fromValue(body.type)),
 ];
 
 /** Step keys in Bitbucket's alphabetical schema order, then raw. */

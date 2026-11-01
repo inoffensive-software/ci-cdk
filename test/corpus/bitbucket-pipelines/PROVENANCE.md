@@ -153,6 +153,13 @@ config uses either shape. The synthetic fixture in `artifacts-expanded.test.ts` 
 <https://support.atlassian.com/bitbucket-cloud/docs/child-pipeline-step-options/> retrieved
 2026-10-29; no file is vendored for it.
 
+The same page, retrieved 2026-10-29, is the only evidence for the child-pipeline step: its
+`input-variables` example declares a parent custom pipeline with a `variables` item, a `step` with
+`type: pipeline`, `custom` and five `input-variables`, and the child pipeline that reads two of them.
+No licence-clean config uses the shape, so `child-pipelines.fixture.ts` is synthetic,
+documentation-derived, and validated against the pinned schema; no file is vendored and there is no
+commit to pin.
+
 ## Schema-derived fixtures
 
 The pinned schema copied 2026-10-29 (`test/schemas/bitbucket-pipelines.json`) types a custom

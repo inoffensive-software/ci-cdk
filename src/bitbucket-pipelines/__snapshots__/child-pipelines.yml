@@ -1,0 +1,25 @@
+pipelines:
+  custom:
+    a-parent-pipeline:
+      - variables:
+          - allowed-values:
+              - val1
+              - val2
+            default: val1
+            name: parent_pipeline_variable
+      - step:
+          custom: a-child-pipeline
+          input-variables:
+            var_1: $parent_pipeline_variable
+            var_2: $repository_variable_name
+            var_3: $workspace_variable_name
+            var_4: static-value-1
+            var_5: static-value-2
+          name: Child pipeline
+          type: pipeline
+    a-child-pipeline:
+      - step:
+          name: Child Pipeline step
+          script:
+            - echo "Parent Pipeline Step Variable -" $var_1
+            - echo "Parent Pipeline Step Variable -" $var_2

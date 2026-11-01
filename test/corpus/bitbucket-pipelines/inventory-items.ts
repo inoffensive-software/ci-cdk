@@ -163,7 +163,21 @@ const everyExpandedSteps = (): readonly StepItem[] => [
   everyExpandedArtifacts(["build", "coverage"]),
 ];
 
-/** A stage body carries its own condition, one document per branch, plus its child step. */
+/** A child pipeline step: a `custom` target and the inputs the parent passes, with no script. */
+const everyChildStep = (): StepItem =>
+  step({
+    custom: "a-child-pipeline",
+    "input-variables": { INPUT_ONE: "${INPUT_ONE}", INPUT_TWO: "static-value" },
+    name: "Child pipeline",
+    type: "pipeline",
+  });
+
+/** The child form beside the inline one, because a step item holds exactly one of the two. */
+const everyChildSteps = (): readonly StepItem[] => [everyChildStep()];
+
+/**
+ * A stage body carries its own condition, one document per branch, plus its child step.
+ */
 const everyStage = (changesets: Changesets = INCLUDED): Stage => ({
   condition: { changesets, state: "successful" },
   deployment: "production",
@@ -174,6 +188,7 @@ const everyStage = (changesets: Changesets = INCLUDED): Stage => ({
     ...everyExpandedSteps(),
     ...everySelfHostedSteps(),
     ...everyImageSteps(),
+    ...everyChildSteps(),
   ],
   trigger: "manual",
 });
@@ -189,12 +204,14 @@ export const everyItems = (): readonly PipelineItem[] => [
   ...everyExpandedSteps(),
   ...everySelfHostedSteps(),
   ...everyImageSteps(),
+  ...everyChildSteps(),
   parallel([
     everyField(INCLUDED),
     everyField(EXCLUDED),
     ...everyExpandedSteps(),
     ...everySelfHostedSteps(),
     ...everyImageSteps(),
+    ...everyChildSteps(),
   ]),
   parallel({
     "fail-fast": true,
@@ -204,6 +221,7 @@ export const everyItems = (): readonly PipelineItem[] => [
       ...everyExpandedSteps(),
       ...everySelfHostedSteps(),
       ...everyImageSteps(),
+      ...everyChildSteps(),
     ],
   }),
   stage(everyStage(INCLUDED)),
@@ -218,7 +236,21 @@ export const everyDefinedStep = (): readonly StepItem[] => [
   ...everyExpandedSteps(),
   ...everySelfHostedSteps(),
   ...everyImageSteps(),
+  ...everyChildSteps(),
 ];
+
+/**
+ * The child form of a final step: the final position repeats the step grammar, so it carries the
+ * child shape as well as the inline one. A pipeline holds one final step, so this needs its own
+ * document, the way the final step's artifacts map does.
+ */
+export const everyChildFinal = (): FinalItem =>
+  finalStep({
+    custom: "a-child-pipeline",
+    "input-variables": { INPUT_ONE: "${INPUT_ONE}", INPUT_TWO: "static-value" },
+    name: "Child pipeline",
+    type: "pipeline",
+  });
 
 /**
  * The final step's artifacts map, one download form per document because a pipeline allows a single

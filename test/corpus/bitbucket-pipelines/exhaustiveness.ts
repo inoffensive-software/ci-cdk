@@ -44,6 +44,7 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.pipelines.custom",
   ...STEP_BODIES.flatMap((body) => [
     `${body}["after-script"][].variables`,
+    `${body}["input-variables"]`,
     `${body}.script[].variables`,
   ]),
 ];
