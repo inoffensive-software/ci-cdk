@@ -12,6 +12,7 @@ import {
 import { keyPath, rawKeyPath } from "../core/paths.js";
 import { rawEntries } from "../core/raw.js";
 import { itemDoc } from "./item-doc.js";
+import { runtimeDoc } from "./runtime-doc.js";
 import { cloneDoc, imageDoc } from "./step-doc.js";
 import type {
   Cache,
@@ -58,7 +59,7 @@ const cacheDoc = (cache: Cache): Doc =>
 /** Service keys in the schema's order; variable maps keep the author's insertion order. */
 const serviceDoc = (service: Service): Doc =>
   map([
-    ...entry("image", service.image === undefined ? undefined : fromValue(service.image)),
+    ...entry("image", imageDoc(service.image)),
     ...entry("memory", service.memory === undefined ? undefined : fromValue(service.memory)),
     ...entry("type", service.type === undefined ? undefined : fromValue(service.type)),
     ...entry(
@@ -103,7 +104,7 @@ const definitionsDoc = (config: PipelineConfig, diagnostics: Diagnostic[]): Doc 
   return map(rows);
 };
 
-/** Options: `docker`, `max-time`, `runs-on`, `size`. */
+/** Options: `docker`, `max-time`, `runs-on`, `runtime`, `size`. */
 const optionsDoc = (config: PipelineConfig): Doc | undefined => {
   const options = config.options;
 
@@ -121,6 +122,7 @@ const optionsDoc = (config: PipelineConfig): Doc | undefined => {
       "runs-on",
       options["runs-on"] === undefined ? undefined : fromValue(options["runs-on"]),
     ),
+    ...entry("runtime", runtimeDoc(options.runtime)),
     ...entry("size", options.size === undefined ? undefined : fromValue(options.size)),
   ]);
 };

@@ -133,6 +133,19 @@ as the file (see the corpus README and ADR 0005).
   step and a three-way parallel group. This is a repository example file, not a live config.
 - Vendored as: `triggers-vardot.yml`, SHA-256 `f0ca7e778d8dc647a6b72d8eac626a4909258f680ecfe5c01be3d77713a94f8e`
 
+## runtime-chaosgroup
+
+- Repo: <https://github.com/ChaosGroup/cg2_2014_demo>
+- Commit: `9cb7d426ec3feb9b5ec51ca2aaf9173f203fa921`
+- Path: `bitbucket-pipelines.yml`
+- Licence: MIT
+- Bytes: 587
+- Lines: 25
+- Comparison: data
+- Why this entry: a commented-out arm entry beside a live `runtime.cloud.arch: x86` step inside a
+  parallel group - the arch arm no other config writes.
+- Vendored as: `runtime-chaosgroup.yml`, SHA-256 `53f05b79273d74f8d8dff5da77099b98982c19c188625f1a3564afae9d923bde`
+
 ## Documentation-derived fixtures
 
 Bitbucket documents the named `upload` entry and the name-list `download`, and no redistributable

@@ -7,6 +7,7 @@ import { CONNECT_EXPRESS } from "../../test/corpus/bitbucket-pipelines/connect-e
 import { CUSTOM_VARS_NAKAMA } from "../../test/corpus/bitbucket-pipelines/custom-vars-nakama.fixture.js";
 import { OBUSPA } from "../../test/corpus/bitbucket-pipelines/obuspa.fixture.js";
 import { RAIR_DAPP } from "../../test/corpus/bitbucket-pipelines/rair-dapp.fixture.js";
+import { RUNTIME_CHAOSGROUP } from "../../test/corpus/bitbucket-pipelines/runtime-chaosgroup.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "../../test/corpus/bitbucket-pipelines/systemsdk-symfony.fixture.js";
 import { TRIGGERS_ALIBABA } from "../../test/corpus/bitbucket-pipelines/triggers-alibaba.fixture.js";
 import { TRIGGERS_VARDOT } from "../../test/corpus/bitbucket-pipelines/triggers-vardot.fixture.js";
@@ -220,6 +221,14 @@ describe("builders", () => {
     expect(step({ script: ["true"] })).toStrictEqual({ step: { script: ["true"] } });
     expect(pipelineConfig(config)).toBe(config);
     expect(pipe(builtPipe)).toBe(builtPipe);
+  });
+});
+
+describe("runtime corpus goldens", () => {
+  it("pins the runtime-chaosgroup fixture with the header suppressed", async () => {
+    await expect(render(RUNTIME_CHAOSGROUP, { header: "" })).toMatchFileSnapshot(
+      "__snapshots__/runtime-chaosgroup.yml",
+    );
   });
 });
 

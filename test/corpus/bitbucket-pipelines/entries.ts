@@ -5,6 +5,7 @@ import { CONNECT_EXPRESS } from "./connect-express.fixture.js";
 import { CUSTOM_VARS_NAKAMA } from "./custom-vars-nakama.fixture.js";
 import { OBUSPA } from "./obuspa.fixture.js";
 import { RAIR_DAPP } from "./rair-dapp.fixture.js";
+import { RUNTIME_CHAOSGROUP } from "./runtime-chaosgroup.fixture.js";
 import { SYSTEMSDK_SYMFONY } from "./systemsdk-symfony.fixture.js";
 import { TRIGGERS_ALIBABA } from "./triggers-alibaba.fixture.js";
 import { TRIGGERS_VARDOT } from "./triggers-vardot.fixture.js";
@@ -27,4 +28,5 @@ export const ENTRIES: readonly CorpusEntry[] = [
   { name: "custom-vars-nakama", file: "custom-vars-nakama.yml", config: CUSTOM_VARS_NAKAMA },
   { name: "triggers-alibaba", file: "triggers-alibaba.yml", config: TRIGGERS_ALIBABA },
   { name: "triggers-vardot", file: "triggers-vardot.yml", config: TRIGGERS_VARDOT },
+  { name: "runtime-chaosgroup", file: "runtime-chaosgroup.yml", config: RUNTIME_CHAOSGROUP },
 ];

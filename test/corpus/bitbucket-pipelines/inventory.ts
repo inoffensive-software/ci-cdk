@@ -1,4 +1,5 @@
 import {
+  type Image,
   type NamedPipeline,
   type PipelineConfig,
   type SelectorPipeline,
@@ -6,6 +7,68 @@ import {
   step,
 } from "../../../src/bitbucket-pipelines/index.js";
 import { everyDefinedStep, everyFinalArtifacts, everyItems } from "./inventory-items.js";
+import { everyFinalRuntime } from "./inventory-runtime.js";
+
+/** The cloud runtime every key at once; the step inventories carry the same map. */
+const CLOUD_RUNTIME = {
+  arch: "arm",
+  "atlassian-ip-ranges": true,
+  "instance-type": "m6g.large",
+  platform: "windows",
+  version: "3",
+} as const;
+
+/** The self-hosted variants the options and final positions each carry one of. */
+const SELF_HOSTED_RUNTIME = [
+  {
+    cpu: 4,
+    memory: 8192,
+    storage: {
+      aws: { bucket: "runner-cache", region: "ap-southeast-2", "oidc-role": "${RUNNER_ROLE}" },
+    },
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock"],
+  },
+  {
+    cpu: 2,
+    memory: 4096,
+    storage: {
+      aws: {
+        bucket: "runner-cache",
+        region: "us-east-1",
+        "access-key": "${AWS_ACCESS_KEY_ID}",
+        "secret-key": "${AWS_SECRET_ACCESS_KEY}",
+      },
+    },
+    volumes: ["/tmp:/tmp"],
+  },
+  {
+    cpu: 8,
+    memory: 16384,
+    storage: { gcp: { bucket: "runner-cache", "key-file": "${GCP_KEY_FILE}" } },
+    volumes: ["/cache:/cache"],
+  },
+] as const;
+
+/** The image map arms a service can carry, one per service because an image holds one arm. */
+const SERVICE_IMAGES: readonly [Image, Image, Image, Image] = [
+  { name: "postgres:17", "run-as-user": 70 },
+  {
+    name: "123.dkr.ecr.us-east-1.amazonaws.com/postgres:17",
+    aws: { "oidc-role": "${AWS_BB_PULL_ROLE}" },
+    "run-as-user": 70,
+  },
+  {
+    name: "123.dkr.ecr.us-east-1.amazonaws.com/postgres:17",
+    aws: { "access-key": "${AWS_ACCESS_KEY_ID}", "secret-key": "${AWS_SECRET_ACCESS_KEY}" },
+    "run-as-user": 70,
+  },
+  {
+    name: "registry.example.com/postgres:17",
+    username: "builder",
+    password: "${REGISTRY_PASSWORD}",
+    "run-as-user": 70,
+  },
+];
 
 /** One inventory document: a configuration, plus the name a failure should use for it. */
 export interface InventoryDocument {
@@ -56,12 +119,27 @@ export const INVENTORY: readonly InventoryDocument[] = [
             type: "docker",
             variables: { POSTGRES_DB: "app" },
           },
+          "registry-name": { image: SERVICE_IMAGES[0], memory: 1024 },
+          "registry-role": { image: SERVICE_IMAGES[1], memory: 1024 },
+          "registry-keys": { image: SERVICE_IMAGES[2], memory: 1024 },
+          "registry-basic": { image: SERVICE_IMAGES[3], memory: 1024 },
         },
         steps: everyDefinedStep(),
       },
-      image: { name: "node:24", username: "builder", password: "${REGISTRY_PASSWORD}" },
+      image: {
+        name: "node:24",
+        username: "builder",
+        password: "${REGISTRY_PASSWORD}",
+        "run-as-user": 1000,
+      },
       labels: { team: "platform", tier: "backend" },
-      options: { docker: true, "max-time": 120, "runs-on": ["self.hosted", "linux"], size: "4x" },
+      options: {
+        docker: true,
+        "max-time": 120,
+        "runs-on": ["self.hosted", "linux"],
+        runtime: { cloud: CLOUD_RUNTIME },
+        size: "4x",
+      },
       pipelines: {
         default: everyItems(),
         branches: [selector("main"), selector("release/*")],
@@ -151,8 +229,52 @@ export const INVENTORY: readonly InventoryDocument[] = [
   {
     name: "image-name",
     config: pipelineConfig({
-      image: { name: "node:22" },
+      image: { name: "node:22", "run-as-user": 1000 },
       pipelines: { default: [step({ script: ["true"] })] },
     }),
   },
+  {
+    name: "image-aws-role",
+    config: pipelineConfig({
+      image: {
+        name: "123.dkr.ecr.us-east-1.amazonaws.com/app:1",
+        aws: { "oidc-role": "${AWS_BB_PULL_ROLE}" },
+        "run-as-user": 1000,
+      },
+      pipelines: { default: [step({ script: ["true"] })] },
+    }),
+  },
+  {
+    name: "image-aws-keys",
+    config: pipelineConfig({
+      image: {
+        name: "123.dkr.ecr.us-east-1.amazonaws.com/app:1",
+        aws: {
+          "access-key": "${AWS_ACCESS_KEY_ID}",
+          "secret-key": "${AWS_SECRET_ACCESS_KEY}",
+        },
+        "run-as-user": 1000,
+      },
+      pipelines: { default: [step({ script: ["true"] })] },
+    }),
+  },
+  ...SELF_HOSTED_RUNTIME.map((runtime, index) => ({
+    name: `options-runtime-${String(index)}`,
+    config: pipelineConfig({
+      options: { runtime: { "self-hosted": runtime } },
+      pipelines: {
+        default: [step({ script: ["true"] }), everyFinalRuntime(index)],
+        branches: [
+          { pattern: "main", pipeline: [step({ script: ["true"] }), everyFinalRuntime(index)] },
+        ],
+        tags: [{ pattern: "*", pipeline: [step({ script: ["true"] }), everyFinalRuntime(index)] }],
+        "pull-requests": [
+          { pattern: "**", pipeline: [step({ script: ["true"] }), everyFinalRuntime(index)] },
+        ],
+        custom: [
+          { name: "release", pipeline: [step({ script: ["true"] }), everyFinalRuntime(index)] },
+        ],
+      },
+    }),
+  })),
 ];
