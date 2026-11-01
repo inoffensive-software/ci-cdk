@@ -39,6 +39,10 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
     prefixes: ["$.*.variables"],
   },
   {
+    name: "Job inputs",
+    prefixes: ["$.*.inputs"],
+  },
+  {
     name: "Scripts",
     prefixes: ["$.*.before_script", "$.*.script", "$.*.run", "$.*.after_script", "$.*.hooks"],
   },

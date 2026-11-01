@@ -55,7 +55,7 @@ describe("job raw placement", () => {
             stage: "build",
             script: "npm ci",
             raw: {
-              inputs: { DEPLOY_ENV: "staging" },
+              only: "branches",
               publish: "public",
             },
           }),
@@ -66,7 +66,7 @@ describe("job raw placement", () => {
 
     const parsed = parse(text);
 
-    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "inputs", "publish"]);
+    expect(Object.keys(parsed.build)).toStrictEqual(["stage", "script", "only", "publish"]);
   });
 });
 

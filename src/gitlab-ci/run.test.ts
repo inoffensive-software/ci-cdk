@@ -142,3 +142,41 @@ describe("run step validation", () => {
     ).toStrictEqual(['$.jobs[0].raw["run"]']);
   });
 });
+
+describe("run function references", () => {
+  it("writes the git and oci map forms of a function reference", () => {
+    const run = [
+      {
+        name: "git_function",
+        func: {
+          git: {
+            url: "https://gitlab.com/group/functions",
+            rev: "main",
+            dir: "steps",
+            file: "func.yml",
+          },
+        },
+      },
+      {
+        name: "oci_function",
+        func: {
+          oci: {
+            registry: "registry.gitlab.com",
+            repository: "group/functions/release",
+            tag: "1.0.0",
+            dir: "/steps/release",
+            file: "func.yml",
+          },
+        },
+      },
+    ] as const;
+
+    const text = render(withJob(job({ name: "build", run })), { header: "" });
+
+    expect(parse(text).build.run).toStrictEqual(run);
+    expect(text.indexOf("url:")).toBeLessThan(text.indexOf("rev:"));
+    expect(text.indexOf("rev:")).toBeLessThan(text.indexOf("dir:"));
+    expect(text.indexOf("registry:")).toBeLessThan(text.indexOf("repository:"));
+    expect(text.indexOf("repository:")).toBeLessThan(text.indexOf("tag:"));
+  });
+});

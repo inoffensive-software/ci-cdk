@@ -30,6 +30,7 @@ import type {
   RetryOptions,
   Rule,
   RuleChanges,
+  RuleNeed,
   Workflow,
 } from "./types.js";
 import { existsDoc, variablesDoc } from "./nesting-blocks.js";
@@ -48,8 +49,9 @@ const changesDoc = (changes: RuleChanges): Doc =>
   isPathList(changes)
     ? fromValue(changes)
     : map([
-        { key: "paths", value: fromValue(changes.paths) },
+        ...entry("paths", present(changes.paths)),
         ...entry("compare_to", present(changes.compare_to)),
+        ...entry("regexp", present(changes.regexp)),
       ]);
 
 const matrixDoc = (parallel: NeedParallel): Doc =>
@@ -71,6 +73,19 @@ const needDoc = (need: Need): Doc =>
 
 export const needsDoc = (needs: readonly Need[]): Doc => seq(needs.map((need) => needDoc(need)));
 
+/** One rule-level need, in GitLab's documented key order; a bare job name stays a scalar. */
+const ruleNeedDoc = (need: RuleNeed): Doc =>
+  typeof need === "string"
+    ? fromValue(need)
+    : map([
+        { key: "job", value: fromValue(need.job) },
+        ...entry("artifacts", present(need.artifacts)),
+        ...entry("optional", present(need.optional)),
+      ]);
+
+const ruleNeedsDoc = (needs: readonly RuleNeed[]): Doc =>
+  seq(needs.map((need) => ruleNeedDoc(need)));
+
 /** One rule, in GitLab's documented key order; `variables` keeps the author's order. */
 const ruleDoc = (rule: Rule): Doc =>
   map([
@@ -80,7 +95,13 @@ const ruleDoc = (rule: Rule): Doc =>
     ...entry("when", present(rule.when)),
     ...entry("allow_failure", present(rule.allow_failure)),
     ...entry("variables", rule.variables === undefined ? undefined : variablesDoc(rule.variables)),
-    ...entry("needs", present(rule.needs)),
+    ...entry("needs", rule.needs === undefined ? undefined : ruleNeedsDoc(rule.needs)),
+    ...entry("start_in", present(rule.start_in)),
+    ...entry("interruptible", present(rule.interruptible)),
+    ...entry(
+      "auto_cancel",
+      rule.auto_cancel === undefined ? undefined : autoCancelDoc(rule.auto_cancel),
+    ),
   ]);
 
 export const rulesDoc = (rules: readonly Rule[]): Doc => seq(rules.map((rule) => ruleDoc(rule)));
@@ -110,8 +131,14 @@ const includeTail = (item: IncludeOptions): readonly DocEntry[] => [
 const localEntryDoc = (item: IncludeOptions & { readonly local: Text }): Doc =>
   map([{ key: "local", value: fromValue(item.local) }, ...includeTail(item)]);
 
-const remoteEntryDoc = (item: IncludeOptions & { readonly remote: Text }): Doc =>
-  map([{ key: "remote", value: fromValue(item.remote) }, ...includeTail(item)]);
+const remoteEntryDoc = (
+  item: IncludeOptions & { readonly remote: Text; readonly cache?: boolean | Text },
+): Doc =>
+  map([
+    { key: "remote", value: fromValue(item.remote) },
+    ...entry("cache", item.cache === undefined ? undefined : fromValue(item.cache)),
+    ...includeTail(item),
+  ]);
 
 const templateEntryDoc = (item: IncludeOptions & { readonly template: Text }): Doc =>
   map([{ key: "template", value: fromValue(item.template) }, ...includeTail(item)]);

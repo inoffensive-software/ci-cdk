@@ -35,6 +35,7 @@ import {
 import { secretsDoc } from "./secrets-blocks.js";
 import { stepsDoc } from "./run-blocks.js";
 import { imageDoc, servicesDoc } from "./runtime-blocks.js";
+import { jobInputsDoc } from "./input-blocks.js";
 import { variablesDoc } from "./nesting-blocks.js";
 import { idTokensDoc } from "./token-blocks.js";
 import type { Job, Pipeline } from "./types.js";
@@ -80,6 +81,7 @@ const JOB_RESERVED: readonly string[] = [
   "start_in",
   "manual_confirmation",
   "dast_configuration",
+  "inputs",
   "before_script",
   "script",
   "run",
@@ -125,6 +127,7 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("dependencies", present(item.dependencies)),
     ...entry("hooks", whenPresent(item.hooks, hooksDoc)),
     ...entry("dast_configuration", whenPresent(item.dast_configuration, dastConfigurationDoc)),
+    ...entry("inputs", whenPresent(item.inputs, jobInputsDoc)),
     ...entry("before_script", present(item.before_script)),
     ...entry("script", present(item.script)),
     ...entry("run", whenPresent(item.run, stepsDoc)),

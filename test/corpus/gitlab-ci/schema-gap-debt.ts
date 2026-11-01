@@ -32,6 +32,11 @@ export const OVERCLAIMS: readonly Overclaim[] = [
       "the schema declares a job's `image:entrypoint` as an array without `items`, so the walk reads the keyword but not its item; GitLab documents a list of strings, which is what the vocabulary emits",
   },
   {
+    path: "$.*.inputs.*.default[]",
+    reason:
+      "the schema declares a job input's `default` without a type, so the walk reads the keyword but not its items when the default is a list; GitLab documents a list default for an `array` input, which is what the vocabulary emits",
+  },
+  {
     path: "$.*.parallel.matrix[].*[]",
     reason:
       "a `parallel:matrix` cell written as a list; the schema declares the cell as an array without `items`, so the walk reads the cell but not its item, while the corpus lists several values in one cell",

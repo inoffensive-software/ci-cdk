@@ -127,3 +127,27 @@ describe("include inputs", () => {
     expect(parse(includeText({ local: "ci.yml" })).include).toStrictEqual({ local: "ci.yml" });
   });
 });
+
+describe("include cache", () => {
+  it("writes a remote include's cache as a flag or a duration, after the source", () => {
+    const entries: readonly IncludeEntry[] = [
+      { remote: "https://example.com/one.yml", cache: true },
+      { remote: "https://example.com/two.yml", cache: "30 minutes" },
+    ];
+
+    const text = includeText(entries);
+
+    expect(parse(text).include).toStrictEqual(entries);
+    expect(text.indexOf("remote:")).toBeLessThan(text.indexOf("cache:"));
+  });
+
+  it("keeps the cache key on the entry that carries it", () => {
+    const entry: IncludeEntry = {
+      remote: "https://example.com/one.yml",
+      cache: "1 day",
+      rules: [{ changes: { regexp: "^ci/" } }],
+    };
+
+    expect(parse(includeText(entry)).include).toStrictEqual(entry);
+  });
+});

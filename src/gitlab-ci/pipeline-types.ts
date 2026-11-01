@@ -30,7 +30,8 @@ export interface IncludeOptions {
 
 export type IncludeEntry =
   | (IncludeOptions & { readonly local: Text })
-  | (IncludeOptions & { readonly remote: Text })
+  /** Only a remote include caches: `true` takes the default hour, a duration string the rest. */
+  | (IncludeOptions & { readonly remote: Text; readonly cache?: boolean | Text })
   | (IncludeOptions & { readonly template: Text })
   | (IncludeOptions & {
       readonly project: Text;

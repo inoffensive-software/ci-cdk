@@ -54,7 +54,7 @@ describe("gap row subsumption", () => {
   });
 
   it("fails on the whole subtree when a top-level row is removed", () => {
-    const removed = "$.*.inputs";
+    const removed = "$.*.run[].step";
     const withoutRow = GAPS.filter((gap) => gap.path !== removed);
     const undeclared = undeclaredSchemaPaths(SCHEMA_PATHS, MODELLED_PATHS, withoutRow);
 
@@ -110,7 +110,8 @@ describe("root pages job", () => {
  * modelled or declared `unmodelled`. Counts derive from the three lists, so a path moving between
  * modelled and unmodelled keeps the sum. A normalisation change moves the denominator and the
  * literal together: root `pages` collapses onto the job-name wildcard, while enumerated report keys
- * replace an author-named wildcard with named paths.
+ * replace an author-named wildcard with named paths. A row reclassified as `schema-noise` leaves
+ * the sum, which is why the deprecated `run[].step` alias took it from 593 to 581.
  */
 describe("completion target", () => {
   const modelled = new Set(MODELLED_PATHS);
@@ -127,7 +128,7 @@ describe("completion target", () => {
   it("leaves no schema path outside the target", () => {
     const unmodelled = schemaPathsCoveredBy("unmodelled");
 
-    expect(modelledSchemaPaths.length + unmodelled.length).toBe(593);
+    expect(modelledSchemaPaths.length + unmodelled.length).toBe(581);
   });
 
   it("reserves out-of-scope for the spec header", () => {

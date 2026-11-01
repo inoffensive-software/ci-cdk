@@ -1,10 +1,11 @@
 import type { Scalar, Text, Value } from "../core/index.js";
 import type { CacheList } from "./cache-types.js";
+import type { JobInputs } from "./input-types.js";
 import type { RuleExists, Variables } from "./nesting-types.js";
 import type { ArtifactAccess, ArtifactReports } from "./artifact-types.js";
 import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 import type { JobPages } from "./pages-types.js";
-import type { Default, Include, Workflow } from "./pipeline-types.js";
+import type { AutoCancel, Default, Include, Workflow } from "./pipeline-types.js";
 import type { Step } from "./run-types.js";
 import type { Environment, Image, Release, Service } from "./runtime-types.js";
 import type { Trigger } from "./trigger-types.js";
@@ -18,6 +19,8 @@ export type { Cache, CacheKeyFiles, CacheList } from "./cache-types.js";
 export type { RuleExists, Variable, Variables } from "./nesting-types.js";
 
 export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+
+export type { JobInput, JobInputs, JobInputType } from "./input-types.js";
 
 export type { Identity, IdTokens } from "./token-types.js";
 
@@ -63,7 +66,16 @@ export type {
 export type Script = Text | readonly Text[];
 
 /** The `run` step types live in their own module so this one stays within its line budget. */
-export type { FunctionStep, ScriptStep, Step, StepEnv, StepInputs } from "./run-types.js";
+export type {
+  FunctionReference,
+  FunctionStep,
+  GitFunction,
+  OciFunction,
+  ScriptStep,
+  Step,
+  StepEnv,
+  StepInputs,
+} from "./run-types.js";
 
 /** The closed set GitLab documents for a job's run condition. */
 export type When = "on_success" | "on_failure" | "always" | "never" | "manual" | "delayed";
@@ -116,10 +128,11 @@ export interface AllowFailureOptions {
 
 export type AllowFailure = boolean | AllowFailureOptions;
 
-/** The `paths`/`compare_to` form of `rules:changes`. */
+/** The `paths`/`compare_to`/`regexp` form of `rules:changes`; GitLab requires paths or regexp. */
 export interface Changes {
-  readonly paths: readonly string[];
+  readonly paths?: readonly string[];
   readonly compare_to?: Text;
+  readonly regexp?: Text;
 }
 
 /**
@@ -148,6 +161,16 @@ export interface NeedParallel {
 
 export type Need = string | NeedMap;
 
+/** The map form of one rule-level need: a job name, and its artifact and presence options. */
+export interface RuleNeedMap {
+  readonly job: string;
+  readonly artifacts?: boolean;
+  readonly optional?: boolean;
+}
+
+/** A rule's `needs`: a job name, or the map that selects its artifacts and optionality. */
+export type RuleNeed = string | RuleNeedMap;
+
 /** One ordered condition, shared by `workflow`, `include` and a job. */
 export interface Rule {
   readonly if?: Text;
@@ -156,7 +179,13 @@ export interface Rule {
   readonly when?: When;
   readonly allow_failure?: boolean;
   readonly variables?: Variables;
-  readonly needs?: readonly string[];
+  readonly needs?: readonly RuleNeed[];
+  /** The delay before a delayed manual job starts when this rule matches. */
+  readonly start_in?: Text;
+  /** Whether a matching rule marks the job interruptible. */
+  readonly interruptible?: boolean;
+  /** Workflow rules only: cancel superseded pipelines when this rule matches. */
+  readonly auto_cancel?: AutoCancel;
 }
 
 /**
@@ -204,6 +233,8 @@ export interface Job {
   readonly manual_confirmation?: Text;
   /** The DAST site and scanner profiles this job uses. */
   readonly dast_configuration?: DastConfiguration;
+  /** Typed inputs a manual run or retry may override, keyed by the name the job reads. */
+  readonly inputs?: JobInputs;
   /** The same shape and lowering as `script`; a `ref` leaf keeps its tag. */
   readonly before_script?: Script;
   readonly script?: Script;
