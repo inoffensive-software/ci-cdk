@@ -1,0 +1,60 @@
+variables:
+  STABLE_VERSION: "1.5"
+  TARGET:
+    value: staging
+    expand: false
+    options:
+      - staging
+      - production
+    description: the environment to release
+deploy:
+  stage: deploy
+  needs:
+    - build
+    - job: test
+      artifacts: true
+    - job: upstream
+      project: group/upstream
+      ref: main
+    - job: previous
+      optional: true
+      pipeline: "1234"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        paths:
+          - Dockerfile
+        project: group/shared
+        ref: main
+      variables:
+        DEPLOY: "true"
+        SHARDS: 4
+    - exists:
+        regexp: ^ci/.*\.yml$
+    - exists:
+        - Dockerfile
+  services:
+    - name: redis:7
+      variables:
+        REDIS_DB:
+          value: "1"
+          expand: false
+  variables:
+    DEPLOY_ENV:
+      value: production
+      expand: true
+  cache:
+    - key:
+        files:
+          - go.sum
+        files_commits:
+          - go.sum
+        prefix: go-
+      paths:
+        - .cache/go
+      policy: pull
+      unprotect: true
+      when: on_success
+      fallback_keys:
+        - go-main
+  script: make deploy

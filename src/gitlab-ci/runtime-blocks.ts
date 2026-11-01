@@ -8,6 +8,7 @@ import {
   type Doc,
   type LeafNode,
 } from "../core/index.js";
+import { variablesDoc } from "./nesting-blocks.js";
 import type { DockerOptions, Image, KubernetesOptions, Service, ServiceOptions } from "./types.js";
 
 /** A leaf decides its own style; every other object here is one of the provider's own shapes. */
@@ -35,7 +36,7 @@ const serviceOptionsDoc = (service: ServiceOptions): Doc =>
     ...entry("command", present(service.command)),
     ...entry(
       "variables",
-      service.variables === undefined ? undefined : fromValue(service.variables),
+      service.variables === undefined ? undefined : variablesDoc(service.variables),
     ),
     ...entry("pull_policy", present(service.pull_policy)),
   ]);

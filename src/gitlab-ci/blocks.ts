@@ -30,9 +30,9 @@ import type {
   RetryOptions,
   Rule,
   RuleChanges,
-  Scalar,
   Workflow,
 } from "./types.js";
+import { existsDoc, variablesDoc } from "./nesting-blocks.js";
 import { idTokensDoc } from "./token-blocks.js";
 
 /** A leaf decides its own style; every other object here is one of the provider's own shapes. */
@@ -42,13 +42,6 @@ const isLeaf = <T extends object>(value: LeafNode | T): value is LeafNode =>
 /** One cache or one include entry is the same shape as its list's element, so the list is the test. */
 const isSequence = <T>(value: T | readonly T[]): value is readonly T[] => Array.isArray(value);
 
-/**
- * An author-named scalar map. Lowering the whole record at once keeps insertion order and lets the
- * boundary parser carry a numeric-looking string as a string (ADR 0010).
- */
-export const variablesDoc = (value: Readonly<Record<string, Scalar>>): Doc => fromValue(value);
-
-/** A readonly array is not narrowed by `Array.isArray`, which only accepts a mutable one. */
 const isPathList = (changes: RuleChanges): changes is readonly string[] => Array.isArray(changes);
 
 const changesDoc = (changes: RuleChanges): Doc =>
@@ -71,6 +64,9 @@ const needDoc = (need: Need): Doc =>
         ...entry("optional", present(need.optional)),
         ...entry("artifacts", present(need.artifacts)),
         ...entry("parallel", need.parallel === undefined ? undefined : matrixDoc(need.parallel)),
+        ...entry("project", present(need.project)),
+        ...entry("ref", present(need.ref)),
+        ...entry("pipeline", present(need.pipeline)),
       ]);
 
 export const needsDoc = (needs: readonly Need[]): Doc => seq(needs.map((need) => needDoc(need)));
@@ -80,7 +76,7 @@ const ruleDoc = (rule: Rule): Doc =>
   map([
     ...entry("if", present(rule.if)),
     ...entry("changes", rule.changes === undefined ? undefined : changesDoc(rule.changes)),
-    ...entry("exists", present(rule.exists)),
+    ...entry("exists", rule.exists === undefined ? undefined : existsDoc(rule.exists)),
     ...entry("when", present(rule.when)),
     ...entry("allow_failure", present(rule.allow_failure)),
     ...entry("variables", rule.variables === undefined ? undefined : variablesDoc(rule.variables)),
@@ -177,7 +173,11 @@ export const dastConfigurationDoc = (dast: DastConfiguration): Doc =>
   ]);
 
 const cacheKeyDoc = (key: CacheKeyFiles): Doc =>
-  map([{ key: "files", value: fromValue(key.files) }, ...entry("prefix", present(key.prefix))]);
+  map([
+    ...entry("files", present(key.files)),
+    ...entry("files_commits", present(key.files_commits)),
+    ...entry("prefix", present(key.prefix)),
+  ]);
 
 /** A key is a scalar when it is text, and a `files`/`prefix` map otherwise. */
 const cacheKeyValueDoc = (key: Cache["key"]): Doc | undefined => {
@@ -197,6 +197,7 @@ const cacheItemDoc = (cache: Cache): Doc =>
     ...entry("key", cacheKeyValueDoc(cache.key)),
     { key: "paths", value: fromValue(cache.paths) },
     ...entry("policy", present(cache.policy)),
+    ...entry("unprotect", present(cache.unprotect)),
     ...entry("untracked", present(cache.untracked)),
     ...entry("when", present(cache.when)),
     ...entry("fallback_keys", present(cache.fallback_keys)),

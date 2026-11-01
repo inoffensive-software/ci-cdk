@@ -23,7 +23,6 @@ import {
   pagesDoc,
   retryDoc,
   rulesDoc,
-  variablesDoc,
   workflowDoc,
 } from "./blocks.js";
 import {
@@ -36,6 +35,7 @@ import {
 import { secretsDoc } from "./secrets-blocks.js";
 import { stepsDoc } from "./run-blocks.js";
 import { imageDoc, servicesDoc } from "./runtime-blocks.js";
+import { variablesDoc } from "./nesting-blocks.js";
 import { idTokensDoc } from "./token-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";

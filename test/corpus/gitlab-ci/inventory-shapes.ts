@@ -17,7 +17,11 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
         services: ["docker:24.0.7-dind"],
         before_script: ["echo one"],
         after_script: "echo after",
-        cache: { key: { files: ["go.sum"] }, paths: [".cache/go"] },
+        cache: {
+          key: { files: ["go.sum"], files_commits: ["go.sum"], prefix: "go-" },
+          paths: [".cache/go"],
+          unprotect: true,
+        },
         retry: 2,
       },
       include: {
@@ -25,9 +29,11 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
         rules: [
           {
             changes: { paths: ["ci/**/*"], compare_to: "main" },
-            exists: ["ci/test.yml"],
+            exists: { paths: ["ci/test.yml"], project: "group/shared", ref: "main" },
             when: "always",
           },
+          { exists: { regexp: "^ci/.*\\.yml$" } },
+          { exists: ["ci/test.yml"] },
         ],
         inputs: { target: { value: "release", expand: false }, jobs: 2 },
       },

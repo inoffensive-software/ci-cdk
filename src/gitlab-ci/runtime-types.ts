@@ -1,4 +1,5 @@
-import type { Scalar, Text } from "../core/index.js";
+import type { Text } from "../core/index.js";
+import type { Variables } from "./nesting-types.js";
 
 /** The closed set GitLab documents for `image:pull_policy` and `services:pull_policy`. */
 export type ImagePullPolicy = "always" | "if-not-present" | "never";
@@ -26,7 +27,7 @@ export interface ServiceOptions {
   readonly kubernetes?: KubernetesOptions;
   readonly entrypoint?: readonly Text[];
   readonly command?: readonly Text[];
-  readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly variables?: Variables;
   readonly pull_policy?: PullPolicy;
 }
 
