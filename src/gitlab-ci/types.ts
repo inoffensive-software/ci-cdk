@@ -1,4 +1,6 @@
 import type { Scalar, Text, Value } from "../core/index.js";
+import type { CacheList } from "./cache-types.js";
+import type { RuleExists, Variables } from "./nesting-types.js";
 import type { ArtifactAccess, ArtifactReports } from "./artifact-types.js";
 import type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 import type { JobPages } from "./pages-types.js";
@@ -9,6 +11,10 @@ import type { Secret } from "./secret-types.js";
 import type { Identity, IdTokens } from "./token-types.js";
 
 export type { ArtifactAccess, ArtifactReports } from "./artifact-types.js";
+
+export type { Cache, CacheKeyFiles, CacheList } from "./cache-types.js";
+
+export type { RuleExists, Variable, Variables } from "./nesting-types.js";
 
 export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
 
@@ -67,28 +73,10 @@ export interface ServiceOptions {
   readonly alias?: Text;
   readonly entrypoint?: readonly Text[];
   readonly command?: readonly Text[];
-  readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly variables?: Variables;
 }
 
 export type Service = Text | ServiceOptions;
-
-/** The `files`/`prefix` form of `cache:key`; a plain `Text` key is the other form. */
-export interface CacheKeyFiles {
-  readonly files: readonly string[];
-  readonly prefix?: Text;
-}
-
-export interface Cache {
-  readonly key?: Text | CacheKeyFiles;
-  readonly paths: readonly string[];
-  readonly policy?: "pull" | "push" | "pull-push";
-  readonly when?: OnStatus;
-  readonly fallback_keys?: readonly string[];
-  readonly untracked?: boolean;
-}
-
-/** One cache, or several; GitLab accepts either shape wherever `cache` is written. */
-export type CacheList = Cache | readonly Cache[];
 
 export interface Artifacts {
   readonly paths?: readonly string[];
@@ -170,12 +158,17 @@ export interface Changes {
  */
 export type RuleChanges = Changes | readonly string[];
 
-/** One entry of a job's `needs`: a job name, or the map form with its DAG options. */
+/** One entry of a job's `needs`: a job name, or the map form with its DAG and cross-project options. */
 export interface NeedMap {
   readonly job: string;
   readonly optional?: boolean;
   readonly artifacts?: boolean;
   readonly parallel?: NeedParallel;
+  /** The project a cross-project need reads from; `ref` names the revision within it. */
+  readonly project?: Text;
+  readonly ref?: Text;
+  /** The upstream pipeline ID a same-project need waits on. */
+  readonly pipeline?: Text;
 }
 
 /** The `needs:parallel` selector: flat scalar rows, in the author's order. */
@@ -189,10 +182,10 @@ export type Need = string | NeedMap;
 export interface Rule {
   readonly if?: Text;
   readonly changes?: RuleChanges;
-  readonly exists?: readonly string[];
+  readonly exists?: RuleExists;
   readonly when?: When;
   readonly allow_failure?: boolean;
-  readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly variables?: Variables;
   readonly needs?: readonly string[];
 }
 
@@ -215,7 +208,7 @@ export interface Job {
   readonly tags?: readonly string[];
   readonly image?: Image;
   readonly services?: readonly Service[];
-  readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly variables?: Variables;
   /** Which global `default:` keys and `variables:` this job inherits. */
   readonly inherit?: Inherit;
   /** External secrets, keyed by the environment variable they fill. */
@@ -279,7 +272,7 @@ export interface Pipeline {
   readonly default?: Default;
   readonly include?: Include;
   readonly stages?: readonly string[];
-  readonly variables?: Readonly<Record<string, Scalar>>;
+  readonly variables?: Variables;
   readonly workflow?: Workflow;
   /**
    * Hidden jobs and anchor-only entries: author data, not vocabulary. Every key must start with `.`

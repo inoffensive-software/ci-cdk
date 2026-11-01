@@ -25,7 +25,6 @@ import {
   retryDoc,
   rulesDoc,
   servicesDoc,
-  variablesDoc,
   workflowDoc,
 } from "./blocks.js";
 import {
@@ -37,6 +36,7 @@ import {
 } from "./delivery-blocks.js";
 import { secretsDoc } from "./secrets-blocks.js";
 import { stepsDoc } from "./run-blocks.js";
+import { variablesDoc } from "./nesting-blocks.js";
 import { idTokensDoc } from "./token-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";

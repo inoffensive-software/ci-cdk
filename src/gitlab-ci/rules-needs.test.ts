@@ -53,12 +53,6 @@ describe("job rules", () => {
     expect(text.indexOf("compare_to:")).toBeGreaterThan(text.indexOf("paths:"));
   });
 
-  it("accepts the plain path list form of changes", () => {
-    expect(parse(deployText({ rules: [{ changes: ["src/**/*"] }] })).deploy.rules).toStrictEqual([
-      { changes: ["src/**/*"] },
-    ]);
-  });
-
   it("emits no key for a rule with no condition", () => {
     expect(parse(deployText({ rules: [{}] })).deploy.rules).toStrictEqual([{}]);
   });
@@ -104,6 +98,55 @@ describe("job needs", () => {
         pipeline({ jobs: [job({ name: "build", script: "true", needs: ["from-an-include"] })] }),
       ),
     ).not.toThrow();
+  });
+});
+
+describe("rule forms", () => {
+  it("accepts the plain path list form of changes", () => {
+    expect(parse(deployText({ rules: [{ changes: ["src/**/*"] }] })).deploy.rules).toStrictEqual([
+      { changes: ["src/**/*"] },
+    ]);
+  });
+
+  it("accepts the map form of exists with paths, project and ref", () => {
+    const exists = { paths: ["Dockerfile"], project: "group/shared", ref: "main" } as const;
+
+    expect(parse(deployText({ rules: [{ exists }] })).deploy.rules).toStrictEqual([{ exists }]);
+  });
+
+  it("accepts the regexp form of exists and emits only the written keys", () => {
+    const text = deployText({ rules: [{ exists: { regexp: "^ci/.*\\.yml$" } }] });
+
+    expect(parse(text).deploy.rules).toStrictEqual([{ exists: { regexp: "^ci/.*\\.yml$" } }]);
+    expect(text).not.toContain("paths:");
+  });
+
+  it("keeps the exists map keys in documented order", () => {
+    const text = deployText({
+      rules: [
+        { exists: { regexp: "^ci/", ref: "main", project: "group/shared", paths: ["ci.yml"] } },
+      ],
+    });
+
+    const indexes = orderOf(text, ["paths:", "project:", "ref:", "regexp:"]);
+
+    expect(indexes).toStrictEqual([...indexes].toSorted((a, b) => a - b));
+  });
+});
+
+describe("cross-project needs", () => {
+  it("writes the project, ref and pipeline forms in documented order", () => {
+    const needs = [
+      { job: "deploy", project: "group/downstream", ref: "main", artifacts: true },
+      { job: "upstream", pipeline: "1234", optional: true },
+    ] as const;
+
+    const text = deployText({ needs });
+
+    expect(parse(text).deploy.needs).toStrictEqual(needs);
+    expect(text.indexOf("job: deploy")).toBeLessThan(text.indexOf("project:"));
+    expect(text.indexOf("project:")).toBeLessThan(text.indexOf("ref:"));
+    expect(text.indexOf("job: upstream")).toBeLessThan(text.indexOf("pipeline:"));
   });
 });
 

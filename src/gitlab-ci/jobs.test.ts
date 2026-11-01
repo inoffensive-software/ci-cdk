@@ -110,22 +110,29 @@ describe("job cache", () => {
     ]);
   });
 
-  it("writes every cache field, a string key and a files/prefix key", () => {
+  it("writes every cache field, a string key and a files/files_commits/prefix key", () => {
     const cache = [
       {
         key: "go",
         paths: [".cache/go"],
         policy: "pull",
+        unprotect: true,
         untracked: true,
         when: "on_success",
         fallback_keys: ["go-main"],
       },
       {
-        key: { files: ["go.sum", "v2/go.sum"], prefix: "build-" },
+        key: { files: ["go.sum"], files_commits: ["go.sum", "go.mod"], prefix: "build-" },
         paths: [".cache/build"],
         policy: "pull-push",
       },
     ] as const;
+
+    expect(body({ cache })["cache"]).toStrictEqual(cache);
+  });
+
+  it("accepts a key with only files_commits", () => {
+    const cache = { key: { files_commits: ["go.sum"] }, paths: [".cache/go"] } as const;
 
     expect(body({ cache })["cache"]).toStrictEqual(cache);
   });
