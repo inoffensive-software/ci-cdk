@@ -4,8 +4,11 @@ import type { Default, Include, Workflow } from "./pipeline-types.js";
 import type { Step } from "./run-types.js";
 import type { Trigger } from "./trigger-types.js";
 import type { Secret } from "./secret-types.js";
+import type { Identity, IdTokens } from "./token-types.js";
 
 export type { DastConfiguration, Hooks, Inherit } from "./deferred-types.js";
+
+export type { Identity, IdTokens } from "./token-types.js";
 
 export type {
   AutoCancel,
@@ -209,6 +212,10 @@ export interface Job {
   readonly inherit?: Inherit;
   /** External secrets, keyed by the environment variable they fill. */
   readonly secrets?: Readonly<Record<string, Secret>>;
+  /** ID tokens, keyed by the environment variable GitLab injects the JWT as. */
+  readonly id_tokens?: IdTokens;
+  /** Workload identity federation; the provider is a closed set GitLab documents. */
+  readonly identity?: Identity;
   readonly cache?: CacheList;
   readonly artifacts?: Artifacts;
   /** The earlier jobs whose artifacts this job downloads; an empty list downloads none. */

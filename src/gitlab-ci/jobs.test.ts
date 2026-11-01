@@ -239,8 +239,8 @@ describe("job raw collisions", () => {
   });
 
   it("still allows raw for a keyword the vocabulary does not model", () => {
-    expect(body({ raw: { identity: { provider: "example" } } })).toStrictEqual({
-      identity: { provider: "example" },
+    expect(body({ raw: { pages: { publish: "public" } } })).toStrictEqual({
+      pages: { publish: "public" },
     });
   });
 });

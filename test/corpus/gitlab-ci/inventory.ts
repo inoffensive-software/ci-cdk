@@ -70,6 +70,10 @@ export const INVENTORY: readonly InventoryDocument[] = [
         hooks: {
           pre_get_sources_script: ['git config --global url."https://".insteadOf "ssh://"'],
         },
+        id_tokens: {
+          DEFAULT_ID_TOKEN: { aud: ["https://vault.example.com", "https://gcp.example.com"] },
+        },
+        identity: "google_cloud",
       },
       include: [
         {
@@ -167,6 +171,11 @@ export const INVENTORY: readonly InventoryDocument[] = [
           hooks: { pre_get_sources_script: ["git submodule update --init"] },
           dast_configuration: { site_profile: "production site", scanner_profile: "full scan" },
           secrets: MAIN_SECRETS,
+          id_tokens: {
+            VAULT_ID_TOKEN: { aud: "https://vault.example.com" },
+            CLOUD_ID_TOKEN: { aud: ["https://gcp.example.com", "https://aws.example.com"] },
+          },
+          identity: "google_cloud",
           cache: [
             {
               key: "go",

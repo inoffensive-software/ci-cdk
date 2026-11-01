@@ -36,6 +36,7 @@ import {
 } from "./delivery-blocks.js";
 import { secretsDoc } from "./secrets-blocks.js";
 import { stepsDoc } from "./run-blocks.js";
+import { idTokensDoc } from "./token-blocks.js";
 import type { Job, Pipeline } from "./types.js";
 import { validate } from "./validate.js";
 
@@ -69,6 +70,8 @@ const JOB_RESERVED: readonly string[] = [
   "variables",
   "inherit",
   "secrets",
+  "id_tokens",
+  "identity",
   "cache",
   "artifacts",
   "dependencies",
@@ -113,6 +116,8 @@ const jobDoc = (item: Job, path: string, diagnostics: Diagnostic[]): Doc => {
     ...entry("variables", whenPresent(item.variables, variablesDoc)),
     ...entry("inherit", whenPresent(item.inherit, inheritDoc)),
     ...entry("secrets", whenPresent(item.secrets, secretsDoc)),
+    ...entry("id_tokens", whenPresent(item.id_tokens, idTokensDoc)),
+    ...entry("identity", present(item.identity)),
     ...entry("cache", whenPresent(item.cache, cacheDoc)),
     ...entry("artifacts", whenPresent(item.artifacts, artifactsDoc)),
     ...entry("dependencies", present(item.dependencies)),
