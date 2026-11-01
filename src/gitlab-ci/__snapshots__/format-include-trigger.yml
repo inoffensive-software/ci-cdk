@@ -1,0 +1,28 @@
+include:
+  - local: ci/local.yml
+    rules:
+      - if: $CI_COMMIT_BRANCH
+        changes:
+          paths:
+            - ci/**/*
+    inputs:
+      target:
+        value: release
+        expand: false
+      jobs:
+        - 1
+        - 2
+  - remote: https://example.com/ci.yml
+    integrity: sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+    inputs:
+      target: release
+deploy:
+  trigger:
+    project: group/downstream
+    inputs:
+      TARGET:
+        value: production
+        description: target
+    forward:
+      yaml_variables: false
+      pipeline_variables: true

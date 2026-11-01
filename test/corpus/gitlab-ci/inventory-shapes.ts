@@ -19,7 +19,17 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
         cache: { key: { files: ["go.sum"] }, paths: [".cache/go"] },
         retry: 2,
       },
-      include: { local: ".gitlab/ci/test.yml" },
+      include: {
+        local: ".gitlab/ci/test.yml",
+        rules: [
+          {
+            changes: { paths: ["ci/**/*"], compare_to: "main" },
+            exists: ["ci/test.yml"],
+            when: "always",
+          },
+        ],
+        inputs: { target: { value: "release", expand: false }, jobs: 2 },
+      },
       jobs: [
         job({
           name: "release",
@@ -30,14 +40,20 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
           environment: "review/prod",
           trigger: {
             include: [
-              { local: ".gitlab/ci/child.yml" },
-              { project: "group/child", ref: "main", file: "ci/child.yml" },
+              { local: ".gitlab/ci/child.yml", inputs: { CHILD_ENV: "staging" } },
+              {
+                project: "group/child",
+                ref: "main",
+                file: "ci/child.yml",
+                inputs: { CHILD_ENV: { value: "staging", description: "child env" } },
+              },
               {
                 component: "gitlab.com/components/child@1.0",
                 inputs: { CHILD_ENV: "staging" },
               },
             ],
             strategy: "mirror",
+            forward: { yaml_variables: false },
           },
           parallel: 2,
           retry: 2,
@@ -47,13 +63,24 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
           resource_group: "releases",
           coverage: "/total coverage/",
         }),
-        // `include` takes at most three entries, so the template and remote shapes need a second job.
+        // `include` takes at most three entries, so the remaining shapes need another job.
         job({
           name: "child-remote",
           trigger: {
-            include: [{ template: "Child.yml" }, { remote: "https://example.com/child.yml" }],
+            include: [
+              { template: "Child.yml", inputs: { CHILD_ENV: "staging" } },
+              { remote: "https://example.com/child.yml", inputs: { CHILD_ENV: "staging" } },
+              {
+                artifact: "generated/child.yml",
+                job: "generate",
+                inputs: { CHILD_ENV: "staging" },
+              },
+            ],
+            forward: { pipeline_variables: true },
           },
         }),
+        // The schema also accepts one path as a scalar, which is not an entry map.
+        job({ name: "child-path", trigger: { include: "ci/child.yml", strategy: "depend" } }),
         // The other `inherit` shapes, plus the manual confirmation text.
         job({
           name: "confirm",
@@ -78,6 +105,64 @@ export const ALTERNATE_DOCUMENTS: readonly InventoryDocument[] = [
           ],
         }),
       ],
+    }),
+  },
+  // The map form of `include` has its own schema branch: one entry for each source, with rules and
+  // inputs, so every shape is reachable without raw.
+  {
+    name: "include-remote",
+    pipeline: pipeline({
+      include: {
+        remote: "https://example.com/nested.yml",
+        integrity: `sha256-${"A".repeat(43)}=`,
+        rules: [
+          { if: "$CI_COMMIT_BRANCH", exists: ["nested.yml"] },
+          { changes: ["nested.yml"], when: "always" },
+        ],
+        inputs: { target: "release" },
+      },
+      jobs: [],
+    }),
+  },
+  {
+    name: "include-template",
+    pipeline: pipeline({
+      include: {
+        template: "Nested.gitlab-ci.yml",
+        rules: [{ when: "never" }],
+        inputs: { target: "release" },
+      },
+      jobs: [],
+    }),
+  },
+  {
+    name: "include-project",
+    pipeline: pipeline({
+      include: {
+        project: "group/project",
+        ref: "main",
+        file: ["nested/one.yml", "nested/two.yml"],
+        rules: [{ if: "$CI_COMMIT_TAG" }],
+        inputs: { target: "release" },
+      },
+      jobs: [],
+    }),
+  },
+  {
+    name: "include-component",
+    pipeline: pipeline({
+      include: {
+        component: "gitlab.com/components/nested@1.0",
+        rules: [{ if: "$CI_COMMIT_BRANCH" }],
+        inputs: {
+          scalar: "value",
+          object: { value: "release", expand: false, description: "the target" },
+          rows: [{ value: "a" }, { value: "b" }],
+          grid: [[{ value: "x" }], [{ value: "y" }]],
+          nested: [[1, 2], [3]],
+        },
+      },
+      jobs: [],
     }),
   },
 ];

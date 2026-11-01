@@ -109,6 +109,7 @@ export const workflowDoc = (workflow: Workflow): Doc =>
 const includeTail = (item: IncludeOptions): readonly DocEntry[] => [
   ...entry("rules", item.rules === undefined ? undefined : rulesDoc(item.rules)),
   ...entry("integrity", present(item.integrity)),
+  ...entry("inputs", item.inputs === undefined ? undefined : fromValue(item.inputs)),
 ];
 
 const localEntryDoc = (item: IncludeOptions & { readonly local: Text }): Doc =>
@@ -129,11 +130,7 @@ const projectEntryDoc = (item: Extract<IncludeEntry, { readonly project: Text }>
   ]);
 
 const componentEntryDoc = (item: Extract<IncludeEntry, { readonly component: Text }>): Doc =>
-  map([
-    { key: "component", value: fromValue(item.component) },
-    ...entry("inputs", item.inputs === undefined ? undefined : variablesDoc(item.inputs)),
-    ...includeTail(item),
-  ]);
+  map([{ key: "component", value: fromValue(item.component) }, ...includeTail(item)]);
 
 /** The discriminator decides the source, so each shape lowers on its own; the order is fixed. */
 const includeEntryDoc = (item: IncludeEntry): Doc => {

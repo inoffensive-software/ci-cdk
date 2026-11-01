@@ -24,6 +24,7 @@ export const AUTHOR_NAMED: readonly string[] = [
   "$.default.id_tokens",
   "$.default.services[].variables",
   "$.*.services[].variables",
+  "$.include.inputs",
   "$.include[].inputs",
   "$.*.trigger.inputs",
   "$.*.trigger.include[].inputs",
@@ -73,22 +74,59 @@ const parentPath = (path: string): string => {
 };
 
 /**
+ * Input maps whose values may themselves be author maps: the schema admits any object there, so a
+ * key below one is a name the caller chose, exactly as a key directly under the input map is. The
+ * `{key}` token matches one author-chosen segment without reinterpreting the `$.*` root wildcard.
+ */
+const AUTHOR_VALUE_NAMES: readonly string[] = [
+  "$.include.inputs.{key}",
+  "$.include[].inputs.{key}",
+  "$.*.trigger.inputs.{key}",
+  "$.*.trigger.include[].inputs.{key}",
+];
+
+/** A literal name; a `{key}` token matches exactly one author-chosen key segment. */
+const authorPrefix = (name: string, path: string): number | undefined => {
+  const escaped = name.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const key = escaped.replaceAll("\\{key\\}", "[^.[\\]]+");
+
+  const pattern = name.includes("{key}")
+    ? new RegExp(`^${key}(?=\\.|\\[)`, "u")
+    : new RegExp(`^${key}\\.`, "u");
+
+  const match = pattern.exec(path);
+
+  return match === null ? undefined : match[0].length;
+};
+
+/**
  * A key below an author-named path is a name the caller chose, so it becomes `*`; a suffix of
  * sequence markers after it stays, because a cell may hold a list. This runs after the root is
- * normalised, because a job's body is only reachable at `$.*` once its name is.
+ * normalised, because a job's body is only reachable at `$.*` once its name is. The longest matching
+ * name wins, so a nested author map (`inputs.{key}`) is preferred over its parent (`inputs`).
  */
 const normaliseAuthor = (path: string): string => {
-  for (const name of AUTHOR_NAMED) {
-    const prefix = `${name}.`;
+  const matched = [
+    ...AUTHOR_NAMED.map((name) => ({ name, nested: false })),
+    ...AUTHOR_VALUE_NAMES.map((name) => ({ name, nested: true })),
+  ]
+    .flatMap((candidate) => {
+      const prefix = authorPrefix(candidate.name, path);
 
-    if (!path.startsWith(prefix)) {
-      continue;
+      return prefix === undefined ? [] : [{ ...candidate, prefix }];
+    })
+    .toSorted((left, right) => right.prefix - left.prefix)[0];
+
+  if (matched !== undefined) {
+    const rest = path.slice(matched.prefix);
+
+    if (matched.nested) {
+      return `${matched.name}${rest.replaceAll(/[^.[\]]+/gu, "*")}`.replaceAll("{key}", "*");
     }
 
-    const rest = path.slice(prefix.length);
     const marker = rest.search(/[.[]/u);
 
-    return marker === -1 ? `${name}.*` : `${name}.*${rest.slice(marker)}`;
+    return `${matched.name}.*${marker === -1 ? "" : rest.slice(marker)}`;
   }
 
   const parent = parentPath(path);

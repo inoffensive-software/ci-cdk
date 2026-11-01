@@ -86,8 +86,11 @@ describe("hidden templates", () => {
  * The completion target spec 0009 decision 9 sets: 928 of the 1,061 schema paths are modelled, and
  * `out-of-scope` holds the architectural non-goals alone. Modelling `hooks` moved its two
  * nested-array `pre_get_sources_script` paths into `schema-noise`, which the target excludes, so the
- * non-noise remainder is 926. The counts derive from the three lists, so a ticket that moves rows
- * from `unmodelled` to modelled keeps the sum without editing this test.
+ * non-noise remainder is 926. Modelling the map form of `include` did the same for
+ * `$.include.rules[][]`: the path was counted under its unmodelled parent row, and now has the
+ * `schema-noise` row its list-form twin already had, so the non-noise remainder is 925. The counts
+ * derive from the three lists, so a ticket that moves rows from `unmodelled` to modelled keeps the
+ * sum without editing this test.
  */
 describe("completion target", () => {
   const modelled = new Set(MODELLED_PATHS);
@@ -104,7 +107,7 @@ describe("completion target", () => {
   it("leaves no schema path outside the target", () => {
     const unmodelled = schemaPathsCoveredBy("unmodelled");
 
-    expect(modelledSchemaPaths.length + unmodelled.length).toBe(926);
+    expect(modelledSchemaPaths.length + unmodelled.length).toBe(925);
   });
 
   it("reserves out-of-scope for the spec header", () => {

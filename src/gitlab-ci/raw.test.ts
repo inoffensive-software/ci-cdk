@@ -156,14 +156,21 @@ describe("raw collisions", () => {
     ]);
   });
 
-  it("refuses stages even when the pipeline does not declare stages", () => {
-    const refused = pipeline({ jobs: [], raw: { stages: ["build"] } });
+  it("refuses stages and include even when the pipeline declares neither", () => {
+    const refused = pipeline({ jobs: [], raw: { stages: ["build"], include: "other.yml" } });
 
-    expect(pathsOf(() => toDoc(refused))).toStrictEqual(['$.raw["stages"]']);
+    expect(pathsOf(() => toDoc(refused))).toStrictEqual(['$.raw["stages"]', '$.raw["include"]']);
   });
+});
 
-  it("refuses a job raw key of name, stage or script", () => {
-    const refused = withRawJob({ name: "other", stage: "deploy", script: "echo no" });
+describe("job raw collisions", () => {
+  it("refuses a job raw key of name, stage, script or trigger", () => {
+    const refused = withRawJob({
+      name: "other",
+      stage: "deploy",
+      script: "echo no",
+      trigger: { project: "group/downstream" },
+    });
 
     expect(pairsOf(() => toDoc(refused))).toStrictEqual([
       {
@@ -177,6 +184,10 @@ describe("raw collisions", () => {
       {
         path: '$.jobs[0].raw["script"]',
         message: 'raw key "script" is already emitted at this level',
+      },
+      {
+        path: '$.jobs[0].raw["trigger"]',
+        message: 'raw key "trigger" is already emitted at this level',
       },
     ]);
   });

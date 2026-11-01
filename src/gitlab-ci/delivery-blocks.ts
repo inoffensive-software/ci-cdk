@@ -1,11 +1,29 @@
-import { DOC, entry, fromValue, map, present, type Doc, type LeafNode } from "../core/index.js";
-import { includeDoc } from "./blocks.js";
-import { type Trigger } from "./trigger-types.js";
+import {
+  DOC,
+  entry,
+  fromValue,
+  map,
+  present,
+  seq,
+  type Doc,
+  type LeafNode,
+  type Text,
+} from "../core/index.js";
+import { type Forward, type Trigger, type TriggerIncludeEntry } from "./trigger-types.js";
 import { type AllowFailure, type Environment, type Parallel, type Release } from "./types.js";
 
-/** A leaf decides its own style; a bare name or path is a scalar, a map is this provider's shape. */
+/** A leaf decides its own style; every other object here is one of the provider's own shapes. */
 const isLeaf = (value: Environment | Trigger): value is LeafNode =>
   typeof value === "object" && Object.hasOwn(value, DOC);
+
+/** The same test for a union that is not part of `Trigger`, such as a child-include entry. */
+const isDocLeaf = (value: LeafNode | TriggerIncludeEntry): value is LeafNode =>
+  Object.hasOwn(value, DOC);
+
+/** A readonly array is not narrowed by `Array.isArray`, which only accepts a mutable one. */
+const isIncludeList = (
+  value: Text | TriggerIncludeEntry | readonly TriggerIncludeEntry[],
+): value is readonly TriggerIncludeEntry[] => Array.isArray(value);
 
 const environmentOptionsDoc = (environment: Exclude<Environment, string | LeafNode>): Doc =>
   map([
@@ -34,6 +52,68 @@ export const releaseDoc = (release: Release): Doc =>
     ...entry("released_at", present(release.released_at)),
   ]);
 
+/** `trigger:forward`, in the schema's key order; an absent key keeps GitLab's default. */
+const forwardDoc = (forward: Forward): Doc =>
+  map([
+    ...entry("yaml_variables", present(forward.yaml_variables)),
+    ...entry("pipeline_variables", present(forward.pipeline_variables)),
+  ]);
+
+/**
+ * One child-pipeline include entry: the source discriminator first, then `job` for an artifact
+ * entry, `ref`/`file` for a project entry, and the inputs last. No entry carries `rules` or
+ * `integrity`; the schema allows them only on a pipeline-level include.
+ */
+const triggerIncludeEntryDoc = (item: TriggerIncludeEntry): Doc => {
+  const inputs = entry("inputs", item.inputs === undefined ? undefined : fromValue(item.inputs));
+
+  if ("local" in item) {
+    return map([{ key: "local", value: fromValue(item.local) }, ...inputs]);
+  }
+
+  if ("template" in item) {
+    return map([{ key: "template", value: fromValue(item.template) }, ...inputs]);
+  }
+
+  if ("artifact" in item) {
+    return map([
+      { key: "artifact", value: fromValue(item.artifact) },
+      { key: "job", value: fromValue(item.job) },
+      ...inputs,
+    ]);
+  }
+
+  if ("project" in item) {
+    return map([
+      { key: "project", value: fromValue(item.project) },
+      ...entry("ref", present(item.ref)),
+      { key: "file", value: fromValue(item.file) },
+      ...inputs,
+    ]);
+  }
+
+  if ("component" in item) {
+    return map([{ key: "component", value: fromValue(item.component) }, ...inputs]);
+  }
+
+  return map([{ key: "remote", value: fromValue(item.remote) }, ...inputs]);
+};
+
+/** A single path stays a scalar, one entry stays a map, several stay a sequence. */
+const triggerIncludeDoc = (
+  include: Text | TriggerIncludeEntry | readonly TriggerIncludeEntry[],
+): Doc => {
+  if (typeof include === "string") {
+    return fromValue(include);
+  }
+
+  if (isIncludeList(include)) {
+    return seq(include.map((item) => triggerIncludeEntryDoc(item)));
+  }
+
+  return isDocLeaf(include) ? fromValue(include) : triggerIncludeEntryDoc(include);
+};
+
 /**
  * A trigger in GitLab's documented key order. A bare string is a child pipeline path; the map form is
  * either a multi-project trigger (`project` is the discriminator) or a child trigger (`include`). The
@@ -50,12 +130,14 @@ export const triggerDoc = (trigger: Trigger): Doc => {
       ...entry("branch", present(trigger.branch)),
       ...entry("strategy", present(trigger.strategy)),
       ...entry("inputs", trigger.inputs === undefined ? undefined : fromValue(trigger.inputs)),
+      ...entry("forward", trigger.forward === undefined ? undefined : forwardDoc(trigger.forward)),
     ]);
   }
 
   return map([
-    { key: "include", value: includeDoc(trigger.include) },
+    { key: "include", value: triggerIncludeDoc(trigger.include) },
     ...entry("strategy", present(trigger.strategy)),
+    ...entry("forward", trigger.forward === undefined ? undefined : forwardDoc(trigger.forward)),
   ]);
 };
 
