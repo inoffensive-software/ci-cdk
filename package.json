@@ -6,7 +6,7 @@
   "bugs": {
     "url": "https://github.com/eddie-atkinson/ci-cdk/issues"
   },
-  "license": "ISC",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eddie-atkinson/ci-cdk.git"

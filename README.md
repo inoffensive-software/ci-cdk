@@ -106,3 +106,7 @@ My motivations for creating this repo are threefold:
 ## Development
 
 See `AGENTS.md` for the repo map, commands, and the rules that keep the architecture intact.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE` for the full text.
