@@ -18,6 +18,14 @@ This project aims to end the tyranny of YAML by allowing for the specification o
 
 - **Sharing is code**: This project does not support YAML anchors or other sharing primitives from upstream providers. If you want to share snippets between definitions, you need to write a function which generates identical YAML. This may be duplicative, but it's also much simpler to reason about
 
+## Install
+
+```sh
+pnpm add -D @inoffensive/ci-cdk
+# or: npm install -D @inoffensive/ci-cdk
+# or: yarn add -D @inoffensive/ci-cdk
+```
+
 ## Usage
 
 ```ts
