@@ -106,3 +106,20 @@ a tag-aware assertion is ticket 43. Nothing else about the entry depends on it.
   with a numeric `version`, Azure Key Vault with a version, AWS Secrets Manager shorthand and its
   full map, GitLab Secrets Manager with a group `source`, plus `file: false` and `token`. The entry
   pins the shapes only; it is not evidence that a real pipeline uses them.
+
+## gitlab-tokens
+
+- Source: documentation-derived, not vendored from a repository
+- Pages: <https://docs.gitlab.com/ci/yaml/#id_tokens> and
+  <https://docs.gitlab.com/ci/yaml/#identity>
+- Read on: 2026-11-01
+- Licence: n/a
+- Vendored as: `gitlab-tokens.yml`, SHA-256
+  `8037f89aee0ea4d8ef4932a1a76b6a09f1012f4633056d6ba7c75a10e65433f4`
+- Comparison: data
+- Why this entry: no public config was found that declares `id_tokens` at both `default` and job
+  level, so both levels are copied from the syntax reference: `default:id_tokens` with a single
+  `aud`, a job `id_tokens` map with one token carrying a single audience and one carrying a list,
+  and `identity: google_cloud`. `identity` is documented at job level only, so the entry does not
+  invent a `default:identity` shape. The entry pins the shapes only; it is not evidence that a real
+  pipeline uses them.

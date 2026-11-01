@@ -1,0 +1,20 @@
+stages:
+  - deploy
+
+default:
+  id_tokens:
+    DEFAULT_ID_TOKEN:
+      aud: https://vault.example.com
+
+deploy:
+  stage: deploy
+  script:
+    - ./deploy.sh
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: https://vault.example.com
+    CLOUD_ID_TOKEN:
+      aud:
+        - https://gcp.example.com
+        - https://aws.example.com
+  identity: google_cloud
