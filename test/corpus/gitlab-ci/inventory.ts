@@ -264,6 +264,15 @@ export const INVENTORY: readonly InventoryDocument[] = [
           script: ["npm ci", "npm test"],
           after_script: "echo after",
         }),
+        // `pages` is a job name, not a pipeline keyword: the gate normalises it to `$.*` like any
+        // other name, and the schema's root `pages` property is a job body reached through that name.
+        // The `pages` *keyword* inside a job body is ticket 102 and stays unmodelled here.
+        job({
+          name: "pages",
+          stage: "build",
+          script: ["npm run build"],
+          artifacts: { paths: ["public/"] },
+        }),
       ],
     }),
   },

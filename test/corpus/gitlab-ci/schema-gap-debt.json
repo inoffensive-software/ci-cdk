@@ -131,7 +131,6 @@
   {"path":"$.include[].rules[].exists.ref","reason":"the ref an include rule's map-form `exists` looks at","category":"unmodelled"},
   {"path":"$.include[].rules[].exists.regexp","reason":"the `regexp` an include rule's map-form `exists` matches against paths","category":"unmodelled"},
   {"path":"$.include[].rules[][]","reason":"nested arrays in `include:rules`: the schema lets one item be a literal array of strings, which is how it represents a `!reference` tag inside a list; GitLab accepts a flat list here and rejects a nested array","category":"schema-noise"},
-  {"path":"$.pages","reason":"pipeline-level Pages settings; spec 0009 defers `pages` to its own spec (0010), so it is `unmodelled` debt rather than a non-goal","category":"unmodelled"},
   {"path":"$.services","reason":"the schema keeps the pre-`default` global `services` spelling; GitLab marks it deprecated in favour of `default:services`, which is the shape the vocabulary models","category":"schema-noise"},
   {"path":"$.spec","reason":"the header that declares inputs and component context; spec 0006 Out of Scope rules out a `spec` header and `$[[ ... ]]` interpolation","category":"out-of-scope"},
   {"path":"$.stages[][]","reason":"the schema lets one `stages` item be a list of strings; GitLab documents a flat list of stage names, and a nested list is rejected","category":"schema-noise"},

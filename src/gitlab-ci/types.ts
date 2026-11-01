@@ -259,9 +259,8 @@ export interface Job {
 }
 
 /**
- * The pipeline-level vocabulary. Emission order is fixed by the spec and independent of the order
- * the struct is written in: `default`, `include`, `stages`, `variables`, `workflow`, the templates,
- * the jobs, then `raw`.
+ * The pipeline-level vocabulary. Emission order is fixed by the spec: `default`, `include`, `stages`,
+ * `variables`, `workflow`, the templates, the jobs, then `raw`.
  */
 export interface Pipeline {
   readonly default?: Default;
@@ -280,10 +279,7 @@ export interface Pipeline {
   readonly raw?: Readonly<Record<string, Value>>;
 }
 
-/**
- * Builders are near-identity inference anchors: they pin the type and return the input itself, so a
- * call can never throw, default, merge or clone.
- */
+/** Near-identity inference anchors: pin the type and return the input itself, never throwing. */
 export const pipeline = (value: Pipeline): Pipeline => value;
 
 export const job = (value: Job): Job => value;

@@ -1,29 +1,31 @@
 # Spec 0010: GitLab CI pages
 
 Status: ready-for-agent
-Covers: `pages` at pipeline and job level, the deferred keyword that dominates spec 0009's target.
+Covers: the two surfaces GitLab calls `pages`: the job name at the document root, and the job keyword.
 Respects: ADR 0005, ADR 0008, ADR 0010, ADR 0014, specs 0006, 0009.
 
 ## Problem Statement
 
-`pages` accounts for 378 of the 468 deferred schema paths. It is why spec 0009's 87.5% target is
-reachable at all, and it is too large to bury inside a general vocabulary ticket: pipeline-level
-`pages` alone is 374 paths, with job-level `pages` adding four.
+`pages` accounts for most of the deferred schema paths. The pinned schema settles what looked like two
+surfaces: its root `pages` property is `$ref: job`, the same definition as `additionalProperties`, so
+the root form is a **job whose name is its key**, not a pipeline keyword. Only the job-level `pages`
+keyword (`true` or `{ publish, path_prefix, expire_in }`) is new grammar.
 
-The shapes are deployment configuration, not job scheduling: publish settings, paths, expiry, and in
-newer GitLab versions a pipeline-level block that decides what the Pages deployment contains. A ticket
-that guesses the key list from a summary would cement the wrong grammar.
+Treating the root form as a pipeline field duplicates the whole job body in the vocabulary and adds a
+second spelling for every job-body path. The gate should instead normalise the root `$.pages` subtree
+onto the job-name wildcard, so the documented grammar counts the job body once.
 
 ## Solution
 
-Model both surfaces behind the `pages` keyword, deriving the exact key list from the pinned schema and
-GitLab's Pages documentation, with a documentation-derived fixture where no real pinned config uses
-the form. Two tickets: pipeline-level first, job-level second, each ending at `render` and a schema-gap
-row that disappears.
+Two tickets. Ticket 101 makes the root `pages` a job name: no field, no reserved keyword, and a schema
+gate that maps `$.pages.*` to `$.*.*`. Ticket 102 models the job-level `pages` keyword from the pinned
+schema and GitLab's Pages documentation, with a documentation-derived fixture where no real pinned
+config uses it.
 
 ## User Stories
 
-1. As a library consumer, I want pipeline-level `pages` typed, so that a Pages deployment is not raw.
+1. As a library consumer, I want `job({ name: "pages", ... })` to be legal, so that a Pages job is an
+   ordinary job.
 2. As a library consumer, I want job-level `pages` typed, so that a job that publishes Pages is not raw.
 3. As a maintainer, I want the key list derived from the schema walk and docs, so that the shape is not guessed.
 4. As a maintainer, I want each ticket to delete its gap row and add its still-missing children, so progress is visible.
@@ -31,10 +33,12 @@ row that disappears.
 
 ## Implementation Decisions
 
-- Pipeline `pages` is an optional map; job `pages` is an optional map. The ticket derives the exact keys
-  from the schema slice and the Pages docs, and writes them in the spec's fixed order.
+- Root `pages` has no `Pipeline` field and is not a `GLOBAL_KEYWORDS` entry; the schema walk maps its
+  subtree onto `$.*` and dedupes before the gap comparison.
+- Job `pages` is an optional map or `true`. The ticket derives the exact keys from the schema slice and
+  the Pages docs, and writes them in the spec's fixed order.
 - Values are `Text`/`Scalar`/boolean as the docs define; absent keys are not emitted.
-- Raw collides with `pages` at both levels.
+- Raw collides with the job keyword only; a job named `pages` is not a collision.
 - The fixture is documentation-derived unless a redistributable pinned config is found; provenance says
   which, with the doc page and date.
 - No deployment semantics, no URL generation, no validation of the target project.
@@ -43,9 +47,10 @@ row that disappears.
 ## Testing Decisions
 
 - Seam: `render(pipeline(...))`, plus corpus data equality if a real entry is used.
-- Inventory exercises every modelled key without raw; the schema-gap report drops `$.*.pages` and
-  `$.pages` and adds their still-missing children.
-- A golden pins pipeline and job pages in the fixed order.
+- The inventory includes a job named `pages` without raw.
+- The schema gate proves `$.pages` is absent from the documented grammar and `$.pages.x` becomes `$.*.x`.
+- The schema-gap report drops `$.pages`; `$.*.pages` stays until ticket 102 models it.
+- A golden pins job-level pages in the fixed order.
 - `pnpm check` is the exit gate.
 
 ## Out of Scope
@@ -56,5 +61,5 @@ row that disappears.
 
 ## Further Notes
 
-- Ticket numbers are reserved in spec 0009's 100 block: 101 pipeline, 102 job.
+- Ticket numbers are reserved in spec 0009's 100 block: 101 root name, 102 job keyword.
 - If the schema and docs disagree, stop and report; do not pick one silently.
