@@ -59,6 +59,21 @@ a tag-aware assertion is ticket 43. Nothing else about the entry depends on it.
   `dependencies` including a one-item list, `start_in` with `when: delayed`, `manual_confirmation`
   with `when: manual`, and the `dast_configuration` profile pair.
 
+## gitlab-run (documentation-derived)
+
+- Source: <https://docs.gitlab.com/ci/functions/>, <https://docs.gitlab.com/ci/yaml/#run>
+- Not a vendored third-party config: the file pins the `run` step-list shapes, which no pinned
+  repository config used. GitLab Functions is experimental, so the entry is marked documentation-derived
+  under spec 0009 decision 5 and is shape evidence only, not proof that a real pipeline uses it.
+- Read on: 2026-11-01
+- Licence: n/a
+- Vendored as: `gitlab-run.yml`, SHA-256
+  `b8a01ed0f9cbb1231a16f94c42d21b763a19a2487d6dad7efa2644e04d7cc773`
+- Comparison: data
+- Why this entry: a function step with `env`, a function step with `inputs` (a string and a number),
+  and a script step with `env` - the three shapes `run` accepts without the deprecated `step:` key or
+  the map forms of a function reference, which stay declared gaps.
+
 ## gitlab-pages
 
 - Repo: <https://gitlab.com/gitlab-org/gitlab-pages>

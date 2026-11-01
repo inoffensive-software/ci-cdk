@@ -40,7 +40,7 @@ const GRAMMAR_AREAS: readonly GrammarArea[] = [
   },
   {
     name: "Scripts",
-    prefixes: ["$.*.before_script", "$.*.script", "$.*.after_script", "$.*.hooks"],
+    prefixes: ["$.*.before_script", "$.*.script", "$.*.run", "$.*.after_script", "$.*.hooks"],
   },
   {
     name: "Inheritance",

@@ -1,0 +1,19 @@
+stages:
+  - build
+
+build_and_release:
+  stage: build
+  run:
+    - name: validate
+      func: registry.gitlab.com/js/validate:1.0.0
+      env:
+        BUILD_TARGET: release
+    - name: release
+      func: registry.gitlab.com/js/release:1.0.0
+      inputs:
+        environment: production
+        retries: 2
+    - name: migrate
+      script: npm run migrate
+      env:
+        DRY_RUN: "false"
