@@ -6,6 +6,7 @@ import {
   pipelineConfig,
   step,
 } from "../../../src/bitbucket-pipelines/index.js";
+import { CHILD_FINAL_DOCUMENTS } from "./inventory-child.js";
 import { everyDefinedStep, everyFinalArtifacts, everyItems } from "./inventory-items.js";
 import { everyFinalRuntime } from "./inventory-runtime.js";
 
@@ -218,6 +219,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
       },
     }),
   },
+  ...CHILD_FINAL_DOCUMENTS,
   {
     name: "image-string",
     config: pipelineConfig({
