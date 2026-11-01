@@ -17,6 +17,10 @@ test/corpus/paths.ts                       every key path in a parsed document, 
 test/corpus/vendored.ts                    reads an entry's vendored bytes
 test/corpus/coverage.ts                    the ledger assertions; each provider supplies its walker
 test/corpus/report.ts                      the generated blocks a provider page carries, from its data
+test/corpus/provider-index.ts              the README provider table, from every provider's counts
+test/corpus/provider-summary.ts            the facts one provider contributes to that table
+test/corpus/<provider>/provider-summary.ts one provider's schema-gap counts for the README table
+test/corpus/provider-index.test.ts         asserts the README block; `pnpm readme:coverage` regenerates it
 test/corpus/provenance.test.ts             checks every provider's PROVENANCE.md against its files
 ```
 

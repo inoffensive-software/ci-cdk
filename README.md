@@ -89,11 +89,20 @@ git status --porcelain -- .github/workflows   # edits, and a first commit you fo
 
 ## Providers
 
-| Subpath                                   | Provider                                                              | Status      |
-| ----------------------------------------- | --------------------------------------------------------------------- | ----------- |
-| `@inoffensive/ci-cdk/github-actions`      | [GitHub Actions](docs/providers/github-actions.md#documented-grammar) | Supported   |
-| `@inoffensive/ci-cdk/gitlab-ci`           | [GitLab CI](docs/providers/gitlab-ci.md)                              | In Progress |
-| `@inoffensive/ci-cdk/bitbucket-pipelines` | [Bitbucket Pipelines](docs/providers/bitbucket-pipelines.md)          | In Progress |
+<!-- providers:start -->
+
+| Subpath                                   | Provider                                                                        | Modelled     | Unmodelled  | Out of scope | Schema noise |
+| ----------------------------------------- | ------------------------------------------------------------------------------- | ------------ | ----------- | ------------ | ------------ |
+| `@inoffensive/ci-cdk/github-actions`      | [GitHub Actions](docs/providers/github-actions.md#documented-grammar)           | 82.8% (149)  | 1.1% (2)    | 10.0% (18)   | 6.1% (11)    |
+| `@inoffensive/ci-cdk/gitlab-ci`           | [GitLab CI](docs/providers/gitlab-ci.md#documented-grammar)                     | 80.2% (551)  | 15.4% (106) | 0.1% (1)     | 4.2% (29)    |
+| `@inoffensive/ci-cdk/bitbucket-pipelines` | [Bitbucket Pipelines](docs/providers/bitbucket-pipelines.md#documented-grammar) | 99.3% (3699) | 0.0% (0)    | 0.5% (17)    | 0.2% (9)     |
+
+Each provider is measured against the grammar in its pinned upstream schema. `Modelled` is the
+share of documented paths the provider module can emit.`Unmodelled` is debt, `Out of scope` is a shape
+the provider deliberately does not model (usually as it involves some form of YAML sharing primitives - just use code for this). `Schema noise` is grammar the schema permits but the
+provider does not document. They may not sum exactly to 100% because of rounding.
+
+<!-- providers:end -->
 
 ## Documentation
 

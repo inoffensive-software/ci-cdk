@@ -49,6 +49,7 @@
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "check": "pnpm fmt:check && pnpm compile && pnpm typecheck && pnpm lint && pnpm test && pnpm fallow",
+    "readme:coverage": "UPDATE_README_COVERAGE=1 vitest run test/corpus/provider-index.test.ts",
     "ci": "bash tools/ci/ci.sh",
     "ci:workflow": "pnpm compile && node tools/ci/workflow.mts > .github/workflows/ci.yml && node tools/ci/release.mts > .github/workflows/release.yml",
     "changeset": "pnpm changeset",

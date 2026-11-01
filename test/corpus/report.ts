@@ -158,7 +158,7 @@ const entriesFor = (
   );
 
 /** Column padding matches the markdown formatter, so `pnpm fmt` does not rewrite the block. */
-const formatTable = (header: readonly string[], rows: readonly ReportRow[]): string => {
+export const formatTable = (header: readonly string[], rows: readonly ReportRow[]): string => {
   const all = [header, ...rows];
 
   const widths = header.map((_, column) =>
