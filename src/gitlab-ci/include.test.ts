@@ -72,12 +72,58 @@ describe("include entry order and inputs", () => {
   it("never resolves a component's inputs, and keeps them in author order", () => {
     const component: IncludeEntry = {
       component: "gitlab.com/components/danger@1.0",
-      inputs: { job_name: "danger", stage: "test" },
+      inputs: { zulu: "last", alpha: "first" },
     };
 
-    expect(parse(includeText(component)).include).toStrictEqual({
+    const text = includeText(component);
+
+    expect(parse(text).include).toStrictEqual(component);
+    expect(text.indexOf("zulu:")).toBeLessThan(text.indexOf("alpha:"));
+  });
+});
+
+describe("include inputs", () => {
+  it("accepts inputs on every source, scalar and object alike", () => {
+    const cases: readonly IncludeEntry[] = [
+      { local: "ci.yml", inputs: { env: "staging" } },
+      { remote: "https://example.com/ci.yml", inputs: { env: { value: "staging" } } },
+      { template: "Nodejs.gitlab-ci.yml", inputs: { env: ["staging", "production"] } },
+      {
+        project: "group/project",
+        file: "ci.yml",
+        inputs: { env: { value: "staging", expand: false, description: "target" } },
+      },
+      { component: "gitlab.com/components/danger@1.0", inputs: { env: 2 } },
+    ];
+
+    for (const entry of cases) {
+      expect(parse(includeText(entry)).include).toStrictEqual(entry);
+    }
+  });
+
+  it("emits the object form's keys in author order", () => {
+    const entry: IncludeEntry = {
       component: "gitlab.com/components/danger@1.0",
-      inputs: { job_name: "danger", stage: "test" },
-    });
+      inputs: { env: { description: "target", options: ["a"], expand: false, value: "a" } },
+    };
+
+    const text = includeText(entry);
+
+    expect(text.indexOf("description:")).toBeLessThan(text.indexOf("options:"));
+    expect(text.indexOf("options:")).toBeLessThan(text.indexOf("expand:"));
+    expect(text.indexOf("expand:")).toBeLessThan(text.indexOf("value:"));
+  });
+
+  it("accepts a nested list of inputs", () => {
+    const entry: IncludeEntry = {
+      local: "ci.yml",
+      inputs: { matrix: [[{ value: "a" }], [{ value: "b" }]] },
+    };
+
+    expect(parse(includeText(entry)).include).toStrictEqual(entry);
+  });
+
+  it("emits no inputs key when the entry omits them", () => {
+    expect(parse(includeText({ local: "ci.yml" })).include).toStrictEqual({ local: "ci.yml" });
   });
 });

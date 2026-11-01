@@ -109,9 +109,11 @@ describe("root pages job", () => {
  * The completion target spec 0009 decision 9 sets: every schema path that is neither `schema-noise`
  * nor under `spec` is modelled or declared `unmodelled`. The root `pages` property is a job body, so
  * its 374 key paths normalise onto the job-name wildcard's and dedupe away: the documented grammar is
- * 687 paths, not the 1,061 the raw walk reports, and the target is 552 of them. The counts derive
- * from the three lists, so a ticket that moves rows from `unmodelled` to modelled keeps the sum
- * without editing this test.
+ * 687 paths, not the 1,061 the raw walk reports, and the target is 551 of them. Modelling the map
+ * form of `include` closed its unmodelled row but moved `$.include.rules[][]` into `schema-noise`,
+ * which the target excludes, so the 552 that #78 set drops by one. The counts derive from the three
+ * lists, so a ticket that moves rows from `unmodelled` to modelled keeps the sum without editing this
+ * test.
  */
 describe("completion target", () => {
   const modelled = new Set(MODELLED_PATHS);
@@ -128,7 +130,7 @@ describe("completion target", () => {
   it("leaves no schema path outside the target", () => {
     const unmodelled = schemaPathsCoveredBy("unmodelled");
 
-    expect(modelledSchemaPaths.length + unmodelled.length).toBe(552);
+    expect(modelledSchemaPaths.length + unmodelled.length).toBe(551);
   });
 
   it("reserves out-of-scope for the spec header", () => {

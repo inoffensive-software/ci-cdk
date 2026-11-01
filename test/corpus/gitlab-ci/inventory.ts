@@ -101,7 +101,14 @@ export const INVENTORY: readonly InventoryDocument[] = [
         },
         {
           component: "gitlab.com/components/danger@1.0",
-          inputs: { job_name: "danger", stage: "test", blocking: false, retries: 2 },
+          inputs: {
+            job_name: "danger",
+            stage: { value: "test", expand: false },
+            retries: [1, 2],
+            rows: [{ value: "a" }, { value: "b" }],
+            grid: [[{ value: "x" }], [{ value: "y" }]],
+            nested: [[1, 2], [3]],
+          },
           rules: [{ when: "never" }],
         },
       ],
@@ -224,7 +231,15 @@ export const INVENTORY: readonly InventoryDocument[] = [
             project: "group/downstream",
             branch: "main",
             strategy: "depend",
-            inputs: { DEPLOY_ENV: "staging", RETRIES: 2 },
+            inputs: {
+              DEPLOY_ENV: "staging",
+              RETRIES: 2,
+              TARGET: { value: "release", description: "deployment target" },
+              MATRIX: [{ value: "a", expand: false }, { value: "b" }],
+              GRID: [[{ value: "g" }]],
+              NESTED: [[1, 2], [3]],
+            },
+            forward: { yaml_variables: true, pipeline_variables: false },
           },
           parallel: {
             matrix: [

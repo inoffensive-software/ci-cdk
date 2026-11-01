@@ -2,10 +2,30 @@ import type { Scalar, Text } from "../core/index.js";
 import type { Artifacts, CacheList, Hooks, Image, Retry, Rule, Script, Service } from "./types.js";
 import type { Identity, IdTokens } from "./token-types.js";
 
+/**
+ * One input value supplied to an included or triggered configuration. GitLab documents the scalar
+ * form; the pinned schema also admits a list and a map, so the object form carries a value with the
+ * expansion switch and the same descriptive keys a variable may have. Nothing here is resolved or
+ * validated against the target's `spec:inputs`.
+ */
+export interface InputOptions {
+  readonly value: Scalar;
+  readonly expand?: boolean;
+  readonly options?: readonly Scalar[];
+  readonly description?: Text;
+}
+
+/** A scalar, a list of values, or the object form. Lists and maps nest, as the schema allows. */
+export type InputValue = Scalar | readonly InputValue[] | InputOptions;
+
+/** An author-named map of input values, kept in author order when emitted. */
+export type Inputs = Readonly<Record<string, InputValue>>;
+
 /** The fields every include entry may carry; the discriminator decides the source. */
 export interface IncludeOptions {
   readonly rules?: readonly Rule[];
   readonly integrity?: Text;
+  readonly inputs?: Inputs;
 }
 
 export type IncludeEntry =
@@ -17,10 +37,7 @@ export type IncludeEntry =
       readonly ref?: Text;
       readonly file: Text | readonly Text[];
     })
-  | (IncludeOptions & {
-      readonly component: Text;
-      readonly inputs?: Readonly<Record<string, Scalar>>;
-    });
+  | (IncludeOptions & { readonly component: Text });
 
 /** One include entry, or several; GitLab accepts either shape. Entries are never resolved. */
 export type Include = IncludeEntry | readonly IncludeEntry[];

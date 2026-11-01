@@ -60,6 +60,86 @@ describe("job trigger: child pipeline", () => {
       ],
     ).toStrictEqual({ include: [{ template: "Child.yml" }, { local: "ci/child.yml" }] });
   });
+
+  it("writes one path as a scalar", () => {
+    expect(body({ trigger: { include: "ci/child.yml" } })["trigger"]).toStrictEqual({
+      include: "ci/child.yml",
+    });
+  });
+
+  it("writes an artifact include with its job", () => {
+    const trigger = {
+      include: { artifact: "generated/child.yml", job: "generate" },
+    } as const;
+
+    expect(body({ trigger })["trigger"]).toStrictEqual(trigger);
+  });
+
+  it("accepts inputs on every child include shape, in author order", () => {
+    const include = [
+      { local: "ci/local.yml", inputs: { env: "a" } },
+      { template: "Child.yml", inputs: { env: { value: "b", expand: false } } },
+      { artifact: "child.yml", job: "generate", inputs: { env: ["c", "d"] } },
+      { project: "group/project", ref: "main", file: "ci.yml", inputs: { env: 1 } },
+      { component: "gitlab.com/components/child@1.0", inputs: { zulu: "z", alpha: "a" } },
+      { remote: "https://example.com/child.yml", inputs: { env: true } },
+    ] as const;
+
+    const text = bare(pipeline({ jobs: [job({ name: "deploy", trigger: { include } })] }));
+
+    expect(body({ trigger: { include } })["trigger"]).toStrictEqual({ include });
+    expect(text.indexOf("zulu:")).toBeLessThan(text.indexOf("alpha:"));
+  });
+});
+
+describe("job trigger: forward and inputs", () => {
+  it("writes forward after a multi-project trigger's inputs", () => {
+    const trigger = {
+      project: "group/downstream",
+      inputs: { TARGET: { value: "production", description: "target" } },
+      forward: { pipeline_variables: true, yaml_variables: false },
+    } as const;
+
+    const text = bare(pipeline({ jobs: [job({ name: "deploy", trigger })] }));
+
+    expect(body({ trigger })["trigger"]).toStrictEqual(trigger);
+    expect(text.indexOf("inputs:")).toBeLessThan(text.indexOf("forward:"));
+    expect(text.indexOf("yaml_variables:")).toBeLessThan(text.indexOf("pipeline_variables:"));
+  });
+
+  it("writes forward on a child trigger after the strategy", () => {
+    expect(
+      body({
+        trigger: {
+          include: "ci/child.yml",
+          strategy: "depend",
+          forward: { yaml_variables: true },
+        },
+      })["trigger"],
+    ).toStrictEqual({
+      include: "ci/child.yml",
+      strategy: "depend",
+      forward: { yaml_variables: true },
+    });
+  });
+
+  it("emits no forward key when the trigger omits it", () => {
+    expect(body({ trigger: { project: "group/downstream" } })["trigger"]).toStrictEqual({
+      project: "group/downstream",
+    });
+    expect(body({ trigger: { include: "ci/child.yml" } })["trigger"]).toStrictEqual({
+      include: "ci/child.yml",
+    });
+  });
+
+  it("accepts nested input lists on a multi-project trigger", () => {
+    const trigger = {
+      project: "group/downstream",
+      inputs: { grid: [[{ value: "a" }], [{ value: "b" }]] },
+    } as const;
+
+    expect(body({ trigger })["trigger"]).toStrictEqual(trigger);
+  });
 });
 
 describe("job trigger: absent", () => {
