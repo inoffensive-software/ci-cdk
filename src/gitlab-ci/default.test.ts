@@ -95,9 +95,14 @@ describe("default artifacts and retry", () => {
       name: "build-$CI_JOB_NAME",
       expire_in: "1 week",
       expose_as: "build",
-      public: true,
+      untracked: true,
+      access: "maintainer",
+      public: false,
       when: "always",
-      reports: { junit: ["report.xml"] },
+      reports: {
+        junit: ["report.xml"],
+        coverage_report: { coverage_format: "cobertura", path: "coverage/cobertura.xml" },
+      },
     };
 
     expect(parse(defaultText({ artifacts })).default.artifacts).toStrictEqual(artifacts);

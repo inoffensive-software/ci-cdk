@@ -232,15 +232,15 @@ export const artifactsDoc = (artifacts: Artifacts): Doc =>
     ...entry("name", present(artifacts.name)),
     ...entry("expire_in", present(artifacts.expire_in)),
     ...entry("expose_as", present(artifacts.expose_as)),
+    ...entry("untracked", present(artifacts.untracked)),
     ...entry("public", present(artifacts.public)),
+    ...entry("access", present(artifacts.access)),
     ...entry("when", present(artifacts.when)),
     ...entry("reports", artifacts.reports === undefined ? undefined : fromValue(artifacts.reports)),
   ]);
 
-/**
- * `pages` is a flag or a map, in GitLab's documented key order. An absent key emits nothing, so a
- * map with only `publish` reads as a map rather than gaining empty siblings.
- */
+/** `pages` is a flag or a map, in documented key order; an absent key emits nothing, so a map with
+ * only `publish` reads as a map rather than gaining empty siblings. */
 export const pagesDoc = (pages: JobPages): Doc =>
   typeof pages === "boolean"
     ? fromValue(pages)

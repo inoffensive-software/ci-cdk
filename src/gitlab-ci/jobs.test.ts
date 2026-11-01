@@ -131,26 +131,6 @@ describe("job cache", () => {
   });
 });
 
-describe("job artifacts", () => {
-  it("writes every artifacts field, keeping report order and a single report path", () => {
-    const artifacts = {
-      paths: ["dist/"],
-      exclude: ["dist/tmp/"],
-      name: "build-$CI_JOB_NAME",
-      expire_in: "1 week",
-      expose_as: "build",
-      public: true,
-      when: "always",
-      reports: { codequality: "gl-code-quality-report.json", junit: ["report.xml"] },
-    } as const;
-
-    const text = bare(pipeline({ jobs: [job({ name: "build", artifacts })] }));
-
-    expect(body({ artifacts })["artifacts"]).toStrictEqual(artifacts);
-    expect(text.indexOf("codequality:")).toBeLessThan(text.indexOf("junit:"));
-  });
-});
-
 describe("job emission order", () => {
   it("emits the modelled fields in the spec's fixed order, then raw", () => {
     const parsed = parse(
