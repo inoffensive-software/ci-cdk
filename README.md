@@ -21,17 +21,10 @@ This project aims to end the tyranny of YAML by allowing for the specification o
 ## Install
 
 ```sh
-pnpm add @inoffensive/ci-cdk
-# or: npm install @inoffensive/ci-cdk
-# or: yarn add @inoffensive/ci-cdk
+pnpm add -D @inoffensive/ci-cdk
+# or: npm install -D @inoffensive/ci-cdk
+# or: yarn add -D @inoffensive/ci-cdk
 ```
-
-The package is ESM-only and requires Node 24 or newer. Each provider is its own subpath, so installing
-this library for one vendor does not pull the others into your type graph:
-
-- `@inoffensive/ci-cdk/github-actions`
-- `@inoffensive/ci-cdk/gitlab-ci`
-- `@inoffensive/ci-cdk/bitbucket-pipelines`
 
 ## Usage
 
