@@ -1,0 +1,13 @@
+pipelines:
+  default:
+    - parallel:
+        - step:
+            image: gcc:10.2
+            name: test_amd64
+            runtime:
+              cloud:
+                arch: x86
+            script:
+              - cd common
+              - CXX=g++ ./build_unit.sh
+              - ./unittest

@@ -4,6 +4,10 @@
     "reason": "the schema documents reusable steps only through `definitions.pipelines`, but Bitbucket documents `definitions.steps` and every pipeline references one by name; the vocabulary models it"
   },
   {
+    "path": "$.definitions.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
     "path": "$.labels.*",
     "reason": "the schema types `labels` as an object but names no `additionalProperties`, so it describes no child key; the vocabulary models the author's map"
   },
@@ -12,19 +16,119 @@
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },
   {
+    "path": "$.pipelines.branches.*[].final[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.branches.*[].parallel.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.branches.*[].parallel[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.branches.*[].stage.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.branches.*[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
     "path": "$.pipelines.custom.*[].final",
     "reason": "the schema's custom-pipeline items allow `variables`, `step`, `parallel` and `stage` but not `final`; Bitbucket documents a final step for any pipeline, and the vocabulary models one here"
+  },
+  {
+    "path": "$.pipelines.custom.*[].final[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.custom.*[].parallel.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.custom.*[].parallel[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.custom.*[].stage.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.custom.*[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
   },
   {
     "path": "$.pipelines.default[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },
   {
+    "path": "$.pipelines.default[].final[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.default[].parallel.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.default[].parallel[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.default[].stage.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.default[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
     "path": "$.pipelines.tags.*[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
   },
   {
+    "path": "$.pipelines.tags.*[].final[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.tags.*[].parallel.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.tags.*[].parallel[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.tags.*[].stage.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines.tags.*[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
     "path": "$.pipelines[\"pull-requests\"].*[].final.condition",
     "reason": "the schema's final step composes `step_base` alone, which has no `condition`; the vocabulary models the step body once, so a final step can still carry a condition"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].final[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].parallel.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].parallel[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].stage.steps[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
+  },
+  {
+    "path": "$.pipelines[\"pull-requests\"].*[].step[\"output-variables\"]",
+    "reason": "the schema's step definitions omit `output-variables`, but Bitbucket documents step output variables and the pinned corpus uses them; the vocabulary models the key"
   }
 ]
