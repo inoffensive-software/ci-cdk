@@ -1,6 +1,6 @@
 {
   "name": "@inoffensive/ci-cdk",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Typed TypeScript DSL that compiles to CI provider configuration.",
   "homepage": "https://github.com/inoffensive-software/ci-cdk#readme",
   "bugs": {
