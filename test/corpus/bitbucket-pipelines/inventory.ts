@@ -175,7 +175,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
     name: "expanded-final-names",
     config: pipelineConfig({
       pipelines: {
-        default: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+        default: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"], "keys")],
       },
     }),
   },
@@ -187,21 +187,21 @@ export const INVENTORY: readonly InventoryDocument[] = [
           { pattern: "main", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
           {
             pattern: "release/*",
-            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"], "keys")],
           },
         ],
         tags: [
           { pattern: "*", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
           {
             pattern: "v*",
-            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"], "keys")],
           },
         ],
         "pull-requests": [
           { pattern: "**", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
           {
             pattern: "pr-*",
-            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"], "keys")],
           },
         ],
       },
@@ -215,7 +215,7 @@ export const INVENTORY: readonly InventoryDocument[] = [
           { name: "publish", pipeline: [step({ script: ["true"] }), everyFinalArtifacts(true)] },
           {
             name: "publish-named",
-            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"])],
+            pipeline: [step({ script: ["true"] }), everyFinalArtifacts(["coverage"], "keys")],
           },
         ],
       },
