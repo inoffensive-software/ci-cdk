@@ -2,14 +2,14 @@
   "name": "@inoffensive/ci-cdk",
   "version": "0.0.0",
   "description": "Typed TypeScript DSL that compiles to CI provider configuration.",
-  "homepage": "https://github.com/eddie-atkinson/ci-cdk#readme",
+  "homepage": "https://github.com/inoffensive-software/ci-cdk#readme",
   "bugs": {
-    "url": "https://github.com/eddie-atkinson/ci-cdk/issues"
+    "url": "https://github.com/inoffensive-software/ci-cdk/issues"
   },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eddie-atkinson/ci-cdk.git"
+    "url": "git+https://github.com/inoffensive-software/ci-cdk.git"
   },
   "files": [
     "dist"

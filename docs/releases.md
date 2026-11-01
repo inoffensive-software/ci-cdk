@@ -99,7 +99,7 @@ npm binds the trusted publisher to the repository and the workflow filename, so 
 filename is part of the release surface.
 
 **The first publish is the exception.** npm only offers a trusted publisher for a package that
-already exists, so the initial `0.1.0` cannot use the tag workflow. Publish it by hand as the
+already exists, so the initial `0.0.1` cannot use the tag workflow. Publish it by hand as the
 `@inoffensive` owner:
 
 ```
@@ -107,7 +107,7 @@ pnpm publish --access public
 ```
 
 Then open the package settings on npm, add the trusted publisher for
-`eddie-atkinson/ci-cdk` and `.github/workflows/release.yml`, and use the workflow for every release
+`inoffensive-software/ci-cdk` and `.github/workflows/release.yml`, and use the workflow for every release
 after that one. The manual publish is a bootstrap step, not a fallback.
 
 ## Dist-tags
