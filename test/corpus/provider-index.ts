@@ -43,7 +43,7 @@ export const renderProviderTable = (): string => {
 
   const note = [
     "Each provider is measured against the grammar in its pinned upstream schema. `Modelled` is the",
-    "share of documented paths the provider module can emit.`Unmodelled` is debt, `Out of scope` is a shape",
+    "share of documented paths the provider module can emit. `Unmodelled` is debt, `Out of scope` is a shape",
     "the provider deliberately does not model (usually as it involves some form of YAML sharing primitives - just use code for this). `Schema noise` is grammar the schema permits but the",
     "provider does not document. They may not sum exactly to 100% because of rounding.",
   ].join("\n");

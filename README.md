@@ -1,14 +1,14 @@
 # CI CDK
 
-No one was born to write or read YAML. Why can't we use functions as the essential unit of composition for CI? Why have we decided that magical YAML syntax is a better solution than the one we had all along: code.
+No one was born to write or read YAML. Why can't we use functions as the essential unit of composition for CI? Why have we decided that magical YAML syntax is a better solution than the one we had all along: code?
 
-This project aims to end the tyranny of YAML by allowing for the specification of various CI providers' pipelines as Typescript which is automagically emitted as valid YAML.
+This project aims to end the tyranny of YAML by allowing for the specification of various CI providers' pipelines as TypeScript which is automagically emitted as valid YAML.
 
 ## Why
 
 - **Typechecking is good**: Catch annoying YAML syntax errors before merging a PR, not when the pipeline goes red.
 
-- **Composition is code, sharing is libraries**: If you want to share functionality across steps and pipelines, write a function. If you want to share a common pattern of CI configuration across repos or teams, write a module.
+- **Composition is code; sharing is libraries**: If you want to share functionality across steps and pipelines, write a function. If you want to share a common pattern of CI configuration across repos or teams, write a module.
 
 - **Generates vendor YAML, eject if you want to**: Adopting this library is not a one-way door. If you try it out and decide you hate it you've still got the generated vendor's YAML. Try it out, hate it and drop it if you want to.
 
@@ -23,7 +23,7 @@ This project aims to end the tyranny of YAML by allowing for the specification o
 ```ts
 import { job, render, step, workflow } from "@inoffensive/ci-cdk/github-actions";
 
-// This repo's PR pipeline
+// This repo's CI pipeline
 const ci = workflow({
   name: "CI",
   on: { push: { branches: ["main"] }, pull_request: {} },
@@ -68,15 +68,12 @@ export const withCheckout = (j: Job): Job => ({ ...j, steps: [checkout, ...(j.st
 ```
 
 ```ts
-// ci/github.ts
-import { withCache } from "./jobs.ts";
-```
+// ci/workflow.ts
+import { job } from "@inoffensive/ci-cdk/github-actions";
 
-A sample PR check to ensure this file is kept up to date:
+import { withCheckout } from "./jobs.js";
 
-```
-node tools/ci/workflow.mts > .github/workflows/ci.yml
-git status --porcelain -- .github/workflows   # edits, and a first commit you forgot
+const check = withCheckout(job({ id: "check", "runs-on": "ubuntu-latest", steps: [] }));
 ```
 
 ## Providers
@@ -90,7 +87,7 @@ git status --porcelain -- .github/workflows   # edits, and a first commit you fo
 | `@inoffensive/ci-cdk/bitbucket-pipelines` | [Bitbucket Pipelines](docs/providers/bitbucket-pipelines.md#documented-grammar) | 99.3% (3699) | 0.0% (0)   | 0.5% (17)    | 0.2% (9)     |
 
 Each provider is measured against the grammar in its pinned upstream schema. `Modelled` is the
-share of documented paths the provider module can emit.`Unmodelled` is debt, `Out of scope` is a shape
+share of documented paths the provider module can emit. `Unmodelled` is debt, `Out of scope` is a shape
 the provider deliberately does not model (usually as it involves some form of YAML sharing primitives - just use code for this). `Schema noise` is grammar the schema permits but the
 provider does not document. They may not sum exactly to 100% because of rounding.
 
@@ -98,13 +95,13 @@ provider does not document. They may not sum exactly to 100% because of rounding
 
 ## Motivation
 
-My motivations for creating this repo are three-fold:
+My motivations for creating this repo are threefold:
 
 1. I feel like CDK is the correct pattern for most configuration and never understood why it wasn't a supported way of authoring CI pipelines.
 
-2. I was curious about the cost effectiveness and quality of Chinese coding models - the answer is excellent quality and cheap
+2. I was curious about the cost-effectiveness and quality of Chinese coding models - the answer is excellent quality and cheap.
 
-3. I wanted to try my hand at harness-engineering a repo and have it produce a useful tool semi-autonomously
+3. I wanted to try my hand at harness-engineering a repo and having it produce a useful tool semi-autonomously.
 
 ## Development
 

@@ -44,7 +44,7 @@ End to end typesafety is non-negotiable. Do not use casts to satisfy (but lie) t
 
 `any` is never acceptable: it is unchecked by definition. `unknown` is acceptable, but only at a boundary, meaning the one function that takes untyped input and returns a valid type. Nothing downstream may see it. A cast is not a boundary; it asserts without checking. `Value` in core is the type data has once it has crossed.
 
-Settles: How to leverage the Typescript compiler, how to think about typesafety, and where untyped input is allowed to enter
+Settles: How to leverage the TypeScript compiler, how to think about typesafety, and where untyped input is allowed to enter
 
 ## Duplication over premature abstraction
 
